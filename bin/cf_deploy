@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+# vim: ft=ruby
+
+require "cf_deployer/cf_deploy"
+
+cf_deploy = CfDeploy.new(Cli.new(ARGV).parse!)
+
+Bundler.with_clean_env do
+  cf_deploy.ci_aws_run
+end

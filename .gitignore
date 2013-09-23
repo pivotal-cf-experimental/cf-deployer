@@ -1,0 +1,4 @@
+.bundle
+cf-release/
+deployments-aws/
+Gemfile.lock

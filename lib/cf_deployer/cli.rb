@@ -1,3 +1,5 @@
+require 'optparse'
+
 class Cli
   class Options < Struct.new(:release_name, :deploy_branch, :deploy_env, :promote_branch, :tag, :tokens, :interactive)    
     def tokens?
@@ -16,12 +18,8 @@ class Cli
   
   def parse!
     parser.parse!(@args)
-    
-    if @options.deploy_env.nil?
-      puts "deploy_env is required\n\n"
-      puts parser
-      exit 1
-    end
+
+    fail "deploy_env is required\n\n#{parser}" if @options.deploy_env.nil?
     
     @options
   end
@@ -62,14 +60,6 @@ class Cli
         %Q{Branch to promote to after a successful deploy (i.e. "release-candidate", "deployed-to-prod")}
       ) do |promote_branch|
         @options.promote_branch = promote_branch
-      end
-
-      opts.on(
-        "-t TAG",
-        "--tag-with TAG",
-        %Q{Tag to establish after a successful deploy (i.e. "v138")}
-      ) do |tag|
-        @options.tag = tag
       end
 
       opts.on(

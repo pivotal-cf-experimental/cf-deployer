@@ -4,11 +4,9 @@ require_relative "data_dog"
 class Bosh
   include CmdRunner
   
-  def initialize(release_path, deployment_path, opts)
+  def initialize(bosh_environment_path, opts)
     @options = {interactive: true, data_dog: true}.merge(opts)
-    
-    @release_path = release_path
-    @deployment_path = deployment_path
+    @bosh_environment_path = bosh_environment_path
     @data_dog = DataDog.new
   end
   
@@ -16,7 +14,6 @@ class Bosh
     opts = {final: false}.merge(opts)
     log "Create and upload an release #{opts}"
     
-    login
     create_release(opts[:final])
     upload_release
   end
@@ -29,13 +26,27 @@ class Bosh
       bosh! "deploy"
     end
   end
-  
-  private
-  
+
+  def download_manifest(deploy_env)
+    log "Downloading the manifest for #{deploy_env}"
+
+    current_manifest = "current_manifest.yml"
+    bosh! "download manifest cf-#{deploy_env} #{current_manifest}"
+    current_manifest
+  end
+
+  def deployment(manifest)
+    log "Setting manifest to #{manifest}"
+
+    bosh! "deployment #{manifest}"
+  end
+
   def login
     bosh! "target $BOSH_DIRECTOR"
     bosh! "login $BOSH_USER $BOSH_PASSWORD"
   end
+  
+  private
   
   def create_release(final)
     bosh! "create release#{" --force" unless final}"
@@ -51,6 +62,6 @@ class Bosh
   end
   
   def bosh!(cmd)
-    run! "bundle exec bosh#{" -n" unless @options[:interactive]} #{cmd}"
+    run! "source #{@bosh_environment_path} && bundle exec bosh#{" -n" unless @options[:interactive]} #{cmd}"
   end
 end
