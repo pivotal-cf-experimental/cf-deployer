@@ -1,42 +1,40 @@
 class Repo
-  include CmdRunner
-
-  attr_reader :path, :branch
-
-  def self.checkout(path, branch)
-    unless File.directory?(path)
-      log "Checking out repo #{path}/#{branch}"
-      run! "git clone --depth 1 --recursive --branch #{branch} git@github.com:cloudfoundry/#{path}.git"
-    end
-
-    raise "Failed to clone #{path}/#{branch}" unless File.directory?(path)
-
-    Dir.chdir(path) do
-      repo = new(path, branch)
-      repo.clean
-      repo.bundle_install
-      yield repo
-    end
+  def initialize(runner, repos_path, repo_name, branch)
+    @runner = runner
+    @repos_path = repos_path
+    @repo_name = repo_name
+    @branch = branch
   end
 
-  def bundle_install
-    run! "bundle install --without development test" if File.exists?("Gemfile")
+  def sync!
+    FileUtils.mkdir_p(@repos_path)
+
+    unless cloned?
+      @runner.run! "git clone git@github.com:cloudfoundry/#{@repo_name}.git #{path}"
+    end
+
+    sync_with_origin
   end
 
-  def clean
-    log "Cleaning repo #{Dir.pwd}"
+  def path
+    File.join(@repos_path, @repo_name)
+  end
 
-    run! "git reset --hard"
-    run! "git clean -fd"
-    run! "git fetch"
-    run! "git checkout #{@branch}"
-    run! "git submodule update --init --recursive"
+  def cloned?
+    File.exists?(path)
   end
 
   private
 
-  def initialize(path, branch)
-    @path = path
-    @branch = branch
+  def sync_with_origin
+    run_git! "reset --hard"
+    run_git! "clean --force -d"
+    run_git! "fetch"
+    run_git! "checkout origin/#{@branch}"
+    run_git! "submodule update --init --recursive"
+  end
+
+  def run_git!(command)
+    @runner.run! "cd #{path} && git #{command}"
   end
 end

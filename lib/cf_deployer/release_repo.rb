@@ -1,4 +1,4 @@
-require_relative "cmd_runner"
+require_relative "command_runner"
 require_relative "whats_in_the_deploy"
 require_relative "repo"
 
@@ -8,8 +8,6 @@ class ReleaseRepo < Repo
   end
   
   def tag
-    log "Tagging repo #{Dir.pwd} with #{next_version}"
-
     run! "git tag #{next_version}"
     run! "git push origin "
   end
@@ -22,7 +20,7 @@ class ReleaseRepo < Repo
     log "Checking what is in the deploy"
     return
 
-    opts = {interactive: true}.merge(opts)
+    opts = { interactive: true }.merge(opts)
     output_html = "deploy.html"
 
     deploy = WhatsInTheDeploy.new(previous_version, branch)
@@ -30,13 +28,17 @@ class ReleaseRepo < Repo
 
     if opts[:interactive]
       run! "open #{output_html}"
+
       puts "Is the deployment correct (yes/no)?"
-      fail "Did not accept the deployment" if gets.chomp != "yes"
+
+      fail "Did not accept the deployment" if $stdin.gets.chomp !~ /^y/i
     end
   end
   
   private
-  
+
+  alias log puts
+
   def previous_version
     "prev"
   end

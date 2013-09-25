@@ -5,8 +5,6 @@ require_relative 'bosh'
 require_relative 'manifest'
 
 class CfDeploy
-  include CmdRunner
-  
   RUBY_VERSION = "1_9_3".freeze
   GO_VERSION = "1.1.2".freeze
   GO_PACKAGE = "ci".freeze
@@ -15,30 +13,24 @@ class CfDeploy
     @options = options
   end
   
-  def ci_aws_run
-    log "Deploying CI #{@options}"
+  def deploy_to_aws(runner)
+    deployments_repo = Repo.new(runner, "./repos", "deployments-aws", "master")
+    deployments_repo.sync!
 
-    fail "promote branch is required" if @options.promote_branch.nil?
+    deployment = Deployment.new(File.join(deployments_repo.path, @options.deploy_env))
 
-    deployment = Repo.checkout "deployments-aws", "master" do |repo|
-      Deployment.new("#{@options.deploy_env}/bosh_environment", ["#{@options.deploy_env}/cf-aws-stub.yml"])
-    end
+    bosh = Bosh.new(runner, deployment.bosh_environment, interactive: false)
 
-    bosh = Bosh.new(deployment.bosh_environment_path, interactive: false, data_dog: true)
+    release_repo = ReleaseRepo.new(runner, "./repos", @options.release_name, @options.deploy_branch)
+    release_repo.sync!
 
-    ReleaseRepo.checkout(@options.release_name, @options.deploy_branch) do |release|
-      bosh.login
+    new_manifest = Manifest.new(runner).generate(release_repo.path, "aws", deployment.stub_files)
 
-      old_manifest = bosh.download_manifest(@options.deploy_env)
-      new_manifest = Manifest.new(old_manifest, deployment.stub_files).generate("aws")
+    bosh.create_and_upload_release(release_repo.path, final: false)
 
-      bosh.deployment(new_manifest)
+    bosh.deploy(new_manifest)
 
-      bosh.create_and_upload_release(final: false)
-      bosh.deploy(deployment.manifest)
-    
-      release.promote(@options.promote_branch)
-    end
+    release_repo.promote(@options.promote_branch) if @options.promote_branch
   end
 
   def prod_run

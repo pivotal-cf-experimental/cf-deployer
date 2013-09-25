@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   }
   s.executables = %w{cf_deploy}
 
-  s.files         = %w(LICENSE Rakefile) + Dir["lib/**/*"]
+  s.files         = %w(LICENSE) + Dir["lib/**/*"]
   s.license       = "Apache 2.0"
   s.test_files    = Dir["spec/**/*"]
   s.require_paths = %w(lib)
