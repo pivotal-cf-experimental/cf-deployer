@@ -74,7 +74,15 @@ EOF
         )
       end
 
-      it "merges the release tag into master after creating it" do
+      it "pushes HEAD to the remote branch" do
+        subject.promote_final_release("deployed-to-prod")
+
+        expect(runner).to have_executed_serially(
+          "cd #{repo_path} && git push origin HEAD:refs/heads/deployed-to-prod"
+        )
+      end
+
+      it "merges the release tag into master after creating and promoting it" do
         # git checkout will update the release index;
         # ensure the tag to merge isn't determined by it after the checkout
         runner.when_running(/git checkout/) do
@@ -94,20 +102,13 @@ EOF
 
         expect(runner).to have_executed_serially(
           /git tag v125/,
+          /git push .*deployed-to-prod/,
           "cd #{repo_path} && git branch -D master",
           "cd #{repo_path} && git fetch",
           "cd #{repo_path} && git branch --track origin/master master",
           "cd #{repo_path} && git checkout master",
           "cd #{repo_path} && git merge v125",
           "cd #{repo_path} && git push origin master",
-        )
-      end
-
-      it "pushes HEAD to the remote branch" do
-        subject.promote_final_release("deployed-to-prod")
-
-        expect(runner).to have_executed_serially(
-          "cd #{repo_path} && git push origin HEAD:refs/heads/deployed-to-prod"
         )
       end
     end

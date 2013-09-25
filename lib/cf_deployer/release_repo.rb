@@ -32,11 +32,11 @@ module CfDeployer
       log_message "creating and pushing tag v#{latest_release}"
       push_latest_final_release_tag(latest_release)
 
-      log_message "merging release v#{latest_release} into master"
-      merge_latest_final_release_into_master(latest_release)
-
       log_message "promoting final release to #{branch}"
       promote(branch)
+
+      log_message "merging release v#{latest_release} into master"
+      merge_latest_final_release_into_master(latest_release)
     end
 
     def promote_dev_release(branch)
