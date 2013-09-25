@@ -14,6 +14,19 @@ module CfDeployer
     end
 
     describe "#generate" do
+      it "installs and updates spiff" do
+        subject.generate("./repos/cf-release", "aws", ["/woah", "/stub/files"])
+
+        gospace = File.join(Dir.pwd, "gospace")
+
+        expect(runner).to have_executed_serially(
+          ["go get -u -v github.com/vito/spiff", environment: { "GOPATH" => gospace }],
+          [ "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml",
+            environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
+          ]
+        )
+      end
+
       it "generates the deployment manifest" do
         subject.generate("./repos/cf-release", "aws", ["/woah", "/stub/files"])
 
