@@ -1,3 +1,5 @@
+require "tempfile"
+
 module CfDeployer
   class Bosh
     RELEASE_NAME = "cf".freeze
@@ -9,6 +11,8 @@ module CfDeployer
       @runner = runner
       @options = { interactive: true }.merge(options)
       @bosh_environment = bosh_environment
+
+      @bosh_config = Tempfile.new("bosh_config")
     end
 
     def create_and_upload_release(release_path, options = {})
@@ -28,12 +32,21 @@ module CfDeployer
 
     def deployment(manifest)
       @logger.log_message "setting deployment to #{manifest}"
+
+      # despite passing -t for the target, this has to be set in the config file
+      run_with_clean_env("bundle exec bosh -n target #{bosh_director}")
+
       run_with_clean_env("bundle exec bosh #{bosh_flags} deployment #{manifest}")
     end
 
     def deploy
       @logger.log_message "DEPLOYING!"
-      run_with_clean_env("yes yes | bundle exec bosh #{bosh_flags(true)} deploy")
+
+      if @options[:interactive]
+        run_with_clean_env("bundle exec bosh #{bosh_flags} deploy")
+      else
+        run_with_clean_env("yes yes | bundle exec bosh #{bosh_flags(true)} deploy")
+      end
     end
 
     private
@@ -71,7 +84,7 @@ module CfDeployer
     end
 
     def run_with_clean_env(command, options = {}, &blk)
-      @runner.run!(command, { environment: { "BOSH_CONFIG" => "" } }.merge(options), &blk)
+      @runner.run!(command, { environment: { "BOSH_CONFIG" => @bosh_config.path } }.merge(options), &blk)
     end
 
     def bosh_flags(interactive = @options[:interactive])

@@ -16,13 +16,28 @@ module CfDeployer
       }
     end
 
-    let(:options) { {} }
+    let(:options) { { interactive: false } }
 
     subject { described_class.new(logger, runner, bosh_environment, options) }
 
+    def command_options_with_transient_bosh_config
+      proc do |options|
+        next unless options[:environment]
+
+        config = options[:environment]["BOSH_CONFIG"]
+        next unless config
+
+        File.exists?(config)
+      end
+    end
+
+    def bosh_flags
+      "-t http://example.com -u boshuser -p boshpass#{options[:interactive] ? "" : " -n"}"
+    end
+
     def bosh_command(command)
-      [ "bundle exec bosh -t http://example.com -u boshuser -p boshpass #{command}",
-        environment: { "BOSH_CONFIG" => "" }
+      [ "bundle exec bosh #{bosh_flags} #{command}",
+        command_options_with_transient_bosh_config
       ]
     end
 
@@ -41,8 +56,8 @@ module CfDeployer
       end
 
       def bosh_command_in_release(command)
-        [ "cd #{@release_repo} && bundle exec bosh -t http://example.com -u boshuser -p boshpass #{command}",
-          environment: { "BOSH_CONFIG" => "" }
+        [ "cd #{@release_repo} && bundle exec bosh #{bosh_flags} #{command}",
+          command_options_with_transient_bosh_config
         ]
       end
 
@@ -132,6 +147,9 @@ module CfDeployer
         subject.deployment("my-manifest.yml")
 
         expect(runner).to have_executed_serially(
+          [ "bundle exec bosh -n target http://example.com",
+            command_options_with_transient_bosh_config
+          ],
           bosh_command("deployment my-manifest.yml"),
         )
       end
@@ -149,7 +167,7 @@ module CfDeployer
 
         expect(runner).to have_executed_serially(
           [ "yes yes | bundle exec bosh -t http://example.com -u boshuser -p boshpass deploy",
-            environment: { "BOSH_CONFIG" => "" }
+            command_options_with_transient_bosh_config
           ]
         )
       end
