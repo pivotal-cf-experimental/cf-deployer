@@ -177,6 +177,20 @@ module CfDeployer
 
         expect(logger).to have_logged("DEPLOYING!")
       end
+
+      context "when interactive" do
+        before { options[:interactive] = true }
+
+        it "does not pipe yes yes" do
+          subject.deploy
+
+          expect(runner).to have_executed_serially(
+            [ "bundle exec bosh -t http://example.com -u boshuser -p boshpass deploy",
+              command_options_with_transient_bosh_config
+            ]
+          )
+        end
+      end
     end
   end
 end
