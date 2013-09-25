@@ -2,7 +2,7 @@ require 'optparse'
 
 module CfDeployer
   class Cli
-    class Options < Struct.new(:release_name, :deploy_branch, :deploy_env, :promote_branch, :tag, :tokens, :interactive)
+    class Options < Struct.new(:release_name, :deploy_branch, :deploy_env, :promote_branch, :tag, :tokens, :interactive, :repos_path, :deployments_repo)
       def tokens?
         !!tokens
       end
@@ -14,7 +14,7 @@ module CfDeployer
 
     def initialize(args)
       @args = args
-      @options = Options.new("cf-release", "master", nil, nil, nil, true, true)
+      @options = Options.new("cf-release", "master", nil, nil, nil, true, false, "./repos", "deployments-aws")
     end
 
     def parse!
@@ -34,7 +34,7 @@ module CfDeployer
         opts.on(
           "-r RELEASE_NAME",
           "--release RELEASE_NAME",
-          %Q{Release repositories to deploy (i.e. "cf-release" or "cf-services-release") DEFAULT: #{@options.release_name}}
+          %Q{Release repositories to deploy (i.e. "cf-release" or "cf-services-release"). DEFAULT: #{@options.release_name}}
         ) do |release_name|
           @options.release_name = release_name
         end
@@ -42,7 +42,7 @@ module CfDeployer
         opts.on(
           "-b DEPLOY_BRANCH",
           "--branch DEPLOY_BRANCH",
-          %Q{Release repository branch to deploy (i.e. "master", "a1", "rc") DEFAULT: #{@options.deploy_branch}}
+          %Q{Release repository branch to deploy (i.e. "master", "a1", "rc"). DEFAULT: #{@options.deploy_branch}}
         ) do |deploy_branch|
           @options.deploy_branch = deploy_branch
         end
@@ -76,6 +76,20 @@ module CfDeployer
           %Q{Run bosh interactively DEFAULT: #{@options.interactive}}
         ) do |interactive|
           @options.interactive = interactive
+        end
+
+        opts.on(
+          "--repos",
+          %Q{Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}}
+        ) do |repos_path|
+          @options.repos_path = repos_path
+        end
+
+        opts.on(
+          "--deployments-repo",
+          %Q{Which deployments repository to use. DEFAULT: #{@options.deployments_repo}}
+        ) do |deployments_repo|
+          @options.deployments_repo = deployments_repo
         end
       end
     end

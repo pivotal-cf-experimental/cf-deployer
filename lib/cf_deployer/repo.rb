@@ -12,7 +12,7 @@ module CfDeployer
       unless cloned?
         log_message "not found; cloning"
         @runner.run! "mkdir -p #@repos_path"
-        @runner.run! "git clone git@github.com:cloudfoundry/#{@repo_name}.git #{path}"
+        @runner.run! "git clone git@github.com:cloudfoundry/#@repo_name.git #{path}"
       end
 
       log_message "syncing with origin/#@branch"
