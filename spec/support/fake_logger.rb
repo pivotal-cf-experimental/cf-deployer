@@ -1,5 +1,7 @@
 module CfDeployer
   class FakeLogger
+    attr_reader :logged
+
     def initialize
       @logged = []
     end
@@ -13,7 +15,7 @@ module CfDeployer
     end
 
     def has_logged?(entry)
-      @logged.include?(entry)
+      @logged.any? { |logged_entry| entry === logged_entry }
     end
   end
 end

@@ -33,7 +33,7 @@ module CfDeployer
 
       bosh.deploy
 
-      release_repo.promote(@options.promote_branch) if @options.promote_branch
+      release_repo.promote_dev_release(@options.promote_branch) if @options.promote_branch
     end
   end
 end
