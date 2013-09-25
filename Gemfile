@@ -8,4 +8,5 @@ gem "bosh_cli", "~>1.5.0.pre.3"
 group :test do
   gem 'rspec'
   gem 'blue-shell'
+  gem 'timecop'
 end

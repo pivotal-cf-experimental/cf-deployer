@@ -1,24 +1,30 @@
-class CommandRunner
-  class CommandFailed < RuntimeError; end
+module CfDeployer
+  class CommandRunner
+    class CommandFailed < RuntimeError; end
 
-  def run!(command, options = {})
-    puts("\e[40;33m" + command.ljust(80) + "\e[0m")
+    def initialize(logger)
+      @logger = logger
+    end
 
-    spawn_opts = options.dup
+    def run!(command, options = {})
+      @logger.log_execution(command)
 
-    env = spawn_opts.delete(:environment) || {}
+      spawn_opts = options.dup
 
-    pid =
-      begin
-        Process.spawn(env, command, spawn_opts)
-      rescue => e
-        raise CommandFailed, "Spawning command failed: #{e.message}\n#{e.backtrace}"
-      end
+      env = spawn_opts.delete(:environment) || {}
 
-    yield if block_given?
+      pid =
+        begin
+          Process.spawn(env, command, spawn_opts)
+        rescue => e
+          raise CommandFailed, "Spawning command failed: #{e.message}\n#{e.backtrace}"
+        end
 
-    Process.wait(pid)
+      yield if block_given?
 
-    raise CommandFailed, "Command failed: #{command.inspect} (options: #{options.inspect})" unless $?.success?
+      Process.wait(pid)
+
+      raise CommandFailed, "Command failed: #{command.inspect} (options: #{options.inspect})" unless $?.success?
+    end
   end
 end

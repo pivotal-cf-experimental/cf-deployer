@@ -2,3 +2,4 @@
 cf-release/
 deployments-aws/
 Gemfile.lock
+new_deployment.yml

@@ -3,11 +3,18 @@
 
 require "cf_deployer/cf_deploy"
 require "cf_deployer/command_runner"
+require "cf_deployer/logger"
 
-cf_deploy = CfDeploy.new(Cli.new(ARGV).parse!)
+logger = CfDeployer::Logger.new(`tput cols`.to_i)
 
-runner = CommandRunner.new
+cf_deploy = CfDeployer::CfDeploy.new(logger, CfDeployer::Cli.new(ARGV).parse!)
+runner = CfDeployer::CommandRunner.new(logger)
 
-Bundler.with_clean_env do
-  cf_deploy.deploy_to_aws(runner)
+begin
+  Bundler.with_clean_env do
+    cf_deploy.deploy("aws", runner)
+  end
+rescue => e
+  logger.log_exception e
+  exit 1
 end
