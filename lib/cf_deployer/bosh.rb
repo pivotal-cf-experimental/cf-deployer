@@ -50,7 +50,7 @@ module CfDeployer
       @logger.log_message "setting release name to '#{RELEASE_NAME}'"
       set_release_name(release_path)
 
-      @logger.log_message "creating final release"
+      @logger.log_message "creating #{"final " if final}release"
       create_release(release_path, final)
 
       if private_config

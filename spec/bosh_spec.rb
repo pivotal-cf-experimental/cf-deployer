@@ -57,16 +57,6 @@ module CfDeployer
         ]
       end
 
-      def self.it_logs_the_important_bits
-        it "logs the important bits" do
-          create_and_upload_release
-
-          expect(logger).to have_logged("setting release name to 'cf'")
-          expect(logger).to have_logged(/creating (final )?release/)
-          expect(logger).to have_logged("uploading release")
-        end
-      end
-
       def self.it_sets_up_the_release_name
         describe "setting the release name" do
           context "when config/dev.yml exists" do
@@ -119,9 +109,16 @@ module CfDeployer
           subject.create_and_upload_dev_release(@release_repo)
         end
 
-        it_logs_the_important_bits
         it_sets_up_the_release_name
         it_resets_config_final
+
+        it "logs the important bits" do
+          create_and_upload_release
+
+          expect(logger).to have_logged("setting release name to 'cf'")
+          expect(logger).to have_logged("creating release")
+          expect(logger).to have_logged("uploading release")
+        end
 
         it "creates a dev release via bosh create release" do
           create_and_upload_release
@@ -140,9 +137,16 @@ module CfDeployer
           subject.create_and_upload_final_release(@release_repo, "/some/config/private.yml")
         end
 
-        it_logs_the_important_bits
         it_sets_up_the_release_name
         it_resets_config_final
+
+        it "logs the important bits" do
+          create_and_upload_release
+
+          expect(logger).to have_logged("setting release name to 'cf'")
+          expect(logger).to have_logged("creating final release")
+          expect(logger).to have_logged("uploading release")
+        end
 
         it "executes bosh create release --final" do
           create_and_upload_release
