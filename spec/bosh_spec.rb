@@ -163,7 +163,7 @@ module CfDeployer
 
     describe "#set_deployment" do
       it "sets the deployment" do
-        subject.deployment("my-manifest.yml")
+        subject.set_deployment("my-manifest.yml")
 
         expect(runner).to have_executed_serially(
           [ "bundle exec bosh -n target http://example.com",
@@ -174,7 +174,7 @@ module CfDeployer
       end
 
       it "logs what it's setting the deployment to" do
-        subject.deployment("my-manifest.yml")
+        subject.set_deployment("my-manifest.yml")
 
         expect(logger).to have_logged("setting deployment to my-manifest.yml")
       end

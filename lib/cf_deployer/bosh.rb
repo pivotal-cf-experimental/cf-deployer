@@ -23,7 +23,7 @@ module CfDeployer
       create_and_upload_release(release_path, :final, private_config)
     end
 
-    def deployment(manifest)
+    def set_deployment(manifest)
       @logger.log_message "setting deployment to #{manifest}"
 
       # despite passing -t for the target, this has to be set in the config file

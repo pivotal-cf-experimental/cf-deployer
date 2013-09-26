@@ -21,6 +21,10 @@ module CfDeployer
       sanitized_bosh_environment
     end
 
+    def private_config
+      deployment_file(File.join("config", "private.yml"))
+    end
+
     private
 
     def deployment_file(filename)

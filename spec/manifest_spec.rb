@@ -2,10 +2,11 @@ require "spec_helper"
 require "cf_deployer/manifest"
 
 module CfDeployer
-  describe Manifest do
+  describe ReleaseManifestGenerator do
     let(:runner) { FakeCommandRunner.new }
+    let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
 
-    subject { described_class.new(runner) }
+    subject { described_class.new(runner, release, "aws") }
 
     around do |example|
       Dir.mktmpdir("working_dir") do |working_dir|
@@ -15,7 +16,7 @@ module CfDeployer
 
     describe "#generate" do
       it "installs and updates spiff" do
-        subject.generate("./repos/cf-release", "aws", ["/woah", "/stub/files"])
+        subject.generate(["/woah", "/stub/files"])
 
         gospace = File.join(Dir.pwd, "gospace")
 
@@ -28,7 +29,7 @@ module CfDeployer
       end
 
       it "generates the deployment manifest" do
-        subject.generate("./repos/cf-release", "aws", ["/woah", "/stub/files"])
+        subject.generate(["/woah", "/stub/files"])
 
         expect(runner).to have_executed_serially(
           "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml",
@@ -36,7 +37,7 @@ module CfDeployer
       end
 
       it "returns the path to the generated manifest" do
-        result = subject.generate("./repos/cf-release", "aws", ["/woah", "/stub/files"])
+        result = subject.generate(["/woah", "/stub/files"])
 
         expect(result).to eq("#{Dir.pwd}/new_deployment.yml")
       end

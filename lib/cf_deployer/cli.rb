@@ -15,8 +15,7 @@ module CfDeployer
       repos_path: "./repos",
       deployments_repo: "deployments-aws",
       infrastructure: "aws",
-      final: false,
-      private_config: nil,
+      final_release: false,
     }
 
     class Options < Struct.new(*OPTIONS.keys)
@@ -50,10 +49,6 @@ module CfDeployer
 
       unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
         fail "infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
-      end
-
-      if @options.final && !@options.private_config
-        fail "must provide path to private.yml for final release"
       end
     end
 
@@ -130,6 +125,13 @@ module CfDeployer
           %Q{Which infrastructure to deploy. DEFAULT: #{@options.infrastructure}}
         ) do |infrastructure|
           @options.infrastructure = infrastructure
+        end
+
+        opts.on(
+          "--final",
+          %Q{Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}}
+        ) do |final_release|
+          @options.final_release = final_release
         end
       end
     end

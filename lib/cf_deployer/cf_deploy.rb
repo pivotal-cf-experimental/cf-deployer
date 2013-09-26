@@ -3,6 +3,8 @@ require 'cf_deployer/release_repo'
 require 'cf_deployer/deployment'
 require 'cf_deployer/bosh'
 require 'cf_deployer/manifest'
+require 'cf_deployer/dev_deployment_strategy'
+require 'cf_deployer/final_deployment_strategy'
 
 module CfDeployer
   class CfDeploy
@@ -30,18 +32,25 @@ module CfDeployer
         logger, runner, deployment.bosh_environment,
         interactive: @options.interactive)
 
-      bosh.create_and_upload_dev_release(release_repo.path)
+      manifest_generator =
+        ReleaseManifestGenerator.new(
+          runner, release_repo, @options.infrastructure)
 
-      manifest_generator = Manifest.new(runner)
+      strategy_type =
+        if @options.final_release
+          FinalDeploymentStrategy
+        else
+          DevDeploymentStrategy
+        end
 
-      new_manifest = manifest_generator.generate(
-        release_repo.path, @options.infrastructure, deployment.stub_files)
+      strategy = strategy_type.new(
+        bosh, deployment, release_repo, manifest_generator)
 
-      bosh.deployment(new_manifest)
+      strategy.deploy!
 
-      bosh.deploy
-
-      release_repo.promote_dev_release(@options.promote_branch) if @options.promote_branch
+      if @options.promote_branch
+        strategy.promote_to!(@options.promote_branch)
+      end
     end
   end
 end
