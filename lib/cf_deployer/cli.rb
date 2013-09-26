@@ -11,7 +11,7 @@ module CfDeployer
       promote_branch: nil,
       tag: nil,
       tokens: true,
-      interactive: false,
+      interactive: true,
       repos_path: "./repos",
       deployments_repo: "deployments-aws",
       infrastructure: "aws",
@@ -40,7 +40,10 @@ module CfDeployer
 
     def parse!
       parser.parse!(@args)
+      @options
+    end
 
+    def validate!
       if @options.deploy_env.nil?
         fail "deploy_env is required"
       end
@@ -52,11 +55,6 @@ module CfDeployer
       if @options.final && !@options.private_config
         fail "must provide path to private.yml for final release"
       end
-
-      @options
-    rescue
-      puts parser
-      raise
     end
 
     private
@@ -105,29 +103,30 @@ module CfDeployer
         end
 
         opts.on(
-          "-i",
-          "--[no-]interactive",
-          %Q{Run bosh interactively DEFAULT: #{@options.interactive}}
+          "-n",
+          "--non-interactive",
+          %Q{Run bosh interactively. DEFAULT: #{@options.interactive}}
         ) do |interactive|
-          @options.interactive = interactive
+          @options.interactive = !interactive
         end
 
         opts.on(
-          "--repos",
+          "--repos REPOS",
           %Q{Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}}
         ) do |repos_path|
           @options.repos_path = repos_path
         end
 
         opts.on(
-          "--deployments-repo",
+          "--deployments-repo DEPLOYMENTS_REPO",
           %Q{Which deployments repository to use. DEFAULT: #{@options.deployments_repo}}
         ) do |deployments_repo|
           @options.deployments_repo = deployments_repo
         end
 
         opts.on(
-          "--infrastructure",
+          "-i INFRASTRUCTURE",
+          "--infrastructure INFRASTRUCTURE",
           %Q{Which infrastructure to deploy. DEFAULT: #{@options.infrastructure}}
         ) do |infrastructure|
           @options.infrastructure = infrastructure
