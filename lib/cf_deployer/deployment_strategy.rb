@@ -1,10 +1,10 @@
 module CfDeployer
   class DeploymentStrategy
-    def initialize(bosh, deployment, release, manifest_generator)
+    def initialize(bosh, deployment, release, manifest)
       @bosh = bosh
       @deployment = deployment
       @release = release
-      @manifest_generator = manifest_generator
+      @manifest = manifest
     end
   end
 end

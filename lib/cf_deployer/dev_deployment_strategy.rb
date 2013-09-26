@@ -5,7 +5,7 @@ module CfDeployer
     def deploy!
       @bosh.create_and_upload_dev_release(@release.path)
 
-      manifest = @manifest_generator.generate(@deployment.stub_files)
+      manifest = @manifest.generate!(@deployment.stub_files)
 
       @bosh.set_deployment(manifest)
       @bosh.deploy

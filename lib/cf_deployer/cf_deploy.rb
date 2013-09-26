@@ -32,9 +32,9 @@ module CfDeployer
         logger, runner, deployment.bosh_environment,
         interactive: @options.interactive)
 
-      manifest_generator =
-        ReleaseManifestGenerator.new(
-          runner, release_repo, @options.infrastructure)
+      manifest =
+        ReleaseManifest.new(
+          runner, release_repo, @options.infrastructure, "new_deployment.yml")
 
       strategy_type =
         if @options.final_release
@@ -44,7 +44,7 @@ module CfDeployer
         end
 
       strategy = strategy_type.new(
-        bosh, deployment, release_repo, manifest_generator)
+        bosh, deployment, release_repo, manifest)
 
       strategy.deploy!
 

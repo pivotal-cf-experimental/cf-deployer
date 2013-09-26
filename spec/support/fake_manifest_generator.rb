@@ -2,13 +2,13 @@ module CfDeployer
   class FakeManifestGenerator
     attr_reader :stubs
 
-    def initialize(path_to_return)
-      @path_to_return = path_to_return
+    def initialize(destination)
+      @destination = destination
     end
 
-    def generate(stubs)
+    def generate!(stubs)
       @stubs = stubs
-      @path_to_return
+      @destination
     end
   end
 end
