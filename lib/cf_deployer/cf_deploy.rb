@@ -6,29 +6,24 @@ require 'cf_deployer/manifest'
 
 module CfDeployer
   class CfDeploy
-    RUBY_VERSION = "1_9_3".freeze
-    GO_VERSION = "1.1.2".freeze
-    GO_PACKAGE = "ci".freeze
-
-    def initialize(logger, options)
-      @logger = logger
+    def initialize(options)
       @options = options
     end
 
-    def deploy(infrastructure, runner)
-      deployments_repo = Repo.new(@logger, runner, @options.repos_path, @options.deployments_repo, "master")
+    def deploy(logger, runner)
+      deployments_repo = Repo.new(logger, runner, @options.repos_path, @options.deployments_repo, "master")
       deployments_repo.sync!
 
-      release_repo = ReleaseRepo.new(@logger, runner, @options.repos_path, @options.release_name, @options.deploy_branch)
+      release_repo = ReleaseRepo.new(logger, runner, @options.repos_path, @options.release_name, @options.deploy_branch)
       release_repo.sync!
 
       deployment = Deployment.new(File.join(deployments_repo.path, @options.deploy_env))
 
-      bosh = Bosh.new(@logger, runner, deployment.bosh_environment, interactive: @options.interactive)
+      bosh = Bosh.new(logger, runner, deployment.bosh_environment, interactive: @options.interactive)
 
       bosh.create_and_upload_dev_release(release_repo.path)
 
-      new_manifest = Manifest.new(runner).generate(release_repo.path, infrastructure, deployment.stub_files)
+      new_manifest = Manifest.new(runner).generate(release_repo.path, @options.infrastructure, deployment.stub_files)
       bosh.deployment(new_manifest)
 
       bosh.deploy

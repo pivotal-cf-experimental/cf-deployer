@@ -2,7 +2,24 @@ require 'optparse'
 
 module CfDeployer
   class Cli
-    class Options < Struct.new(:release_name, :deploy_branch, :deploy_env, :promote_branch, :tag, :tokens, :interactive, :repos_path, :deployments_repo)
+    VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
+
+    OPTIONS = {
+      release_name: "cf-release",
+      deploy_branch: "master",
+      deploy_env: nil,
+      promote_branch: nil,
+      tag: nil,
+      tokens: true,
+      interactive: false,
+      repos_path: "./repos",
+      deployments_repo: "deployments-aws",
+      infrastructure: "aws",
+      final: false,
+      private_config: nil,
+    }
+
+    class Options < Struct.new(*OPTIONS.keys)
       def tokens?
         !!tokens
       end
@@ -14,15 +31,32 @@ module CfDeployer
 
     def initialize(args)
       @args = args
-      @options = Options.new("cf-release", "master", nil, nil, nil, true, false, "./repos", "deployments-aws")
+      @options = Options.new
+
+      OPTIONS.each do |opt, default|
+        @options.send(:"#{opt}=", default)
+      end
     end
 
     def parse!
       parser.parse!(@args)
 
-      fail "deploy_env is required\n\n#{parser}" if @options.deploy_env.nil?
+      if @options.deploy_env.nil?
+        fail "deploy_env is required"
+      end
+
+      unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
+        fail "infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
+      end
+
+      if @options.final && !@options.private_config
+        fail "must provide path to private.yml for final release"
+      end
 
       @options
+    rescue
+      puts parser
+      raise
     end
 
     private
@@ -90,6 +124,13 @@ module CfDeployer
           %Q{Which deployments repository to use. DEFAULT: #{@options.deployments_repo}}
         ) do |deployments_repo|
           @options.deployments_repo = deployments_repo
+        end
+
+        opts.on(
+          "--infrastructure",
+          %Q{Which infrastructure to deploy. DEFAULT: #{@options.infrastructure}}
+        ) do |infrastructure|
+          @options.infrastructure = infrastructure
         end
       end
     end

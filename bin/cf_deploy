@@ -7,12 +7,12 @@ require "cf_deployer/logger"
 
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
 
-cf_deploy = CfDeployer::CfDeploy.new(logger, CfDeployer::Cli.new(ARGV).parse!)
+cf_deploy = CfDeployer::CfDeploy.new(CfDeployer::Cli.new(ARGV).parse!)
 runner = CfDeployer::CommandRunner.new(logger)
 
 begin
   Bundler.with_clean_env do
-    cf_deploy.deploy("aws", runner)
+    cf_deploy.deploy(logger, runner)
   end
 rescue => e
   logger.log_exception e
