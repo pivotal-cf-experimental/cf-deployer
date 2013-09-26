@@ -26,7 +26,7 @@ module CfDeployer
 
       bosh = Bosh.new(@logger, runner, deployment.bosh_environment, interactive: @options.interactive)
 
-      bosh.create_and_upload_release(release_repo.path, final: false)
+      bosh.create_and_upload_dev_release(release_repo.path)
 
       new_manifest = Manifest.new(runner).generate(release_repo.path, infrastructure, deployment.stub_files)
       bosh.deployment(new_manifest)

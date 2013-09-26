@@ -15,19 +15,12 @@ module CfDeployer
       @bosh_config = Tempfile.new("bosh_config")
     end
 
-    def create_and_upload_release(release_path, options = {})
-      options = { final: false }.merge(options)
+    def create_and_upload_dev_release(release_path)
+      create_and_upload_release(release_path)
+    end
 
-      @runner.run! "cd #{release_path} && git checkout -- #{FINAL_CONFIG}" # until there's a solid BOSH on rubygems >:(
-
-      @logger.log_message "setting release name to '#{RELEASE_NAME}'"
-      set_release_name(release_path)
-
-      @logger.log_message "creating #{options[:final] ? "final release" : "release"}"
-      create_release(release_path, options[:final])
-
-      @logger.log_message "uploading release"
-      upload_release(release_path)
+    def create_and_upload_final_release(release_path, private_config)
+      create_and_upload_release(release_path, :final, private_config)
     end
 
     def deployment(manifest)
@@ -51,6 +44,24 @@ module CfDeployer
 
     private
 
+    def create_and_upload_release(release_path, final = false, private_config = nil)
+      @runner.run! "cd #{release_path} && git checkout -- #{FINAL_CONFIG}" # until there's a solid BOSH on rubygems >:(
+
+      @logger.log_message "setting release name to '#{RELEASE_NAME}'"
+      set_release_name(release_path)
+
+      @logger.log_message "creating final release"
+      create_release(release_path, final)
+
+      if private_config
+        @logger.log_message "configuring blobstore"
+        copy_private_config(release_path, private_config)
+      end
+
+      @logger.log_message "uploading release"
+      upload_release(release_path)
+    end
+
     def set_release_name(release_path)
       dev_config = File.expand_path(File.join(release_path, DEV_CONFIG))
 
@@ -67,6 +78,10 @@ module CfDeployer
 
     def create_release(release_path, final)
       run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} create release#{" --final" if final}")
+    end
+
+    def copy_private_config(release_path, source_path)
+      @runner.run! "cp #{source_path} #{release_path}/config/private.yml"
     end
 
     def upload_release(release_path)

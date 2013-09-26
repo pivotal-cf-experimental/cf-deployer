@@ -41,7 +41,7 @@ module CfDeployer
       ]
     end
 
-    describe "#create_and_upload_release" do
+    describe "creating and uploading releases" do
       around do |example|
         Dir.mktmpdir("release_repo") do |release_repo|
           @release_repo = release_repo
@@ -51,59 +51,59 @@ module CfDeployer
 
       let(:dev_yml) { File.join(@release_repo, "config", "dev.yml") }
 
-      def create_and_upload_release(options = {})
-        subject.create_and_upload_release(@release_repo, options)
-      end
-
       def bosh_command_in_release(command)
         [ "cd #{@release_repo} && bundle exec bosh #{bosh_flags} #{command}",
           command_options_with_transient_bosh_config
         ]
       end
 
-      it "logs the important bits" do
-        create_and_upload_release
+      def self.it_logs_the_important_bits
+        it "logs the important bits" do
+          create_and_upload_release
 
-        expect(logger).to have_logged("setting release name to 'cf'")
-        expect(logger).to have_logged("creating release")
-        expect(logger).to have_logged("uploading release")
+          expect(logger).to have_logged("setting release name to 'cf'")
+          expect(logger).to have_logged(/creating (final )?release/)
+          expect(logger).to have_logged("uploading release")
+        end
       end
 
-      describe "setting the release name" do
-        context "when config/dev.yml exists" do
-          before do
-            FileUtils.mkdir_p(File.join(@release_repo, "config"))
+      def self.it_sets_up_the_release_name
+        describe "setting the release name" do
+          context "when config/dev.yml exists" do
+            before do
+              FileUtils.mkdir_p(File.join(@release_repo, "config"))
 
-            File.open(dev_yml, "w") do |io|
-              YAML.dump({ "dev_name" => "bosh-release", "foo" => "bar" }, io)
+              File.open(dev_yml, "w") do |io|
+                YAML.dump({ "dev_name" => "bosh-release", "foo" => "bar" }, io)
+              end
+            end
+
+            it "updates the release name to 'cf'" do
+              expect {
+                create_and_upload_release
+              }.to change {
+                YAML.load_file(dev_yml)
+              }.from(
+                "dev_name" => "bosh-release", "foo" => "bar"
+              ).to(
+                "dev_name" => "cf", "foo" => "bar"
+              )
             end
           end
 
-          it "updates the release name to 'cf'" do
-            expect {
-              create_and_upload_release
-            }.to change {
-              YAML.load_file(dev_yml)
-            }.from(
-              "dev_name" => "bosh-release", "foo" => "bar"
-            ).to(
-              "dev_name" => "cf", "foo" => "bar"
-            )
-          end
-        end
-
-        context "when config/dev.yml does NOT exist" do
-          it "writes it with the release name 'cf'" do
-            expect {
-              create_and_upload_release
-            }.to change {
-              YAML.load_file(dev_yml) if File.exists?(dev_yml)
-            }.from(nil).to("dev_name" => "cf")
+          context "when config/dev.yml does NOT exist" do
+            it "writes it with the release name 'cf'" do
+              expect {
+                create_and_upload_release
+              }.to change {
+                YAML.load_file(dev_yml) if File.exists?(dev_yml)
+              }.from(nil).to("dev_name" => "cf")
+            end
           end
         end
       end
 
-      describe "creating and uploading the release" do
+      def self.it_resets_config_final
         it "resets config/final.yml before creating the release" do
           create_and_upload_release
 
@@ -112,32 +112,51 @@ module CfDeployer
              /create release/
           )
         end
+      end
 
-        context "when creating a final release" do
-          it "executes bosh create release --final" do
-            create_and_upload_release(final: true)
-
-            expect(runner).to have_executed_serially(
-              bosh_command_in_release("create release --final"),
-              bosh_command_in_release("upload release --skip-if-exists"),
-            )
-          end
-
-          it "logs that it's creating a final release" do
-            create_and_upload_release(final: true)
-            expect(logger).to have_logged("creating final release")
-          end
+      describe "#create_and_upload_dev_release" do
+        def create_and_upload_release
+          subject.create_and_upload_dev_release(@release_repo)
         end
 
-        context "when NOT creating a final release" do
-          it "creates a dev release via bosh create release" do
-            create_and_upload_release
+        it_logs_the_important_bits
+        it_sets_up_the_release_name
+        it_resets_config_final
 
-            expect(runner).to have_executed_serially(
-              bosh_command_in_release("create release"),
-              bosh_command_in_release("upload release --skip-if-exists"),
-            )
-          end
+        it "creates a dev release via bosh create release" do
+          create_and_upload_release
+
+          expect(runner).to have_executed_serially(
+            bosh_command_in_release("create release"),
+            bosh_command_in_release("upload release --skip-if-exists"),
+          )
+        end
+      end
+
+      describe "#create_and_upload_final_release" do
+        let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
+
+        def create_and_upload_release
+          subject.create_and_upload_final_release(@release_repo, "/some/config/private.yml")
+        end
+
+        it_logs_the_important_bits
+        it_sets_up_the_release_name
+        it_resets_config_final
+
+        it "executes bosh create release --final" do
+          create_and_upload_release
+
+          expect(runner).to have_executed_serially(
+            bosh_command_in_release("create release --final"),
+            "cp /some/config/private.yml #{private_yml}",
+            bosh_command_in_release("upload release --skip-if-exists"),
+          )
+        end
+
+        it "logs that it's creating a final release" do
+          create_and_upload_release
+          expect(logger).to have_logged("creating final release")
         end
       end
     end
