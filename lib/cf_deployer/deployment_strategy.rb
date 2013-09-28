@@ -19,10 +19,14 @@ module CfDeployer
       @hooks.each(&:pre_deploy)
       do_deploy
       @hooks.each(&:post_deploy)
+      nil
     end
 
     def promote_to!(branch)
+      @hooks.each { |h| h.pre_promote(branch) }
       do_promote_to(branch)
+      @hooks.each { |h| h.post_promote(branch) }
+      nil
     end
 
     private
@@ -31,7 +35,7 @@ module CfDeployer
       raise NotImplementedError
     end
 
-    def do_promote(branch)
+    def do_promote_to(branch)
       raise NotImplementedError
     end
   end

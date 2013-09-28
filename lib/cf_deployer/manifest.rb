@@ -28,20 +28,6 @@ module CfDeployer
       File.expand_path(@destination)
     end
 
-    def appdirect_services
-      services = find_in_manifest(
-        "properties", "appdirect_gateway", "services")
-
-      return unless services
-
-      services.collect do |service|
-        { label: service["name"],
-          provider: service["provider"],
-          token: service["auth_token"]
-        }
-      end
-    end
-
     def api_endpoint
       find_in_manifest("properties", "cc", "srv_api_uri")
     end

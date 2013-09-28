@@ -75,5 +75,36 @@ module CfDeployer
         }.from([]).to([:pre_deploy, :deploying, :post_deploy])
       end
     end
+
+    describe "#promote!" do
+      it "calls pre_promote and post_promote hooks before and after promoteing" do
+        sequence = []
+
+        some_hook =
+          Class.new do
+            define_method(:pre_promote) do |x|
+              sequence << [:pre_promote, x]
+            end
+
+            define_method(:post_promote) do |x|
+              sequence << [:post_promote, x]
+            end
+          end
+
+        subject.install_hook(some_hook.new)
+
+        subject.stub(:do_promote_to) { |x| sequence << [:promoting_to, x] }
+
+        expect {
+          subject.promote_to!("release-candidate")
+        }.to change {
+          sequence
+        }.from([]).to([
+          [:pre_promote, "release-candidate"],
+          [:promoting_to, "release-candidate"],
+          [:post_promote, "release-candidate"],
+        ])
+      end
+    end
   end
 end
