@@ -50,12 +50,16 @@ module CfDeployer
         bosh, deployment, release_repo, manifest)
 
       # TODO: this is a bit dirty
-      datadog_env = deployment.bosh_environment
-      dogapi = Dogapi::Client.new(
-        datadog_env["DATADOG_API_KEY"],
-        datadog_env["DATADOG_APPLICATION_KEY"])
+      env = deployment.bosh_environment
 
-      strategy.install_hook DatadogEmitter.new(logger, dogapi, @options.deploy_env)
+      if env["DATADOG_API_KEY"]
+        dogapi = Dogapi::Client.new(
+          env["DATADOG_API_KEY"],
+          env["DATADOG_APPLICATION_KEY"])
+
+        strategy.install_hook(
+          DatadogEmitter.new(logger, dogapi, @options.deploy_env))
+      end
 
       strategy.deploy!
 
