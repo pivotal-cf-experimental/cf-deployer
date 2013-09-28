@@ -18,4 +18,5 @@ Gem::Specification.new do |s|
   s.require_paths = %w(lib)
 
   s.add_runtime_dependency "cfoundry", "~> 4.3.11"
+  s.add_runtime_dependency "dogapi", "~> 1.9"
 end

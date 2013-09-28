@@ -1,3 +1,5 @@
+require "dogapi"
+
 require 'cf_deployer/cli'
 require 'cf_deployer/release_repo'
 require 'cf_deployer/deployment'
@@ -5,7 +7,7 @@ require 'cf_deployer/bosh'
 require 'cf_deployer/manifest'
 require 'cf_deployer/dev_deployment_strategy'
 require 'cf_deployer/final_deployment_strategy'
-require 'cf_deployer/hooks/service_auth_token_installer'
+require 'cf_deployer/hooks/datadog_emitter'
 
 module CfDeployer
   class CfDeploy
@@ -47,7 +49,13 @@ module CfDeployer
       strategy = strategy_type.new(
         bosh, deployment, release_repo, manifest)
 
-      strategy.install_hook ServiceAuthTokenInstaller.new(logger, manifest)
+      # TODO: this is a bit dirty
+      datadog_env = deployment.bosh_environment
+      dogapi = Dogapi::Client.new(
+        datadog_env["DATADOG_API_KEY"],
+        datadog_env["DATADOG_APPLICATION_KEY"])
+
+      strategy.install_hook DatadogEmitter.new(logger, dogapi, @options.deploy_env)
 
       strategy.deploy!
 
