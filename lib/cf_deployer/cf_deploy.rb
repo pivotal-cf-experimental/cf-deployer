@@ -5,6 +5,7 @@ require 'cf_deployer/bosh'
 require 'cf_deployer/manifest'
 require 'cf_deployer/dev_deployment_strategy'
 require 'cf_deployer/final_deployment_strategy'
+require 'cf_deployer/hooks/service_auth_token_installer'
 
 module CfDeployer
   class CfDeploy
@@ -45,6 +46,8 @@ module CfDeployer
 
       strategy = strategy_type.new(
         bosh, deployment, release_repo, manifest)
+
+      strategy.install_hook ServiceAuthTokenInstaller.new(logger, manifest)
 
       strategy.deploy!
 

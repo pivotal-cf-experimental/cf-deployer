@@ -1,5 +1,5 @@
 module CfDeployer
-  class FakeManifestGenerator
+  class FakeManifest
     attr_reader :stubs
 
     def initialize(destination)

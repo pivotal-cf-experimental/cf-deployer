@@ -8,9 +8,9 @@ module CfDeployer
     let(:bosh) { FakeBosh.new }
     let(:deployment) { Deployment.new(deployment_path) }
     let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
-    let(:manifest_generator) { FakeManifestGenerator.new "some-manifest.yml" }
+    let(:manifest) { FakeManifest.new "some-manifest.yml" }
 
-    subject { described_class.new(bosh, deployment, release, manifest_generator) }
+    subject { described_class.new(bosh, deployment, release, manifest) }
 
     after { FileUtils.rm_rf(deployment_path) }
 
@@ -57,7 +57,7 @@ module CfDeployer
           expect {
             subject.deploy!
           }.to change {
-            manifest_generator.stubs
+            manifest.stubs
           }.to([generic_stub, shared_secrets])
         end
 

@@ -2,6 +2,12 @@ require 'yaml'
 
 module CfDeployer
   class ReleaseManifest
+    class ManifestNotGenerated < RuntimeError
+      def message
+        "manifest file has not generated yet"
+      end
+    end
+
     def initialize(runner, release, infrastructure, destination)
       @runner = runner
       @release = release
@@ -20,6 +26,55 @@ module CfDeployer
         environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
 
       File.expand_path(@destination)
+    end
+
+    def appdirect_services
+      services = find_in_manifest(
+        "properties", "appdirect_gateway", "services")
+
+      return unless services
+
+      services.collect do |service|
+        { label: service["name"],
+          provider: service["provider"],
+          token: service["auth_token"]
+        }
+      end
+    end
+
+    def api_endpoint
+      find_in_manifest("properties", "cc", "srv_api_uri")
+    end
+
+    def admin_credentials
+      users = find_in_manifest("properties", "uaa", "scim", "users")
+      return unless users
+
+      users.each do |user|
+        username, password, _ = user.split("|")
+        return username, password if username == "admin"
+      end
+
+      nil
+    end
+
+    private
+
+    def find_in_manifest(*path)
+      raise ManifestNotGenerated unless generated?
+
+      parsed = YAML.load_file(@destination)
+
+      path.inject(parsed) do |here, key|
+        return here if !here.is_a?(Hash)
+        return unless here.key?(key)
+
+        here[key]
+      end
+    end
+
+    def generated?
+      File.exists?(@destination)
     end
   end
 end

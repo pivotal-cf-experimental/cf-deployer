@@ -8,7 +8,9 @@ module CfDeployer
       end
     end
 
-    def deploy!
+    private
+
+    def do_deploy
       private_config = @deployment.private_config
       raise MissingPrivateConfig unless private_config
 
@@ -21,7 +23,7 @@ module CfDeployer
       @bosh.deploy
     end
 
-    def promote_to!(branch)
+    def do_promote_to(branch)
       @release.promote_final_release(branch)
     end
   end
