@@ -6,10 +6,10 @@ module CfDeployer
     def post_deploy
     end
 
-    def pre_promote
+    def pre_promote(branch)
     end
 
-    def post_promote
+    def post_promote(branch)
     end
   end
 end
