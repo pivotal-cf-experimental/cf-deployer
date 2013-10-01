@@ -45,7 +45,7 @@ module CfDeployer
     private
 
     def create_and_upload_release(release_path, final = false, private_config = nil)
-      @runner.run! "cd #{release_path} && git checkout -- #{FINAL_CONFIG}" # until there's a solid BOSH on rubygems >:(
+      reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG)
 
       @logger.log_message "setting release name to '#{RELEASE_NAME}'"
       set_release_name(release_path)
@@ -54,6 +54,8 @@ module CfDeployer
       create_release(release_path, false)
 
       if final
+        reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG, ".final_builds/")
+
         if private_config
           @logger.log_message "configuring blobstore"
           copy_private_config(release_path, private_config)
@@ -65,6 +67,12 @@ module CfDeployer
 
       @logger.log_message "uploading release"
       upload_release(release_path)
+    end
+
+    def reset_bosh_final_build_stupidity(release_path, *to_checkout)
+      # config/final.yml is constantly being set to the bosh cli version, and making the repo dirty
+      # .final_builds/* is constantly messed up by base64-encoding shas. don't know why,
+      @runner.run! "cd #{release_path} && git checkout -- #{to_checkout.join(" ")}"
     end
 
     def set_release_name(release_path)

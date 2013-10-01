@@ -148,11 +148,12 @@ module CfDeployer
           expect(logger).to have_logged("uploading release")
         end
 
-        it "executes bosh create release --final" do
+        it "executes bosh create release --final, resetting bosh crap" do
           create_and_upload_release
 
           expect(runner).to have_executed_serially(
             bosh_command_in_release("create release"),
+            "cd #@release_repo && git checkout -- config/final.yml .final_builds/",
             "cp /some/config/private.yml #{private_yml}",
             bosh_command_in_release("create release --final"),
             bosh_command_in_release("upload release --skip-if-exists"),
