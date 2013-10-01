@@ -50,12 +50,17 @@ module CfDeployer
       @logger.log_message "setting release name to '#{RELEASE_NAME}'"
       set_release_name(release_path)
 
-      @logger.log_message "creating #{"final " if final}release"
-      create_release(release_path, final)
+      @logger.log_message "creating dev release"
+      create_release(release_path, false)
 
-      if private_config
-        @logger.log_message "configuring blobstore"
-        copy_private_config(release_path, private_config)
+      if final
+        if private_config
+          @logger.log_message "configuring blobstore"
+          copy_private_config(release_path, private_config)
+        end
+
+        @logger.log_message "creating final release"
+        create_release(release_path, final)
       end
 
       @logger.log_message "uploading release"

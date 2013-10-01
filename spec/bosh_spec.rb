@@ -116,7 +116,7 @@ module CfDeployer
           create_and_upload_release
 
           expect(logger).to have_logged("setting release name to 'cf'")
-          expect(logger).to have_logged("creating release")
+          expect(logger).to have_logged("creating dev release")
           expect(logger).to have_logged("uploading release")
         end
 
@@ -152,8 +152,9 @@ module CfDeployer
           create_and_upload_release
 
           expect(runner).to have_executed_serially(
-            bosh_command_in_release("create release --final"),
+            bosh_command_in_release("create release"),
             "cp /some/config/private.yml #{private_yml}",
+            bosh_command_in_release("create release --final"),
             bosh_command_in_release("upload release --skip-if-exists"),
           )
         end
