@@ -1,10 +1,10 @@
 module CfDeployer
   class Repo
-    def initialize(logger, runner, repos_path, repo_name, ref)
+    def initialize(logger, runner, repos_path, repo_uri, ref)
       @logger = logger
       @runner = runner
       @repos_path = repos_path
-      @repo_name = repo_name
+      @repo_uri = repo_uri
       @ref = ref
     end
 
@@ -12,7 +12,7 @@ module CfDeployer
       unless cloned?
         log_message "not found; cloning"
         @runner.run! "mkdir -p #@repos_path"
-        @runner.run! "git clone git@github.com:cloudfoundry/#@repo_name.git #{path}"
+        @runner.run! "git clone #@repo_uri #{path}"
       end
 
       log_message "syncing with #@ref"
@@ -20,7 +20,7 @@ module CfDeployer
     end
 
     def path
-      File.join(@repos_path, @repo_name)
+      File.join(@repos_path, repo_name)
     end
 
     def cloned?
@@ -30,7 +30,19 @@ module CfDeployer
     private
 
     def log_message(message)
-      @logger.log_message "cloudfoundry/#@repo_name: #{message}"
+      @logger.log_message "#{repo_display_name}: #{message}"
+    end
+
+    def repo_display_name
+      "#{repo_owner}/#{repo_name}"
+    end
+
+    def repo_name
+      @repo_uri[/([^\.:\/]+)(\.git)?$/, 1]
+    end
+
+    def repo_owner
+      @repo_uri[/[\/:]([^\/]+)\/([^\.:\/]+)(\.git)?$/, 1]
     end
 
     def sync_with_origin

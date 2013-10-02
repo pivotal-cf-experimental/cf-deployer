@@ -23,13 +23,13 @@ module CfDeployer
       deployments_repo.sync!
 
       release_repo = ReleaseRepo.new(
-        logger, runner, @options.repos_path, @options.release_name,
-        @options.deploy_branch)
+        logger, runner, @options.repos_path, @options.release_repo,
+        @options.release_ref)
 
       release_repo.sync!
 
       deployment = Deployment.new(
-        File.join(deployments_repo.path, @options.deploy_env))
+        File.join(deployments_repo.path, @options.deployment_name))
 
       bosh = Bosh.new(
         logger, runner, deployment.bosh_environment,
@@ -47,7 +47,7 @@ module CfDeployer
         end
 
       strategy = strategy_type.new(
-        bosh, deployment, release_repo, manifest)
+        bosh, deployment, release_repo, manifest, @options.release_name)
 
       # TODO: this is a bit dirty
       env = deployment.bosh_environment
@@ -58,7 +58,7 @@ module CfDeployer
           env["DATADOG_APPLICATION_KEY"])
 
         strategy.install_hook(
-          DatadogEmitter.new(logger, dogapi, @options.deploy_env))
+          DatadogEmitter.new(logger, dogapi, @options.deployment_name))
       end
 
       strategy.deploy!

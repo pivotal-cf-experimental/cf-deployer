@@ -65,7 +65,7 @@ module CfDeployer
         [^\s<]+
       }x
 
-      BRACKETS = { ']' => '[', ')' => '(', '}' => '{' }
+    BRACKETS = { ']' => '[', ')' => '(', '}' => '{' }
 
 
     def linkify(text)

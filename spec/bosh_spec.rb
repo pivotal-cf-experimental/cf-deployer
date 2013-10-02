@@ -76,7 +76,7 @@ module CfDeployer
               }.from(
                 "dev_name" => "bosh-release", "foo" => "bar"
               ).to(
-                "dev_name" => "cf", "foo" => "bar"
+                "dev_name" => release_name, "foo" => "bar"
               )
             end
           end
@@ -87,7 +87,7 @@ module CfDeployer
                 create_and_upload_release
               }.to change {
                 YAML.load_file(dev_yml) if File.exists?(dev_yml)
-              }.from(nil).to("dev_name" => "cf")
+              }.from(nil).to("dev_name" => release_name)
             end
           end
         end
@@ -105,8 +105,10 @@ module CfDeployer
       end
 
       describe "#create_and_upload_dev_release" do
+        let(:release_name) { "some-release-name" }
+
         def create_and_upload_release
-          subject.create_and_upload_dev_release(@release_repo)
+          subject.create_and_upload_dev_release(@release_repo, release_name)
         end
 
         it_sets_up_the_release_name
@@ -115,7 +117,7 @@ module CfDeployer
         it "logs the important bits" do
           create_and_upload_release
 
-          expect(logger).to have_logged("setting release name to 'cf'")
+          expect(logger).to have_logged("setting release name to 'some-release-name'")
           expect(logger).to have_logged("creating dev release")
           expect(logger).to have_logged("uploading release")
         end
@@ -131,10 +133,11 @@ module CfDeployer
       end
 
       describe "#create_and_upload_final_release" do
+        let(:release_name) { "some-release-name" }
         let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
 
         def create_and_upload_release
-          subject.create_and_upload_final_release(@release_repo, "/some/config/private.yml")
+          subject.create_and_upload_final_release(@release_repo, release_name, "/some/config/private.yml")
         end
 
         it_sets_up_the_release_name
@@ -143,7 +146,7 @@ module CfDeployer
         it "logs the important bits" do
           create_and_upload_release
 
-          expect(logger).to have_logged("setting release name to 'cf'")
+          expect(logger).to have_logged("setting release name to 'some-release-name'")
           expect(logger).to have_logged("creating final release")
           expect(logger).to have_logged("uploading release")
         end

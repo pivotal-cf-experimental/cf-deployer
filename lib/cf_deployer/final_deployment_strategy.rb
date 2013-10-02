@@ -15,7 +15,7 @@ module CfDeployer
       raise MissingPrivateConfig unless private_config
 
       @bosh.create_and_upload_final_release(
-        @release.path, private_config)
+        @release.path, @release_name, private_config)
 
       manifest = @manifest.generate!(@deployment.stub_files)
 

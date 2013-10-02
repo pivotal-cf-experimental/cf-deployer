@@ -5,17 +5,21 @@ module CfDeployer
     VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
 
     OPTIONS = {
-      release_name: "cf-release",
-      deploy_branch: "master",
-      deploy_env: nil,
+      release_name: nil,
+
+      release_repo: nil,
+      deployments_repo: nil,
+
+      release_ref: nil,
       promote_branch: nil,
-      tag: nil,
-      tokens: true,
+
+      infrastructure: nil,
+
+      deployment_name: nil,
+
+      final_release: false,
       interactive: true,
       repos_path: "./repos",
-      deployments_repo: "deployments-aws",
-      infrastructure: "aws",
-      final_release: false,
     }
 
     class Options < Struct.new(*OPTIONS.keys)
@@ -43,12 +47,28 @@ module CfDeployer
     end
 
     def validate!
-      if @options.deploy_env.nil?
-        fail "deploy_env is required"
+      if @options.release_name.nil?
+        fail "--release-name is required"
+      end
+
+      if @options.release_repo.nil?
+        fail "--release-repo is required"
+      end
+
+      if @options.deployments_repo.nil?
+        fail "--deployments-repo is required"
+      end
+
+      if @options.release_ref.nil?
+        fail "--release-ref is required"
+      end
+
+      if @options.deployment_name.nil?
+        fail "--deployment-name is required"
       end
 
       unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
-        fail "infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
+        fail "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
       end
     end
 
@@ -59,77 +79,61 @@ module CfDeployer
         opts.banner = "Example: ci_deploy.rb -d tabasco"
 
         opts.on(
-          "-r RELEASE_NAME",
-          "--release RELEASE_NAME",
-          %Q{Release repositories to deploy (i.e. "cf-release" or "cf-services-release"). DEFAULT: #{@options.release_name}}
+          "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
+        ) do |release_repo|
+          @options.release_repo = release_repo
+        end
+
+        opts.on(
+          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
         ) do |release_name|
           @options.release_name = release_name
         end
 
         opts.on(
-          "-b DEPLOY_BRANCH",
-          "--branch DEPLOY_BRANCH",
-          %Q{Release repository branch to deploy (i.e. "master", "a1", "rc"). DEFAULT: #{@options.deploy_branch}}
-        ) do |deploy_branch|
-          @options.deploy_branch = deploy_branch
+          "--release-ref RELEASE_REF", "Git ref to deploy from the release repository (e.g. master, a1, v144)."
+        ) do |release_ref|
+          @options.release_ref = release_ref
         end
 
         opts.on(
-          "-d DEPLOY_ENV",
-          "--deploy DEPLOY_ENV",
-          %Q{Name of environment to deploy to (i.e. "tabasco", "a1")}
-        ) do |deploy_env|
-          @options.deploy_env = deploy_env
+          "--deployment-name DEPLOYMENT_NAME", "Name of environment to deploy to (e.g. tabasco, a1)."
+        ) do |deployment_name|
+          @options.deployment_name = deployment_name
         end
 
         opts.on(
-          "-p PROMOTE_BRANCH",
-          "--promote PROMOTE_BRANCH",
-          %Q{Branch to promote to after a successful deploy (i.e. "release-candidate", "deployed-to-prod")}
+          "--promote-to BRANCH", "Branch to push to after deploying (e.g. release-candidate)."
         ) do |promote_branch|
           @options.promote_branch = promote_branch
         end
 
         opts.on(
-          "--[no-]tokens",
-          %Q{Adding service tokens DEFAULT true}
-        ) do |tokens|
-          @options.tokens = tokens
-        end
-
-        opts.on(
-          "-n",
-          "--non-interactive",
-          %Q{Run bosh interactively. DEFAULT: #{@options.interactive}}
-        ) do |interactive|
-          @options.interactive = !interactive
-        end
-
-        opts.on(
-          "--repos REPOS",
-          %Q{Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}}
-        ) do |repos_path|
-          @options.repos_path = repos_path
-        end
-
-        opts.on(
-          "--deployments-repo DEPLOYMENTS_REPO",
-          %Q{Which deployments repository to use. DEFAULT: #{@options.deployments_repo}}
+          "--deployments-repo DEPLOYMENTS_REPO_URI", "URI to the repository containing the deployment."
         ) do |deployments_repo|
           @options.deployments_repo = deployments_repo
         end
 
         opts.on(
-          "-i INFRASTRUCTURE",
-          "--infrastructure INFRASTRUCTURE",
-          %Q{Which infrastructure to deploy. DEFAULT: #{@options.infrastructure}}
+          "--infrastructure INFRASTRUCTURE", "Which infrastructure to deploy."
         ) do |infrastructure|
           @options.infrastructure = infrastructure
         end
 
         opts.on(
-          "--final",
-          %Q{Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}}
+          "--non-interactive", "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
+        ) do |interactive|
+          @options.interactive = !interactive
+        end
+
+        opts.on(
+          "--clone-to REPOS_PATH", "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
+        ) do |repos_path|
+          @options.repos_path = repos_path
+        end
+
+        opts.on(
+          "--final", "Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}"
         ) do |final_release|
           @options.final_release = final_release
         end

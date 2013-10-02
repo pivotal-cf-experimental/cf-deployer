@@ -2,7 +2,6 @@ require "tempfile"
 
 module CfDeployer
   class Bosh
-    RELEASE_NAME = "cf".freeze
     DEV_CONFIG = "config/dev.yml".freeze
     FINAL_CONFIG = "config/final.yml".freeze
 
@@ -15,12 +14,12 @@ module CfDeployer
       @bosh_config = Tempfile.new("bosh_config")
     end
 
-    def create_and_upload_dev_release(release_path)
-      create_and_upload_release(release_path)
+    def create_and_upload_dev_release(release_path, release_name)
+      create_and_upload_release(release_path, release_name)
     end
 
-    def create_and_upload_final_release(release_path, private_config)
-      create_and_upload_release(release_path, :final, private_config)
+    def create_and_upload_final_release(release_path, release_name, private_config)
+      create_and_upload_release(release_path, release_name, :final, private_config)
     end
 
     def set_deployment(manifest)
@@ -44,11 +43,11 @@ module CfDeployer
 
     private
 
-    def create_and_upload_release(release_path, final = false, private_config = nil)
+    def create_and_upload_release(release_path, release_name, final = false, private_config = nil)
       reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG)
 
-      @logger.log_message "setting release name to '#{RELEASE_NAME}'"
-      set_release_name(release_path)
+      @logger.log_message "setting release name to '#{release_name}'"
+      set_release_name(release_path, release_name)
 
       @logger.log_message "creating dev release"
       create_release(release_path, false)
@@ -75,12 +74,12 @@ module CfDeployer
       @runner.run! "cd #{release_path} && git checkout -- #{to_checkout.join(" ")}"
     end
 
-    def set_release_name(release_path)
+    def set_release_name(release_path, release_name)
       dev_config = File.expand_path(File.join(release_path, DEV_CONFIG))
 
       dev = File.exists?(dev_config) ? YAML.load_file(dev_config) : {}
 
-      dev["dev_name"] = RELEASE_NAME
+      dev["dev_name"] = release_name
 
       FileUtils.mkdir_p(File.dirname(dev_config))
 

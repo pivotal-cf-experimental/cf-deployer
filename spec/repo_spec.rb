@@ -8,16 +8,20 @@ module CfDeployer
   describe Repo do
     let(:logger) { FakeLogger.new }
     let(:runner) { FakeCommandRunner.new }
-    let(:repo_name) { "some-repo" }
+    let(:repo_uri) { "git@github.com:cloudfoundry/some-repo.git" }
     let(:ref) { "some-ref" }
 
-    subject { described_class.new(logger, runner, @repos_path, repo_name, ref) }
+    subject { described_class.new(logger, runner, @repos_path, repo_uri, ref) }
 
     around do |example|
       Dir.mktmpdir("repos_path") do |release_repo|
         @repos_path = release_repo
         example.call
       end
+    end
+
+    def repo_name
+      repo_uri[/([^\.:\/]+)(\.git)?$/, 1]
     end
 
     def repo_path
@@ -68,6 +72,15 @@ module CfDeployer
       it "logs that it's syncing" do
         subject.sync!
         expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
+      end
+
+      context "with a http uri" do
+        let(:repo_uri) { "https://github.com/cloudfoundry/some-repo.git" }
+
+        it "logs the proper owner/repo name" do
+          subject.sync!
+          expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
+        end
       end
     end
   end

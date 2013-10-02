@@ -3,6 +3,8 @@ require "json"
 require "webmock/rspec"
 
 require "spec_helper"
+require "cf_deployer/deployment"
+require "cf_deployer/manifest"
 require "cf_deployer/deployment_strategy"
 
 module CfDeployer
@@ -16,8 +18,9 @@ module CfDeployer
     let(:deployment) { Deployment.new(deployment_path) }
     let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
     let(:manifest) { ReleaseManifest.new runner, release, "doesnt-matter", generated_manifest.path }
+    let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, release, manifest) }
+    subject { described_class.new(bosh, deployment, release, manifest, release_name) }
 
     describe "#install_hook" do
       let(:some_hook) do

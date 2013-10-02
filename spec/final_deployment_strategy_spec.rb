@@ -1,4 +1,5 @@
 require "spec_helper"
+require "cf_deployer/deployment"
 require "cf_deployer/final_deployment_strategy"
 
 module CfDeployer
@@ -9,8 +10,9 @@ module CfDeployer
     let(:deployment) { Deployment.new(deployment_path) }
     let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
     let(:manifest) { FakeManifest.new "some-manifest.yml" }
+    let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, release, manifest) }
+    subject { described_class.new(bosh, deployment, release, manifest, release_name) }
 
     after { FileUtils.rm_rf(deployment_path) }
 
@@ -45,12 +47,12 @@ module CfDeployer
           end
         end
 
-        it "creates and uploads a final release" do
+        it "creates and uploads a final release with the right name" do
           expect {
             subject.deploy!
           }.to change {
             [bosh.final_release, bosh.private_config]
-          }.to([release.path, private_config])
+          }.to([[release.path, "some-release-name"], private_config])
         end
 
         it "generates the manifest using the stubs" do
