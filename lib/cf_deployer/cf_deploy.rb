@@ -18,7 +18,7 @@ module CfDeployer
     def deploy(logger, runner)
       deployments_repo = Repo.new(
         logger, runner, @options.repos_path, @options.deployments_repo,
-        "master")
+        "origin/master")
 
       deployments_repo.sync!
 
