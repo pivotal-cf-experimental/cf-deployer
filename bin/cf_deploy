@@ -16,9 +16,7 @@ begin
 
   runner = CfDeployer::CommandRunner.new(logger)
 
-  Bundler.with_clean_env do
-    cf_deploy.deploy(logger, runner)
-  end
+  cf_deploy.deploy(logger, runner)
 rescue => e
   logger.log_exception e
   exit 1
