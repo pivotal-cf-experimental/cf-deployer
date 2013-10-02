@@ -1,11 +1,11 @@
 module CfDeployer
   class Repo
-    def initialize(logger, runner, repos_path, repo_name, branch)
+    def initialize(logger, runner, repos_path, repo_name, ref)
       @logger = logger
       @runner = runner
       @repos_path = repos_path
       @repo_name = repo_name
-      @branch = branch
+      @ref = ref
     end
 
     def sync!
@@ -15,7 +15,7 @@ module CfDeployer
         @runner.run! "git clone git@github.com:cloudfoundry/#@repo_name.git #{path}"
       end
 
-      log_message "syncing with origin/#@branch"
+      log_message "syncing with #@ref"
       sync_with_origin
     end
 
@@ -37,7 +37,7 @@ module CfDeployer
       run_git! "reset --hard"
       run_git! "clean --force -d"
       run_git! "fetch"
-      run_git! "checkout origin/#{@branch}"
+      run_git! "checkout #{@ref}"
       run_git! "submodule update --init --recursive"
     end
 

@@ -9,9 +9,9 @@ module CfDeployer
     let(:logger) { FakeLogger.new }
     let(:runner) { FakeCommandRunner.new }
     let(:repo_name) { "some-repo" }
-    let(:branch) { "some-branch" }
+    let(:ref) { "some-ref" }
 
-    subject { described_class.new(logger, runner, @repos_path, repo_name, branch) }
+    subject { described_class.new(logger, runner, @repos_path, repo_name, ref) }
 
     around do |example|
       Dir.mktmpdir("repos_path") do |release_repo|
@@ -52,7 +52,7 @@ module CfDeployer
         end
       end
 
-      it "cleans the repository and fetches the latest from origin on the branch" do
+      it "cleans the repository and fetches the latest from origin on the ref" do
         subject.sync!
 
         expect(runner).to have_executed_serially(
@@ -60,14 +60,14 @@ module CfDeployer
           "cd #{repo_path} && git reset --hard",
           "cd #{repo_path} && git clean --force -d",
           "cd #{repo_path} && git fetch",
-          "cd #{repo_path} && git checkout origin/some-branch",
+          "cd #{repo_path} && git checkout some-ref",
           "cd #{repo_path} && git submodule update --init --recursive",
         )
       end
 
       it "logs that it's syncing" do
         subject.sync!
-        expect(logger).to have_logged("cloudfoundry/some-repo: syncing with origin/some-branch")
+        expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
       end
     end
   end
