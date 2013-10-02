@@ -127,7 +127,7 @@ module CfDeployer
         end
 
         opts.on(
-          "--clone-to REPOS_PATH", "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
+          "--repos REPOS_PATH", "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
         ) do |repos_path|
           @options.repos_path = repos_path
         end
