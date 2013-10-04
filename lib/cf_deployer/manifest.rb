@@ -44,6 +44,10 @@ module CfDeployer
       nil
     end
 
+    def appdirect_tokens
+      find_in_manifest("properties", "appdirect_gateway", "services")
+    end
+
     private
 
     def find_in_manifest(*path)

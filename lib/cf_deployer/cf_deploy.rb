@@ -8,6 +8,7 @@ require 'cf_deployer/manifest'
 require 'cf_deployer/dev_deployment_strategy'
 require 'cf_deployer/final_deployment_strategy'
 require 'cf_deployer/hooks/datadog_emitter'
+require 'cf_deployer/hooks/token_installer'
 
 module CfDeployer
   class CfDeploy
@@ -59,6 +60,10 @@ module CfDeployer
 
         strategy.install_hook(
           DatadogEmitter.new(logger, dogapi, @options.deployment_name))
+      end
+
+      if @options.install_tokens
+        strategy.install_hook TokenInstaller.new(logger, manifest, runner)
       end
 
       strategy.deploy!

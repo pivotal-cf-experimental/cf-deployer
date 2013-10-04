@@ -20,6 +20,8 @@ module CfDeployer
       final_release: false,
       interactive: true,
       repos_path: "./repos",
+
+      install_tokens: false
     }
 
     class Options < Struct.new(*OPTIONS.keys)
@@ -136,6 +138,12 @@ module CfDeployer
           "--final", "Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}"
         ) do |final_release|
           @options.final_release = final_release
+        end
+
+        opts.on(
+          "--install-tokens", "Install service auth tokens. DEFAULT: #{@options.install_tokens}"
+        ) do |install_tokens|
+          @options.install_tokens = install_tokens
         end
       end
     end

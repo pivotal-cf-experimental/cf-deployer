@@ -122,6 +122,63 @@ EOF
       end
     end
 
+    describe "#appdirect_tokens" do
+      context "when the manifest has not been generated" do
+        it "raises a ManifestNotGenerated" do
+          expect {
+            subject.appdirect_tokens
+          }.to raise_error(ReleaseManifest::ManifestNotGenerated)
+        end
+      end
+
+      context "when the manifest has been generated" do
+        context "and it does not contain the api endpoint" do
+          before do
+            runner.when_running(/generate_deployment_manifest/) do
+              File.open("new_deployment.yml", "w") do |io|
+                io.write <<EOF
+---
+properties:
+EOF
+              end
+            end
+
+            subject.generate!([])
+          end
+
+          it "returns nil" do
+            expect(subject.appdirect_tokens).to be_nil
+          end
+        end
+
+        context "and the manifest contains properties.appdirect_gateway.services" do
+          before do
+            runner.when_running(/generate_deployment_manifest/) do
+              File.open("new_deployment.yml", "w") do |io|
+                io.write File.read(File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__))
+              end
+            end
+
+            subject.generate!([])
+
+          end
+
+          it "returns an array of hashes with the credentials" do
+            expect(subject.appdirect_tokens).to eq([
+                {
+                  'name'        => 'cleardb',
+                  'provider'    => 'cleardb',
+                  'ad_name'     => 'mysql',
+                  'ad_provider' => 'cleardb',
+                  'tags'        => ['mysql', 'relational'],
+                  'auth_token'  => 'mongodb_rocks_yo'
+                }
+              ])
+          end
+        end
+      end
+    end
+
     describe "#api_endpoint" do
       context "when the manifest has not been generated" do
         it "raises a ManifestNotGenerated" do
