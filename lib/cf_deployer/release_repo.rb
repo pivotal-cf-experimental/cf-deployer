@@ -63,7 +63,7 @@ module CfDeployer
     def merge_latest_final_release_into_master(release)
       run_git! "branch -D master" # ensure a clean slate (i.e. submodule changes)
       run_git! "fetch"
-      run_git! "branch --track origin/master master"
+      run_git! "branch --track master origin/master"
       run_git! "checkout master"
       run_git! "merge v#{release}"
       run_git! "push origin master"

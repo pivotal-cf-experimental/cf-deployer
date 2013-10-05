@@ -105,7 +105,7 @@ EOF
           /git push .*deployed-to-prod/,
           "cd #{repo_path} && git branch -D master",
           "cd #{repo_path} && git fetch",
-          "cd #{repo_path} && git branch --track origin/master master",
+          "cd #{repo_path} && git branch --track master origin/master",
           "cd #{repo_path} && git checkout master",
           "cd #{repo_path} && git merge v125",
           "cd #{repo_path} && git push origin master",
