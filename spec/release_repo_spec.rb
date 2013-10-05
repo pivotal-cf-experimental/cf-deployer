@@ -69,7 +69,7 @@ EOF
 
         expect(runner).to have_executed_serially(
           /git commit.*add blobs/,
-          "cd #{repo_path} && git tag v125",
+          "cd #{repo_path} && git tag -f v125",
           "cd #{repo_path} && git push --tags"
         )
       end
@@ -101,7 +101,7 @@ EOF
         subject.promote_final_release("deployed-to-prod")
 
         expect(runner).to have_executed_serially(
-          /git tag v125/,
+          /git tag -f v125/,
           /git push .*deployed-to-prod/,
           "cd #{repo_path} && git branch -D master",
           "cd #{repo_path} && git fetch",

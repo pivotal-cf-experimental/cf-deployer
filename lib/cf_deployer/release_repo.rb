@@ -52,7 +52,7 @@ module CfDeployer
     end
 
     def push_latest_final_release_tag(release)
-      run_git! "tag v#{release}"
+      run_git! "tag -f v#{release}"
       run_git! "push --tags"
     end
 
