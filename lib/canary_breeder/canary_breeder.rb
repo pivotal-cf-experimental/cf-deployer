@@ -23,6 +23,7 @@ module CanaryBreeder
       push_disk_canary(logger, runner)
       push_memory_canary(logger, runner)
       push_network_canary(logger, runner)
+      push_instances_canary(logger, runner)
 
       logger.log_message "TWEET TWEET"
     end
@@ -71,9 +72,11 @@ module CanaryBreeder
 
     def push_instances_canary(logger, runner)
       push_app(
-        logger, runner, "instances", {},
+        logger, runner, "instances-canary", {},
         instances: @options.number_of_instances_canary_instances,
-        path: path)
+        memory: 128,
+        directory_name: "instances"
+      )
     end
 
     def push_app(logger, runner, name, env = {}, options = {})
