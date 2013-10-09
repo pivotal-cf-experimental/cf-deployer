@@ -55,11 +55,11 @@ module CanaryBreeder
     end
 
     def push_cpu_canary(logger, runner)
-      push_app(logger, runner, "cpu", {}, memory: 512)
+      push_app(logger, runner, "cpu", {}, memory: "512M")
     end
 
     def push_disk_canary(logger, runner)
-      push_app(logger, runner, "disk", { SPACE: "768" }, memory: 512)
+      push_app(logger, runner, "disk", { SPACE: "768" }, memory: "2G")
     end
 
     def push_memory_canary(logger, runner)
