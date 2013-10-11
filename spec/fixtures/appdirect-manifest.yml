@@ -11,7 +11,26 @@ properties:
         - mysql
         - relational
         auth_token: mongodb_rocks_yo
+
   uaa:
     scim:
       users:
       - admin|secret|scim.write,scim.read,openid,cloud_controller.admin
+
+
+jobs:
+- name: mysql_gateway
+  instances: 1
+  networks:
+  - name: services1
+    static_ips:
+    - 10.10.10.10
+  properties:
+    mysql_gateway:
+      cc_api_version: v2
+      check_orphan_interval: 9000
+      supported_versions:
+      - '5.5'
+      token: 2bits
+      version_aliases:
+        current: '5.5'

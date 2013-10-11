@@ -1,5 +1,5 @@
 require "spec_helper"
-require "cf_deployer/manifest"
+require "cf_deployer/manifest_generator"
 require "cf_deployer/hooks/token_installer"
 
 module CfDeployer
@@ -10,12 +10,14 @@ module CfDeployer
     let(:runner) { FakeCommandRunner.new }
 
     let(:release) { FakeReleaseRepo.new './repos/appdirect-gateway' }
-    let(:manifest) { ReleaseManifest.new runner, release, 'doesnt-matter', generated_manifest.path }
+    let(:manifest_generator) { ReleaseManifestGenerator.new runner, release, 'doesnt-matter', generated_manifest.path }
 
-    subject { described_class.new(logger, manifest, runner) }
+    subject { described_class.new(logger, manifest_generator, runner) }
 
     describe '#post_deploy' do
       it 'registers tokens with the cloud controller' do
+        manifest = manifest_generator.get_manifest
+
         username, password = manifest.admin_credentials
 
         subject.post_deploy

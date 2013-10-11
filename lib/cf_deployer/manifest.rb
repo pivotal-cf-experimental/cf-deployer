@@ -2,30 +2,15 @@ require 'yaml'
 
 module CfDeployer
   class ReleaseManifest
-    class ManifestNotGenerated < RuntimeError
-      def message
-        "manifest file has not generated yet"
+
+    class << self
+      def load_file(filename)
+        ReleaseManifest.new(YAML.load_file(filename))
       end
     end
 
-    def initialize(runner, release, infrastructure, destination)
-      @runner = runner
-      @release = release
-      @infrastructure = infrastructure
-      @destination = destination
-    end
-
-    def generate!(stub_files)
-      gospace = File.expand_path("./gospace")
-
-      FileUtils.mkdir_p(gospace)
-      @runner.run! "go get -u -v github.com/vito/spiff",
-        environment: { "GOPATH" => gospace }
-
-      @runner.run! "#{@release.path}/generate_deployment_manifest #{@infrastructure} #{stub_files.join(" ")} > #{@destination}",
-        environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
-
-      File.expand_path(@destination)
+    def initialize(content_hash)
+      @content = content_hash
     end
 
     def api_endpoint
@@ -44,27 +29,37 @@ module CfDeployer
       nil
     end
 
+    def service_tokens
+      appdirect_tokens + mysql_token
+    end
+
     def appdirect_tokens
       find_in_manifest("properties", "appdirect_gateway", "services")
     end
 
-    private
+    def mysql_token
+      token = content['jobs'].find {|job| job['name'] == 'mysql_gateway'}['properties']['mysql_gateway']['token'] rescue nil
 
-    def find_in_manifest(*path)
-      raise ManifestNotGenerated unless generated?
-
-      parsed = YAML.load_file(@destination)
-
-      path.inject(parsed) do |here, key|
-        return here if !here.is_a?(Hash)
-        return unless here.key?(key)
-
-        here[key]
+      if token
+        [{
+          'name'     => 'mysql',
+          'provider' => 'core',
+          'auth_token' => token
+        }]
+      else
+        []
       end
     end
 
-    def generated?
-      File.exists?(@destination)
+    private
+
+    attr_reader :content
+
+    def find_in_manifest(*path)
+      path.inject(content) do |here, (key, _)|
+        return nil unless here.is_a?(Hash) && here.has_key?(key)
+        here[key]
+      end
     end
   end
 end

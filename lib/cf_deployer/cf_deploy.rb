@@ -4,7 +4,7 @@ require 'cf_deployer/cf_deploy_cli'
 require 'cf_deployer/release_repo'
 require 'cf_deployer/deployment'
 require 'cf_deployer/bosh'
-require 'cf_deployer/manifest'
+require 'cf_deployer/manifest_generator'
 require 'cf_deployer/dev_deployment_strategy'
 require 'cf_deployer/final_deployment_strategy'
 require 'cf_deployer/hooks/datadog_emitter'
@@ -36,8 +36,8 @@ module CfDeployer
         logger, runner, deployment.bosh_environment,
         interactive: @options.interactive)
 
-      manifest =
-        ReleaseManifest.new(
+      manifest_generator =
+        ReleaseManifestGenerator.new(
           runner, release_repo, @options.infrastructure, "new_deployment.yml")
 
       strategy_type =
@@ -48,7 +48,7 @@ module CfDeployer
         end
 
       strategy = strategy_type.new(
-        bosh, deployment, release_repo, manifest, @options.release_name)
+        bosh, deployment, release_repo, manifest_generator, @options.release_name)
 
       # TODO: this is a bit dirty
       env = deployment.bosh_environment
@@ -63,7 +63,7 @@ module CfDeployer
       end
 
       if @options.install_tokens
-        strategy.install_hook TokenInstaller.new(logger, manifest, runner)
+        strategy.install_hook TokenInstaller.new(logger, manifest_generator, runner)
       end
 
       strategy.deploy!

@@ -3,119 +3,81 @@ require "cf_deployer/manifest"
 
 module CfDeployer
   describe ReleaseManifest do
-    let(:runner) { FakeCommandRunner.new }
-    let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
 
-    subject { described_class.new(runner, release, "aws", "new_deployment.yml") }
+    let(:manifest) { ReleaseManifest.new(content_hash) }
 
-    around do |example|
-      Dir.mktmpdir("working_dir") do |working_dir|
-        Dir.chdir(working_dir, &example)
-      end
-    end
-
-    describe "#generate!" do
-      it "installs and updates spiff" do
-        subject.generate!(["/woah", "/stub/files"])
-
-        gospace = File.join(Dir.pwd, "gospace")
-
-        expect(runner).to have_executed_serially(
-          ["go get -u -v github.com/vito/spiff", environment: { "GOPATH" => gospace }],
-          [ "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml",
-            environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
-          ]
-        )
+    describe '.load_file' do
+      let(:content_hash) do
+        { 'foo' => 'bar' }
       end
 
-      it "generates the deployment manifest" do
-        subject.generate!(["/woah", "/stub/files"])
+      it 'should construct a manifest using the hash in the yaml file' do
+        ReleaseManifest.should_receive(:new).with(content_hash)
 
-        expect(runner).to have_executed_serially(
-          "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml",
-        )
+        Dir.mktmpdir("working_dir") do |working_dir|
+          Dir.chdir(working_dir) do
+            File.open("new_deployment.yml", "w") do |io|
+              io.write(content_hash.to_yaml)
+            end
+
+            ReleaseManifest.load_file("new_deployment.yml")
+          end
+        end
       end
 
-      it "returns the full path to the generated manifest" do
-        result = subject.generate!(["/woah", "/stub/files"])
-
-        expect(result).to eq("#{Dir.pwd}/new_deployment.yml")
+      context "file does not exist" do
+        it 'gives a meaninful error' do
+          expect {
+            ReleaseManifest.load_file("/tmp/doesnotexist")
+          }.to raise_error(/No such file/)
+        end
       end
     end
 
     describe "#admin_credentials" do
-      context "when the manifest has not been generated" do
-        it "raises a ManifestNotGenerated" do
-          expect {
-            subject.admin_credentials
-          }.to raise_error(ReleaseManifest::ManifestNotGenerated)
-        end
-      end
-
-      context "when the manifest has been generated" do
-        context "and the manifest does not contain scim information" do
-          before do
-            runner.when_running(/generate_deployment_manifest/) do
-              File.open("new_deployment.yml", "w") do |io|
-                io.write <<EOF
----
-properties:
-EOF
-              end
-            end
-
-            subject.generate!([])
-          end
-
-          it "returns nil" do
-            expect(subject.admin_credentials).to be_nil
-          end
+      context "and the manifest does not contain scim information" do
+        let(:content_hash) do
+          { 'properties' => nil }
         end
 
-        context "and the manifest contains properties.uaa.scim.users" do
-          context "and there is an admin user" do
-            before do
-              runner.when_running(/generate_deployment_manifest/) do
-                File.open("new_deployment.yml", "w") do |io|
-                  io.write <<EOF
----
-properties:
-  uaa:
-    scim:
-      users:
-      - admin|secret|...
-EOF
-                end
-              end
+        it "returns nil" do
+          expect(manifest.admin_credentials).to be_nil
+        end
 
-              subject.generate!([])
-            end
 
-            it "returns their username and password" do
-              expect(subject.admin_credentials).to eq(["admin", "secret"])
-            end
+      context "and the manifest contains properties.uaa.scim.users" do
+        context "and there is an admin user" do
+          let(:content_hash) do
+            {
+              'properties' => {
+                'uaa' => {
+                  'scim' => {
+                    'users' => ['admin|secret|...']
+                  }
+                }
+              }
+            }
           end
+          it "returns their username and password" do
+            expect(manifest.admin_credentials).to eq(["admin", "secret"])
+          end
+        end
 
           context "and there is no admin user" do
-            before do
-              runner.when_running(/generate_deployment_manifest/) do
-                File.open("new_deployment.yml", "w") do |io|
-                  io.write <<EOF
----
-properties:
-  uaa:
-    scim:
-      users:
-      - non-admin|secret|...
-EOF
-                end
-              end
-
-              subject.generate!([])
+            let(:content_hash) do
+              {
+                'properties' => {
+                  'uaa' => {
+                    'scim' => {
+                      'users' => ['non-admin|secret|...']
+                    }
+                  }
+                }
+              }
             end
 
             it "returns nil" do
-              expect(subject.admin_credentials).to be_nil
+              expect(manifest.admin_credentials).to be_nil
             end
           end
         end
@@ -123,110 +85,90 @@ EOF
     end
 
     describe "#appdirect_tokens" do
-      context "when the manifest has not been generated" do
-        it "raises a ManifestNotGenerated" do
-          expect {
-            subject.appdirect_tokens
-          }.to raise_error(ReleaseManifest::ManifestNotGenerated)
+      context "the manifest does not contain the api endpoint" do
+        let(:content_hash) do
+          {'properties' => nil}
+        end
+
+        it "returns nil" do
+          expect(manifest.appdirect_tokens).to be_nil
         end
       end
 
-      context "when the manifest has been generated" do
-        context "and it does not contain the api endpoint" do
-          before do
-            runner.when_running(/generate_deployment_manifest/) do
-              File.open("new_deployment.yml", "w") do |io|
-                io.write <<EOF
----
-properties:
-EOF
-              end
-            end
+      context "the manifest contains properties.appdirect_gateway.services" do
+        let(:manifest_file) { File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__)}
+        let(:manifest) { ReleaseManifest.load_file(manifest_file) }
 
-            subject.generate!([])
-          end
+        it "returns an array of hashes with the credentials" do
+          expect(manifest.appdirect_tokens).to eq([
+              {
+                'name'        => 'cleardb',
+                'provider'    => 'cleardb',
+                'ad_name'     => 'mysql',
+                'ad_provider' => 'cleardb',
+                'tags'        => ['mysql', 'relational'],
+                'auth_token'  => 'mongodb_rocks_yo'
+              }
+            ])
+        end
+      end
+    end
 
-          it "returns nil" do
-            expect(subject.appdirect_tokens).to be_nil
-          end
+    describe "#mysql_token" do
+      context "and the manifest contains jobs.properties.mysql_gateway.token" do
+        let(:manifest_file) { File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__)}
+        let(:manifest) { ReleaseManifest.load_file(manifest_file) }
+
+        it "returns an array containing the token" do
+          expect(manifest.mysql_token).to eq([
+                                              {
+                                                'name'        => 'mysql',
+                                                'provider'    => 'core',
+                                                'auth_token'  => '2bits'
+                                              }
+                                            ])
+        end
+      end
+
+      context "and the manifest does not contain jobs.properties.mysql_gateway.token" do
+        let(:content_hash) do
+          {
+            'jobs' => [
+              {'name' => 'api'}
+            ]
+          }
         end
 
-        context "and the manifest contains properties.appdirect_gateway.services" do
-          before do
-            runner.when_running(/generate_deployment_manifest/) do
-              File.open("new_deployment.yml", "w") do |io|
-                io.write File.read(File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__))
-              end
-            end
-
-            subject.generate!([])
-
-          end
-
-          it "returns an array of hashes with the credentials" do
-            expect(subject.appdirect_tokens).to eq([
-                {
-                  'name'        => 'cleardb',
-                  'provider'    => 'cleardb',
-                  'ad_name'     => 'mysql',
-                  'ad_provider' => 'cleardb',
-                  'tags'        => ['mysql', 'relational'],
-                  'auth_token'  => 'mongodb_rocks_yo'
-                }
-              ])
-          end
+        it "should return an empty array" do
+          expect(manifest.mysql_token).to eq([])
         end
       end
     end
 
     describe "#api_endpoint" do
-      context "when the manifest has not been generated" do
-        it "raises a ManifestNotGenerated" do
-          expect {
-            subject.admin_credentials
-          }.to raise_error(ReleaseManifest::ManifestNotGenerated)
+      context "and it does not contain the api endpoint" do
+        let(:content_hash) do
+          { 'properties' => nil }
+        end
+
+        it "returns nil" do
+          expect(manifest.api_endpoint).to be_nil
         end
       end
 
-      context "when the manifest has been generated" do
-        context "and it does not contain the api endpoint" do
-          before do
-            runner.when_running(/generate_deployment_manifest/) do
-              File.open("new_deployment.yml", "w") do |io|
-                io.write <<EOF
----
-properties:
-EOF
-              end
-            end
-
-            subject.generate!([])
-          end
-
-          it "returns nil" do
-            expect(subject.api_endpoint).to be_nil
-          end
+      context "and the manifest contains properties.cc.srv_api_url" do
+        let(:content_hash) do
+          {
+            'properties' => {
+              'cc' => {
+                'srv_api_uri' => 'http://api.example.com'
+              }
+            }
+          }
         end
 
-        context "and the manifest contains properties.uaa.scim.users" do
-          before do
-            runner.when_running(/generate_deployment_manifest/) do
-              File.open("new_deployment.yml", "w") do |io|
-                io.write <<EOF
----
-properties:
-  cc:
-    srv_api_uri: http://api.example.com
-EOF
-              end
-            end
-
-            subject.generate!([])
-          end
-
-          it "returns their username and password" do
-            expect(subject.api_endpoint).to eq("http://api.example.com")
-          end
+        it "returns their username and password" do
+          expect(manifest.api_endpoint).to eq("http://api.example.com")
         end
       end
     end
