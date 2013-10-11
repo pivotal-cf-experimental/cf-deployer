@@ -17,16 +17,9 @@ module CfDeployer
       find_in_manifest("properties", "cc", "srv_api_uri")
     end
 
-    def admin_credentials
-      users = find_in_manifest("properties", "uaa", "scim", "users")
-      return unless users
-
-      users.each do |user|
-        username, password, _ = user.split("|")
-        return username, password if username == "admin"
-      end
-
-      nil
+    def services_credentials
+      creds = find_in_manifest("properties", "uaa_client_auth_credentials")
+      creds ? [creds['username'], creds['password']] : nil
     end
 
     def service_tokens

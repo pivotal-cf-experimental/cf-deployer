@@ -11,7 +11,7 @@ module CfDeployer
     def post_deploy
       manifest = @manifest_generator.get_manifest
 
-      username, password = manifest.admin_credentials
+      username, password = manifest.services_credentials
       @runner.run!("cf target #{manifest.api_endpoint}")
       @runner.run!("cf login --username #{username} --password #{password} --organization pivotal")
       manifest.service_tokens.each do |service|

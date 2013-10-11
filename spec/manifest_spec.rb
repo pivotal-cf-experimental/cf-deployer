@@ -34,52 +34,30 @@ module CfDeployer
       end
     end
 
-    describe "#admin_credentials" do
-      context "and the manifest does not contain scim information" do
+    describe "#services_credentials" do
+      context "when the manifest does not contain services credentials" do
         let(:content_hash) do
           { 'properties' => nil }
         end
 
         it "returns nil" do
-          expect(manifest.admin_credentials).to be_nil
+          expect(manifest.services_credentials).to be_nil
         end
+      end
 
-
-      context "and the manifest contains properties.uaa.scim.users" do
-        context "and there is an admin user" do
-          let(:content_hash) do
-            {
-              'properties' => {
-                'uaa' => {
-                  'scim' => {
-                    'users' => ['admin|secret|...']
-                  }
-                }
+      context "when the manifest contains properties.uaa_client_auth_credentials" do
+        let(:content_hash) do
+          {
+            'properties' => {
+              'uaa_client_auth_credentials' => {
+                'username' => 'services',
+                'password' => 'letmein'
               }
             }
-          end
-          it "returns their username and password" do
-            expect(manifest.admin_credentials).to eq(["admin", "secret"])
-          end
+          }
         end
-
-          context "and there is no admin user" do
-            let(:content_hash) do
-              {
-                'properties' => {
-                  'uaa' => {
-                    'scim' => {
-                      'users' => ['non-admin|secret|...']
-                    }
-                  }
-                }
-              }
-            end
-
-            it "returns nil" do
-              expect(manifest.admin_credentials).to be_nil
-            end
-          end
+        it "returns the username and password as an array" do
+          expect(manifest.services_credentials).to eq(["services", "letmein"])
         end
       end
     end

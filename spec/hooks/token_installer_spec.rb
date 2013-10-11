@@ -18,7 +18,7 @@ module CfDeployer
       it 'registers tokens with the cloud controller' do
         manifest = manifest_generator.get_manifest
 
-        username, password = manifest.admin_credentials
+        username, password = manifest.services_credentials
 
         subject.post_deploy
 
