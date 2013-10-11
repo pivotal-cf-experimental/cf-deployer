@@ -33,8 +33,12 @@ module CfDeployer
       appdirect_tokens + mysql_token
     end
 
+    private
+
+    attr_reader :content
+
     def appdirect_tokens
-      find_in_manifest("properties", "appdirect_gateway", "services")
+      find_in_manifest("properties", "appdirect_gateway", "services") || []
     end
 
     def mysql_token
@@ -50,10 +54,6 @@ module CfDeployer
         []
       end
     end
-
-    private
-
-    attr_reader :content
 
     def find_in_manifest(*path)
       path.inject(content) do |here, (key, _)|

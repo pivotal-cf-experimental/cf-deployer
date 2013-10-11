@@ -84,23 +84,80 @@ module CfDeployer
       end
     end
 
-    describe "#appdirect_tokens" do
-      context "the manifest does not contain the api endpoint" do
+    describe "#service_tokens" do
+      context 'when the manifest has no tokens' do
         let(:content_hash) do
           {'properties' => nil}
         end
 
-        it "returns nil" do
-          expect(manifest.appdirect_tokens).to be_nil
+        it "returns an empty array" do
+          expect(manifest.service_tokens).to eq([])
         end
       end
 
-      context "the manifest contains properties.appdirect_gateway.services" do
+      context 'when the manifest has one appdirect token' do
+        let(:content_hash) do
+          {
+            'properties' => {
+              'appdirect_gateway' => {
+                'services' => [{
+                  'name' => 'cleardb',
+                  'provider' => 'cleardb',
+                  'ad_name' => 'mysql',
+                  'ad_provider' => 'cleardb',
+                  'tags' => ['mysql', 'relational'],
+                  'auth_token' => 'mongodb_rocks_yo'
+                }]
+              }
+            }
+          }
+        end
+
+        it 'returns an array of hashes with the credentials' do
+          expect(manifest.service_tokens).to eq([
+            {
+              'name'        => 'cleardb',
+              'provider'    => 'cleardb',
+              'ad_name'     => 'mysql',
+              'ad_provider' => 'cleardb',
+              'tags'        => ['mysql', 'relational'],
+              'auth_token'  => 'mongodb_rocks_yo'
+            }
+          ])
+        end
+      end
+
+      context 'when the manifest has one mysql token' do
+        let(:content_hash) do
+          {
+            'jobs' => [{
+              'name' => 'mysql_gateway',
+              'properties' => {
+                'mysql_gateway' => {
+                  'token' => '2bits'
+                }
+              }
+            }]
+          }
+        end
+
+        it 'returns an array containing the token' do
+          expect(manifest.service_tokens).to eq([
+            {
+              'name'        => 'mysql',
+              'provider'    => 'core',
+              'auth_token'  => '2bits'
+            }
+          ])
+        end
+      end
+
+      context 'when the manifest has both appdirect and mysql tokens' do
         let(:manifest_file) { File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__)}
         let(:manifest) { ReleaseManifest.load_file(manifest_file) }
 
-        it "returns an array of hashes with the credentials" do
-          expect(manifest.appdirect_tokens).to eq([
+        it 'returns an array of hashes with the credentials' do
+          expect(manifest.service_tokens).to eq([
               {
                 'name'        => 'cleardb',
                 'provider'    => 'cleardb',
@@ -108,39 +165,13 @@ module CfDeployer
                 'ad_provider' => 'cleardb',
                 'tags'        => ['mysql', 'relational'],
                 'auth_token'  => 'mongodb_rocks_yo'
+              },
+              {
+                'name'        => 'mysql',
+                'provider'    => 'core',
+                'auth_token'  => '2bits'
               }
             ])
-        end
-      end
-    end
-
-    describe "#mysql_token" do
-      context "and the manifest contains jobs.properties.mysql_gateway.token" do
-        let(:manifest_file) { File.expand_path('../fixtures/appdirect-manifest.yml', __FILE__)}
-        let(:manifest) { ReleaseManifest.load_file(manifest_file) }
-
-        it "returns an array containing the token" do
-          expect(manifest.mysql_token).to eq([
-                                              {
-                                                'name'        => 'mysql',
-                                                'provider'    => 'core',
-                                                'auth_token'  => '2bits'
-                                              }
-                                            ])
-        end
-      end
-
-      context "and the manifest does not contain jobs.properties.mysql_gateway.token" do
-        let(:content_hash) do
-          {
-            'jobs' => [
-              {'name' => 'api'}
-            ]
-          }
-        end
-
-        it "should return an empty array" do
-          expect(manifest.mysql_token).to eq([])
         end
       end
     end
