@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+# vim: ft=ruby
+
+require "cf_deployer/command_runner"
+require "cf_deployer/logger"
+
+cli = CfDeployer::Cli.new(ARGV)
+options = cli.parse!
+logger = CfDeployer::Logger.new(`tput cols`.to_i)
+
+begin
+  cli.validate!
+
+  runner = CfDeployer::CommandRunner.new(logger)
+  repo = CfDeployer::ReleaseRepo.new(logger, runner, options.repos_path, options.release_repo,
+                         options.release_ref)
+  repo.sync!
+  repo.promote_dev_release(options.promote_branch)
+rescue => e
+  logger.log_exception e
+  exit 1
+end
