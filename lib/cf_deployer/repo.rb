@@ -47,10 +47,11 @@ module CfDeployer
 
     def sync_with_origin
       run_git! "reset --hard"
-      run_git! "clean --force -d"
+      run_git! "clean --force --force -d"
       run_git! "fetch"
       run_git! "checkout #{@ref}"
       run_git! "submodule update --init --recursive"
+      run_git! "submodule foreach --recursive git clean --force --force -d"
     end
 
     def run_git!(command)
