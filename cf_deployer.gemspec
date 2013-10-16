@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.summary     = %q{
     Friendly command-line interface for Cloud Foundry deploys.
   }
-  s.executables = %w{cf_deploy}
+  s.executables = %w{cf_deploy promote}
 
   s.files         = %w(LICENSE) + Dir["lib/**/*"]
   s.license       = "Apache 2.0"
