@@ -34,7 +34,9 @@ module CfDeployer
 
       bosh = Bosh.new(
         logger, runner, deployment.bosh_environment,
-        interactive: @options.interactive)
+        interactive: @options.interactive,
+        rebase: @options.rebase,
+      )
 
       manifest_generator =
         ReleaseManifestGenerator.new(

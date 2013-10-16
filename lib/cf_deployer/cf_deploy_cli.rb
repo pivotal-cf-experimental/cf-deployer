@@ -19,6 +19,7 @@ module CfDeployer
 
       final_release: false,
       interactive: true,
+      rebase: false,
       repos_path: "./repos",
 
       install_tokens: false
@@ -31,6 +32,10 @@ module CfDeployer
 
       def interactive?
         !!interactive
+      end
+
+      def rebase?
+        !!rebase
       end
     end
 
@@ -126,6 +131,12 @@ module CfDeployer
           "--non-interactive", "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
         ) do |interactive|
           @options.interactive = !interactive
+        end
+
+        opts.on(
+          "--rebase", "Upload the BOSH release to the director using the --rebase option. DEFAULT: #{@options.rebase}"
+        ) do |rebase|
+          @options.rebase = !!rebase
         end
 
         opts.on(

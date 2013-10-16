@@ -8,7 +8,7 @@ module CfDeployer
     def initialize(logger, runner, bosh_environment, options = {})
       @logger = logger
       @runner = runner
-      @options = { interactive: true }.merge(options)
+      @options = { interactive: true, rebase: false }.merge(options)
       @bosh_environment = bosh_environment
 
       @bosh_config = Tempfile.new("bosh_config")
@@ -19,7 +19,11 @@ module CfDeployer
     end
 
     def create_and_upload_final_release(release_path, release_name, private_config)
-      create_and_upload_release(release_path, release_name, :final, private_config)
+      create_and_upload_release(release_path, release_name,
+        final: true,
+        private_config: private_config,
+        rebase: @options.fetch(:rebase)
+      )
     end
 
     def set_deployment(manifest)
@@ -43,7 +47,10 @@ module CfDeployer
 
     private
 
-    def create_and_upload_release(release_path, release_name, final = false, private_config = nil)
+    def create_and_upload_release(release_path, release_name, options={})
+      final = options.fetch(:final, false)
+      private_config = options[:private_config]
+      rebase = options.fetch(:rebase, false)
       reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG)
 
       @logger.log_message "setting release name to '#{release_name}'"
@@ -65,7 +72,7 @@ module CfDeployer
       end
 
       @logger.log_message "uploading release"
-      upload_release(release_path)
+      upload_release(release_path, rebase)
     end
 
     def reset_bosh_final_build_stupidity(release_path, *to_checkout)
@@ -96,8 +103,10 @@ module CfDeployer
       @runner.run! "cp #{source_path} #{release_path}/config/private.yml"
     end
 
-    def upload_release(release_path)
-      run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} upload release --skip-if-exists")
+    def upload_release(release_path, rebase)
+      upload_flags = %w(--skip-if-exists)
+      upload_flags << '--rebase' if rebase
+      run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} upload release #{upload_flags.join(' ')}")
     end
 
     def bosh!(cmd, options = {}, &blk)
