@@ -10,6 +10,8 @@ module CfDeployer
       release_repo: nil,
       deployments_repo: nil,
 
+      dirty: false,
+
       release_ref: nil,
       promote_branch: nil,
 
@@ -66,16 +68,16 @@ module CfDeployer
         fail "--deployments-repo is required"
       end
 
-      if @options.release_ref.nil?
-        fail "--release-ref is required"
-      end
-
       if @options.deployment_name.nil?
         fail "--deployment-name is required"
       end
 
       unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
         fail "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
+      end
+
+      if !@options.dirty && @options.release_ref.nil?
+        fail "--release-ref is required"
       end
     end
 
@@ -149,6 +151,12 @@ module CfDeployer
           "--final", "Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}"
         ) do |final_release|
           @options.final_release = final_release
+        end
+
+        opts.on(
+          "--dirty", "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
+        ) do |dirty|
+          @options.dirty = dirty
         end
 
         opts.on(

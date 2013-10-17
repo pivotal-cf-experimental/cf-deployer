@@ -84,5 +84,25 @@ module CfDeployer
         end
       end
     end
+
+    describe "#path" do
+      context "with a ssh git uri" do
+        let(:repo_uri) { "git@github.com:foo/some-repo.git" }
+
+        its(:path) { should == "#{@repos_path}/some-repo" }
+      end
+
+      context "with a https git uri" do
+        let(:repo_uri) { "https://github.com/foo/some-repo.git" }
+
+        its(:path) { should == "#{@repos_path}/some-repo" }
+      end
+
+      context "with a local path" do
+        let(:repo_uri) { Dir.mktmpdir }
+
+        its(:path) { should == repo_uri }
+      end
+    end
   end
 end

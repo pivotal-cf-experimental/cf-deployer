@@ -20,7 +20,11 @@ module CfDeployer
     end
 
     def path
-      File.join(@repos_path, repo_name)
+      if File.directory?(@repo_uri)
+        @repo_uri
+      else
+        File.join(@repos_path, repo_name)
+      end
     end
 
     def cloned?
@@ -38,7 +42,7 @@ module CfDeployer
     end
 
     def repo_name
-      @repo_uri[/([^\.:\/]+)(\.git)?$/, 1]
+      File.basename(@repo_uri).sub(/\.git$/, "")
     end
 
     def repo_owner

@@ -21,13 +21,13 @@ module CfDeployer
         logger, runner, @options.repos_path, @options.deployments_repo,
         "origin/master")
 
-      deployments_repo.sync!
+      deployments_repo.sync! unless @options.dirty
 
       release_repo = ReleaseRepo.new(
         logger, runner, @options.repos_path, @options.release_repo,
         @options.release_ref)
 
-      release_repo.sync!
+      release_repo.sync! unless @options.dirty
 
       deployment = Deployment.new(
         File.join(deployments_repo.path, @options.deployment_name))
