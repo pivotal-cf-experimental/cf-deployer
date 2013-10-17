@@ -125,6 +125,7 @@ module CfDeployer
 
     def bosh_flags(interactive = @options[:interactive])
       flags = [
+        "-C #{bosh_cache_directory}",
         "-t #{bosh_director}",
         "-u #{bosh_user}",
         "-p #{bosh_password}",
@@ -133,6 +134,10 @@ module CfDeployer
       flags << "-n" unless interactive
 
       flags.join(" ")
+    end
+
+    def bosh_cache_directory
+      @bosh_cache_directory ||= Dir.mktmpdir
     end
 
     def bosh_director
