@@ -5,7 +5,9 @@ module CfDeployer
     private
 
     def do_deploy
-      @bosh.create_and_upload_dev_release(@release.path, @release_name)
+      @releases.each do |name, repo|
+        @bosh.create_and_upload_dev_release(repo.path, name)
+      end
 
       manifest = @manifest.generate!(@deployment.stub_files)
 
@@ -14,7 +16,9 @@ module CfDeployer
     end
 
     def do_promote_to(branch)
-      @release.promote_dev_release(branch)
+      @releases.each do |_, repo|
+        repo.promote_dev_release(branch)
+      end
     end
   end
 end

@@ -15,7 +15,7 @@ module CfDeployer
 
     around do |example|
       Dir.mktmpdir("repos_path") do |release_repo|
-        @repos_path = release_repo
+        @repos_path = Pathname.new(release_repo).realpath
         example.call
       end
     end
@@ -45,7 +45,12 @@ module CfDeployer
       end
 
       context "when the repo is already cloned" do
-        before { FileUtils.mkdir_p(repo_path) }
+        before do
+          Dir.mkdir(repo_path)
+          Dir.chdir(repo_path) do
+            `git init`
+          end
+        end
 
         it "does not clone the repo" do
           subject.sync!
@@ -54,33 +59,49 @@ module CfDeployer
             /git clone/,
           )
         end
-      end
 
-      it "cleans the repository and fetches the latest from origin on the ref" do
-        subject.sync!
-
-        expect(runner).to have_executed_serially(
-          "git clone git@github.com:cloudfoundry/some-repo.git #{repo_path}",
-          "cd #{repo_path} && git reset --hard",
-          "cd #{repo_path} && git clean --force --force -d",
-          "cd #{repo_path} && git fetch",
-          "cd #{repo_path} && git checkout some-ref",
-          "cd #{repo_path} && git submodule update --init --recursive",
-          "cd #{repo_path} && git submodule foreach --recursive git clean --force --force -d"
-        )
-      end
-
-      it "logs that it's syncing" do
-        subject.sync!
-        expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
-      end
-
-      context "with a http uri" do
-        let(:repo_uri) { "https://github.com/cloudfoundry/some-repo.git" }
-
-        it "logs the proper owner/repo name" do
+        it "logs that it's syncing" do
           subject.sync!
           expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
+        end
+      end
+
+      context "after cloning the repo" do
+        before do
+          runner.when_running(/git clone/) do
+            Dir.mkdir(repo_path)
+            Dir.chdir(repo_path) do
+              `git init`
+            end
+          end
+        end
+
+        it "cleans the repository and fetches the latest from origin on the ref" do
+          subject.sync!
+
+          expect(runner).to have_executed_serially(
+            "git clone git@github.com:cloudfoundry/some-repo.git #{repo_path}",
+            "cd #{repo_path} && git reset --hard",
+            "cd #{repo_path} && git clean --force --force -d",
+            "cd #{repo_path} && git fetch",
+            "cd #{repo_path} && git checkout some-ref",
+            "cd #{repo_path} && git submodule update --init --recursive",
+            "cd #{repo_path} && git submodule foreach --recursive git clean --force --force -d"
+          )
+        end
+
+        it "logs that it's syncing" do
+          subject.sync!
+          expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
+        end
+
+        context "with a http uri" do
+          let(:repo_uri) { "https://github.com/cloudfoundry/some-repo.git" }
+
+          it "logs the proper owner/repo name" do
+            subject.sync!
+            expect(logger).to have_logged("cloudfoundry/some-repo: syncing with some-ref")
+          end
         end
       end
     end

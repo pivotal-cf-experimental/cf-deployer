@@ -12,7 +12,7 @@ module CfDeployer
     let(:manifest) { FakeManifest.new "some-manifest.yml" }
     let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, release, manifest, release_name) }
+    subject { described_class.new(bosh, deployment, manifest, release_name => release) }
 
     after { FileUtils.rm_rf(deployment_path) }
 

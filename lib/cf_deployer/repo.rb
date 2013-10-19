@@ -15,6 +15,11 @@ module CfDeployer
         @runner.run! "git clone #@repo_uri #{path}"
       end
 
+      unless git_toplevel
+        log_message "not a repo; skipping"
+        return
+      end
+
       log_message "syncing with #@ref"
       sync_with_origin
     end
@@ -59,7 +64,23 @@ module CfDeployer
     end
 
     def run_git!(command)
-      @runner.run! "cd #{path} && git #{command}"
+      @runner.run! "cd #{git_toplevel} && git #{command}"
+    end
+
+    def git_toplevel
+      return @git_toplevel unless @git_toplevel.nil?
+
+      return unless File.directory?(path)
+
+      Dir.chdir(path) do
+        top = `git rev-parse --show-toplevel 2>/dev/null`
+
+        if $?.success?
+          @git_toplevel = top.chomp
+        else
+          @git_toplevel = false
+        end
+      end
     end
   end
 end

@@ -1,11 +1,10 @@
 module CfDeployer
   class DeploymentStrategy
-    def initialize(bosh, deployment, release, manifest, release_name)
+    def initialize(bosh, deployment, manifest, releases)
       @bosh = bosh
       @deployment = deployment
-      @release = release
       @manifest = manifest
-      @release_name = release_name
+      @releases = releases
 
       @hooks = []
     end
