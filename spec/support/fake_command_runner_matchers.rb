@@ -4,13 +4,24 @@ class CommandExecutionMatcher
   end
 
   def matches?(runner)
-    command_indexes = @expected_commands.map do |command|
-      runner.execution_index(command)
-    end
-
     @actual_commands = runner.iran
 
-    command_indexes == command_indexes.compact.sort
+    actual_commands = @actual_commands.dup
+
+    matched = false
+
+    @expected_commands.each do |expected|
+      return false if actual_commands.empty?
+
+      while actual = actual_commands.shift
+        if runner.command_matches?(expected, actual)
+          matched = true
+          break
+        end
+      end
+    end
+
+    matched
   end
 
   def failure_message

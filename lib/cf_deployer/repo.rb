@@ -59,6 +59,7 @@ module CfDeployer
       run_git! "clean --force --force -d"
       run_git! "fetch"
       run_git! "checkout #{@ref}"
+      run_git! "clean --force --force -d"
       run_git! "submodule update --init --recursive"
       run_git! "submodule foreach --recursive git clean --force --force -d"
     end
