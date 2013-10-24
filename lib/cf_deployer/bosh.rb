@@ -15,7 +15,9 @@ module CfDeployer
     end
 
     def create_and_upload_dev_release(release_path, release_name)
-      create_and_upload_release(release_path, release_name)
+      create_and_upload_release(release_path, release_name,
+        rebase: @options.fetch(:rebase)
+      )
     end
 
     def create_and_upload_final_release(release_path, release_name, private_config)

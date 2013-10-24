@@ -130,6 +130,18 @@ module CfDeployer
             bosh_command_in_release("upload release --skip-if-exists"),
           )
         end
+
+        context "when the Bosh was created with the :rebase option" do
+          let(:options) { { interactive: false, rebase: true } }
+
+          it "uploads the release to the Bosh director using --rebase" do
+            create_and_upload_release
+
+            expect(runner).to have_executed_serially(
+              bosh_command_in_release("upload release --skip-if-exists --rebase")
+            )
+          end
+        end
       end
 
       describe "#create_and_upload_final_release" do
