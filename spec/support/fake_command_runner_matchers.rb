@@ -41,7 +41,7 @@ MSG
       case c
       when Array
         cmd, opts, blk = c
-        command = cmd.dup
+        command = cmd.respond_to?(:<<) ? cmd.dup : cmd.inspect
         command << " with options #{opts.inspect}" if opts && opts != {}
         command << " with a callback" if blk
       when String
