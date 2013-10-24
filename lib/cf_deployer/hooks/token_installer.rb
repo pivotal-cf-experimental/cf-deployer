@@ -13,9 +13,9 @@ module CfDeployer
 
       username, password = manifest.services_credentials
       @runner.run!("cf target #{manifest.api_endpoint}")
-      @runner.run!("cf login --username #{username} --password \"#{password}\" --organization pivotal")
+      @runner.run!("cf login --username '#{username}' --password '#{password}' --organization pivotal")
       manifest.service_tokens.each do |service|
-        @runner.run!("cf create-service-auth-token \"#{service['name']}\" \"#{service['provider']}\" --token \"#{service['auth_token']}\" 2>/dev/null || true")
+        @runner.run!("cf create-service-auth-token '#{service['name']}' '#{service['provider']}' --token '#{service['auth_token']}' 2>/dev/null || true")
       end
     end
   end
