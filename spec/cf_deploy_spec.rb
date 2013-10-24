@@ -19,7 +19,8 @@ module CfDeployer
             infrastructure: 'aws',
             final_release: true,
             install_tokens: false,
-            promote_branch: nil
+            promote_branch: nil,
+            dirty: false,
           )
         )
       end
