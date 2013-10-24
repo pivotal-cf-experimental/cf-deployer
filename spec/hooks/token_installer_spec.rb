@@ -27,9 +27,9 @@ module CfDeployer
 
         expect(runner).to have_executed_serially(
           "cf target #{manifest.api_endpoint}",
-          "cf login --username #{username} --password #{password} --organization pivotal",
-          "cf create-service-auth-token #{tokens[0]['name']} #{tokens[0]['provider']} --token #{tokens[0]['auth_token']} 2>/dev/null || true",
-          "cf create-service-auth-token #{tokens[1]['name']} #{tokens[1]['provider']} --token #{tokens[1]['auth_token']} 2>/dev/null || true"
+          "cf login --username '#{username}' --password '#{password}' --organization pivotal",
+          "cf create-service-auth-token '#{tokens[0]['name']}' '#{tokens[0]['provider']}' --token '#{tokens[0]['auth_token']}' 2>/dev/null || true",
+          "cf create-service-auth-token '#{tokens[1]['name']}' '#{tokens[1]['provider']}' --token '#{tokens[1]['auth_token']}' 2>/dev/null || true"
         )
       end
     end
