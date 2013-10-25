@@ -5,6 +5,8 @@ module CfDeployer
     DEV_CONFIG = "config/dev.yml".freeze
     FINAL_CONFIG = "config/final.yml".freeze
 
+    attr_reader :bosh_output_file
+
     def initialize(logger, runner, bosh_environment, options = {})
       @logger = logger
       @runner = runner
@@ -12,6 +14,7 @@ module CfDeployer
       @bosh_environment = bosh_environment
 
       @bosh_config = Tempfile.new("bosh_config")
+      @bosh_output_file = Tempfile.new("bosh_output")
     end
 
     def create_and_upload_dev_release(release_path, release_name)
@@ -108,7 +111,12 @@ module CfDeployer
     def upload_release(release_path, rebase)
       upload_flags = %w(--skip-if-exists)
       upload_flags << '--rebase' if rebase
-      run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} upload release #{upload_flags.join(' ')}")
+      begin
+        run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} upload release #{upload_flags.join(' ')} | tee #{bosh_output_file.path}")
+      rescue CommandRunner::CommandFailed
+        contents = File.read(@bosh_output_file.path)
+        unless contents.match(/Rebase is attempted without any job or package changes/) then raise end
+      end
     end
 
     def bosh!(cmd, options = {}, &blk)

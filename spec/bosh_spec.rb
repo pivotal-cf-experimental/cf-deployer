@@ -3,6 +3,7 @@ require "yaml"
 
 require "spec_helper"
 require "cf_deployer/bosh"
+require "cf_deployer/command_runner"
 
 module CfDeployer
   describe Bosh do
@@ -18,7 +19,7 @@ module CfDeployer
 
     let(:options) { { interactive: false } }
 
-    subject { described_class.new(logger, runner, bosh_environment, options) }
+    subject(:bosh) { described_class.new(logger, runner, bosh_environment, options) }
 
     def command_options_with_transient_bosh_config
       proc do |options|
@@ -108,7 +109,7 @@ module CfDeployer
         let(:release_name) { "some-release-name" }
 
         def create_and_upload_release
-          subject.create_and_upload_dev_release(@release_repo, release_name)
+          bosh.create_and_upload_dev_release(@release_repo, release_name)
         end
 
         it_sets_up_the_release_name
@@ -141,6 +142,43 @@ module CfDeployer
               bosh_command_in_release("upload release --skip-if-exists --rebase")
             )
           end
+
+          it "logs the bosh output to a temporary bosh_output location" do
+            create_and_upload_release
+
+            expect(runner).to have_executed_serially(
+              bosh_command_in_release(
+                "upload release --skip-if-exists --rebase \\| tee #{bosh.bosh_output_file.path}"
+              )
+            )
+          end
+
+          context "when the rebase has no job or package changes" do
+
+            before do
+              runner.stub(:run!)
+            end
+
+            it "continues without throwing error, despite bosh's unsucessful return code" do
+              runner.should_receive(:run!).with(/upload release .* --rebase/,anything).and_raise CommandRunner::CommandFailed
+              File.open(bosh.bosh_output_file.path, 'w') { |file| file.write("Rebase is attempted without any job or package changes") }
+
+              create_and_upload_release
+            end
+          end
+
+          context "when the bosh upload fails, without the error 'the rebase has no job or package changes'" do
+            before do
+              runner.stub(:run!)
+            end
+
+            it "continues without throwing error, despite bosh's unsucessful return code" do
+              runner.should_receive(:run!).with(/upload release .* --rebase/,anything).and_raise CommandRunner::CommandFailed
+
+              expect{ create_and_upload_release }.to raise_error CommandRunner::CommandFailed
+            end
+          end
+
         end
       end
 
@@ -149,7 +187,7 @@ module CfDeployer
         let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
 
         def create_and_upload_release
-          subject.create_and_upload_final_release(@release_repo, release_name, "/some/config/private.yml")
+          bosh.create_and_upload_final_release(@release_repo, release_name, "/some/config/private.yml")
         end
 
         it_sets_up_the_release_name
@@ -196,7 +234,7 @@ module CfDeployer
 
     describe "#set_deployment" do
       it "sets the deployment" do
-        subject.set_deployment("my-manifest.yml")
+        bosh.set_deployment("my-manifest.yml")
 
         expect(runner).to have_executed_serially(
           [ "bundle exec bosh -n target http://example.com",
@@ -207,7 +245,7 @@ module CfDeployer
       end
 
       it "logs what it's setting the deployment to" do
-        subject.set_deployment("my-manifest.yml")
+        bosh.set_deployment("my-manifest.yml")
 
         expect(logger).to have_logged("setting deployment to my-manifest.yml")
       end
@@ -215,7 +253,7 @@ module CfDeployer
 
     describe "#deploy" do
       it "sets the deployment and deploys" do
-        subject.deploy
+        bosh.deploy
 
         expect(runner).to have_executed_serially(
           [ /yes yes | bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
@@ -225,7 +263,7 @@ module CfDeployer
       end
 
       it "logs that it's deploying" do
-        subject.deploy
+        bosh.deploy
 
         expect(logger).to have_logged("DEPLOYING!")
       end
@@ -234,7 +272,7 @@ module CfDeployer
         before { options[:interactive] = true }
 
         it "does not pipe yes yes" do
-          subject.deploy
+          bosh.deploy
 
           expect(runner).to have_executed_serially(
             [ /bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
