@@ -36,6 +36,7 @@ module CfDeployer
         logger, runner, deployment.bosh_environment,
         interactive: @options.interactive,
         rebase: @options.rebase,
+        dirty: @options.dirty,
       )
 
       manifest_generator =

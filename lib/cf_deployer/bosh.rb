@@ -10,8 +10,12 @@ module CfDeployer
     def initialize(logger, runner, bosh_environment, options = {})
       @logger = logger
       @runner = runner
-      @options = { interactive: true, rebase: false }.merge(options)
       @bosh_environment = bosh_environment
+      @options = {
+        interactive: true,
+        rebase: false,
+        dirty: false
+      }.merge(options)
 
       @bosh_config = Tempfile.new("bosh_config")
       @bosh_output_file = Tempfile.new("bosh_output")
@@ -19,7 +23,8 @@ module CfDeployer
 
     def create_and_upload_dev_release(release_path, release_name)
       create_and_upload_release(release_path, release_name,
-        rebase: @options.fetch(:rebase)
+        rebase: @options.fetch(:rebase),
+        force: @options.fetch(:dirty),
       )
     end
 
@@ -27,7 +32,7 @@ module CfDeployer
       create_and_upload_release(release_path, release_name,
         final: true,
         private_config: private_config,
-        rebase: @options.fetch(:rebase)
+        rebase: @options.fetch(:rebase),
       )
     end
 
@@ -56,13 +61,14 @@ module CfDeployer
       final = options.fetch(:final, false)
       private_config = options[:private_config]
       rebase = options.fetch(:rebase, false)
+      force = options.fetch(:force, false)
       reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG)
 
       @logger.log_message "setting release name to '#{release_name}'"
       set_release_name(release_path, release_name)
 
       @logger.log_message "creating dev release"
-      create_release(release_path, false)
+      create_release(release_path, final: false, force: force)
 
       if final
         reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG, ".final_builds/")
@@ -73,7 +79,7 @@ module CfDeployer
         end
 
         @logger.log_message "creating final release"
-        create_release(release_path, final)
+        create_release(release_path, final: final, force: force)
       end
 
       @logger.log_message "uploading release"
@@ -100,8 +106,15 @@ module CfDeployer
       end
     end
 
-    def create_release(release_path, final)
-      run_with_clean_env("cd #{release_path} && bosh #{bosh_flags} create release#{" --final" if final}")
+    def create_release(release_path, options={})
+      flags = %w[]
+      flags << "--final" if options[:final]
+      flags << "--force" if options[:force]
+
+      create_release_flags = flags.collect { |x| " #{x}" }.join
+
+      run_with_clean_env(
+        "cd #{release_path} && bosh #{bosh_flags} create release#{create_release_flags}")
     end
 
     def copy_private_config(release_path, source_path)
