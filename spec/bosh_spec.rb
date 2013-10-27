@@ -37,7 +37,7 @@ module CfDeployer
     end
 
     def bosh_command(command)
-      [ /bundle exec bosh #{bosh_flags} #{command}/,
+      [ /bosh #{bosh_flags} #{command}/,
         command_options_with_transient_bosh_config
       ]
     end
@@ -53,7 +53,7 @@ module CfDeployer
       let(:dev_yml) { File.join(@release_repo, "config", "dev.yml") }
 
       def bosh_command_in_release(command)
-        [ /cd #{@release_repo} && bundle exec bosh #{bosh_flags} #{command}/,
+        [ /cd #{@release_repo} && bosh #{bosh_flags} #{command}/,
           command_options_with_transient_bosh_config
         ]
       end
@@ -237,7 +237,7 @@ module CfDeployer
         bosh.set_deployment("my-manifest.yml")
 
         expect(runner).to have_executed_serially(
-          [ "bundle exec bosh -n target http://example.com",
+          [ "bosh -n target http://example.com",
             command_options_with_transient_bosh_config
           ],
           bosh_command("deployment my-manifest.yml"),
@@ -256,7 +256,7 @@ module CfDeployer
         bosh.deploy
 
         expect(runner).to have_executed_serially(
-          [ /yes yes | bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
+          [ /yes yes | bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
             command_options_with_transient_bosh_config
           ]
         )
@@ -275,7 +275,7 @@ module CfDeployer
           bosh.deploy
 
           expect(runner).to have_executed_serially(
-            [ /bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
+            [ /bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
               command_options_with_transient_bosh_config
             ]
           )

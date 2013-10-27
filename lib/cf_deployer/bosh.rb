@@ -35,18 +35,18 @@ module CfDeployer
       @logger.log_message "setting deployment to #{manifest}"
 
       # despite passing -t for the target, this has to be set in the config file
-      run_with_clean_env("bundle exec bosh -n target #{bosh_director}")
+      run_with_clean_env("bosh -n target #{bosh_director}")
 
-      run_with_clean_env("bundle exec bosh #{bosh_flags} deployment #{manifest}")
+      run_with_clean_env("bosh #{bosh_flags} deployment #{manifest}")
     end
 
     def deploy
       @logger.log_message "DEPLOYING!"
 
       if @options[:interactive]
-        run_with_clean_env("bundle exec bosh #{bosh_flags} deploy")
+        run_with_clean_env("bosh #{bosh_flags} deploy")
       else
-        run_with_clean_env("yes yes | bundle exec bosh #{bosh_flags(true)} deploy")
+        run_with_clean_env("yes yes | bosh #{bosh_flags(true)} deploy")
       end
     end
 
@@ -101,7 +101,7 @@ module CfDeployer
     end
 
     def create_release(release_path, final)
-      run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} create release#{" --final" if final}")
+      run_with_clean_env("cd #{release_path} && bosh #{bosh_flags} create release#{" --final" if final}")
     end
 
     def copy_private_config(release_path, source_path)
@@ -112,7 +112,7 @@ module CfDeployer
       upload_flags = %w(--skip-if-exists)
       upload_flags << '--rebase' if rebase
       begin
-        run_with_clean_env("cd #{release_path} && bundle exec bosh #{bosh_flags} upload release #{upload_flags.join(' ')} | tee #{bosh_output_file.path}")
+        run_with_clean_env("cd #{release_path} && bosh #{bosh_flags} upload release #{upload_flags.join(' ')} | tee #{bosh_output_file.path}")
       rescue CommandRunner::CommandFailed
         contents = File.read(@bosh_output_file.path)
         unless contents.match(/Rebase is attempted without any job or package changes/) then raise end
@@ -120,13 +120,13 @@ module CfDeployer
     end
 
     def bosh!(cmd, options = {}, &blk)
-      run_with_clean_env("bundle exec bosh #{bosh_flags} #{cmd}", options, &blk)
+      run_with_clean_env("bosh #{bosh_flags} #{cmd}", options, &blk)
     end
 
     # bosh shows different (often useful) output in interactive mode,
     # but we don't want the interactive bit.
     def yes_bosh!(cmd, options = {}, &blk)
-      run_with_clean_env("yes yes | bundle exec bosh #{bosh_flags(true)} #{cmd}", options, &blk)
+      run_with_clean_env("yes yes | bosh #{bosh_flags(true)} #{cmd}", options, &blk)
     end
 
     def run_with_clean_env(command, options = {}, &blk)
