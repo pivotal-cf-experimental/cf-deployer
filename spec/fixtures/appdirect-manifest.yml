@@ -34,3 +34,15 @@ jobs:
       token: 2bits
       version_aliases:
         current: '5.5'
+- name: dev3_appdirect
+  properties:
+    appdirect_gateway:
+      services:
+        - name: dev3-happyfundb
+          provider: happyfun
+          ad_name: happyfun
+          ad_provider: happyfun
+          tags:
+          - explosive
+          - donottaunt
+          auth_token: secret

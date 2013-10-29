@@ -31,7 +31,13 @@ module CfDeployer
     attr_reader :content
 
     def appdirect_tokens
-      find_in_manifest("properties", "appdirect_gateway", "services") || []
+      global = find_in_manifest("properties", "appdirect_gateway", "services") || []
+
+      jobs = content['jobs'] || []
+      service_lists = jobs.map { |job| job['properties']['appdirect_gateway']['services'] rescue nil }
+      ad_service_lists = service_lists.select { |service_list| service_list != nil }
+
+      global + ad_service_lists.flatten
     end
 
     def mysql_token

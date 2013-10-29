@@ -145,6 +145,14 @@ module CfDeployer
                 'auth_token'  => 'mongodb_rocks_yo'
               },
               {
+                'name'        => 'dev3-happyfundb',
+                'provider'    => 'happyfun',
+                'ad_name'     => 'happyfun',
+                'ad_provider' => 'happyfun',
+                'tags'        => ['explosive', 'donottaunt'],
+                'auth_token'  => 'secret'
+              },
+              {
                 'name'        => 'mysql',
                 'provider'    => 'core',
                 'auth_token'  => '2bits'
