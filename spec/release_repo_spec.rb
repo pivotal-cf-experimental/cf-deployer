@@ -1,4 +1,5 @@
 require "fileutils"
+require "pathname"
 require "yaml"
 
 require "spec_helper"
@@ -15,7 +16,15 @@ module CfDeployer
 
     around do |example|
       Dir.mktmpdir("repos_path") do |release_repo|
-        @repos_path = release_repo
+        # /private/var vs. /var
+        @repos_path = Pathname.new(release_repo).realpath
+
+        Dir.mkdir(repo_path)
+
+        Dir.chdir(repo_path) do
+          `git init`
+        end
+
         example.call
       end
     end

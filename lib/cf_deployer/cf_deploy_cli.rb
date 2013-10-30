@@ -5,24 +5,25 @@ module CfDeployer
     VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
 
     OPTIONS = {
-      release_name: nil,
+      release_names: [],
+      release_repos: [],
+      release_refs: [],
 
-      release_repo: nil,
+      deployment_name: nil,
       deployments_repo: nil,
+
+      repos_path: "./repos",
 
       dirty: false,
 
-      release_ref: nil,
-      promote_branch: nil,
-
       infrastructure: nil,
 
-      deployment_name: nil,
+      promote_branch: nil,
 
       final_release: false,
-      interactive: true,
       rebase: false,
-      repos_path: "./repos",
+
+      interactive: true,
 
       install_tokens: false
     }
@@ -56,12 +57,16 @@ module CfDeployer
     end
 
     def validate!
-      if @options.release_name.nil?
-        fail "--release-name is required"
+      if @options.release_repos.nil?
+        fail "at least one --release-repo is required"
       end
 
-      if @options.release_repo.nil?
-        fail "--release-repo is required"
+      if @options.release_names.empty?
+        fail "at least one --release-name is required"
+      end
+
+      if @options.release_repos.size != @options.release_names.size
+        fail "missing --release-repo and --release-name pair"
       end
 
       if @options.deployments_repo.nil?
@@ -76,8 +81,8 @@ module CfDeployer
         fail "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
       end
 
-      if !@options.dirty && @options.release_ref.nil?
-        fail "--release-ref is required"
+      if !@options.dirty && @options.release_refs.nil?
+        fail "--release-ref or --dirty is required"
       end
     end
 
@@ -88,21 +93,21 @@ module CfDeployer
         opts.banner = "Example: ci_deploy.rb -d tabasco"
 
         opts.on(
-          "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
-        ) do |release_repo|
-          @options.release_repo = release_repo
+          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
+        ) do |release_name|
+          @options.release_names << release_name
         end
 
         opts.on(
-          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
-        ) do |release_name|
-          @options.release_name = release_name
+          "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
+        ) do |release_repo|
+          @options.release_repos << release_repo
         end
 
         opts.on(
           "--release-ref RELEASE_REF", "Git ref to deploy from the release repository (e.g. master, a1, v144)."
         ) do |release_ref|
-          @options.release_ref = release_ref
+          @options.release_refs << release_ref
         end
 
         opts.on(

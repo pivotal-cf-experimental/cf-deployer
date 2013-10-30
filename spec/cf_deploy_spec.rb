@@ -1,6 +1,10 @@
 require "spec_helper"
 require "cf_deployer/cf_deploy"
 
+# TODO: can we do this with fakes instead?
+#
+# this is hella stubby and is just a puzzle when actually changing something
+
 module CfDeployer
   describe CfDeploy do
     describe "#deploy" do
@@ -21,9 +25,10 @@ module CfDeployer
             install_tokens: false,
             promote_branch: nil,
             dirty: false,
-          )
+          ).as_null_object
         )
       end
+
       let(:null_object) { double(:null_object).as_null_object }
       let(:logger) { null_object }
       let(:runner) { null_object }

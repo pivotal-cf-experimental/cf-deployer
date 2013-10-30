@@ -20,7 +20,7 @@ module CfDeployer
     let(:manifest_generator) { ReleaseManifestGenerator.new runner, release, "doesnt-matter", generated_manifest.path }
     let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, release, manifest_generator, release_name) }
+    subject { described_class.new(bosh, deployment, manifest_generator, release_name => release) }
 
     describe "#install_hook" do
       let(:some_hook) do

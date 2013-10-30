@@ -14,8 +14,9 @@ module CfDeployer
       private_config = @deployment.private_config
       raise MissingPrivateConfig unless private_config
 
-      @bosh.create_and_upload_final_release(
-        @release.path, @release_name, private_config)
+      @releases.each do |name, repo|
+        @bosh.create_and_upload_final_release(repo.path, name, private_config)
+      end
 
       manifest = @manifest.generate!(@deployment.stub_files)
 
@@ -24,7 +25,9 @@ module CfDeployer
     end
 
     def do_promote_to(branch)
-      @release.promote_final_release(branch)
+      @releases.each do |_, repo|
+        repo.promote_final_release(branch)
+      end
     end
   end
 end
