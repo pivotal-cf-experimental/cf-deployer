@@ -37,7 +37,7 @@ module CfDeployer
     end
 
     def bosh_command(command)
-      [ /bundle exec bosh #{bosh_flags} #{command}/,
+      [ /bosh #{bosh_flags} #{command}/,
         command_options_with_transient_bosh_config
       ]
     end
@@ -53,7 +53,7 @@ module CfDeployer
       let(:dev_yml) { File.join(@release_repo, "config", "dev.yml") }
 
       def bosh_command_in_release(command)
-        [ /cd #{@release_repo} && bundle exec bosh #{bosh_flags} #{command}/,
+        [ /cd #{@release_repo} && bosh #{bosh_flags} #{command}/,
           command_options_with_transient_bosh_config
         ]
       end
@@ -154,31 +154,40 @@ module CfDeployer
           end
 
           context "when the rebase has no job or package changes" do
-
-            before do
-              runner.stub(:run!)
-            end
-
             it "continues without throwing error, despite bosh's unsucessful return code" do
-              runner.should_receive(:run!).with(/upload release .* --rebase/,anything).and_raise CommandRunner::CommandFailed
-              File.open(bosh.bosh_output_file.path, 'w') { |file| file.write("Rebase is attempted without any job or package changes") }
+              runner.when_running(/upload release .* --rebase/) do
+                File.open(bosh.bosh_output_file.path, "w") do |file|
+                  file.write("Rebase is attempted without any job or package changes")
+                end
 
-              create_and_upload_release
+                raise CommandRunner::CommandFailed
+              end
+
+              expect { create_and_upload_release }.to_not raise_error
             end
           end
 
           context "when the bosh upload fails, without the error 'the rebase has no job or package changes'" do
-            before do
-              runner.stub(:run!)
-            end
-
             it "continues without throwing error, despite bosh's unsucessful return code" do
-              runner.should_receive(:run!).with(/upload release .* --rebase/,anything).and_raise CommandRunner::CommandFailed
+              runner.when_running(/upload release .* --rebase/) do
+                raise CommandRunner::CommandFailed
+              end
 
               expect{ create_and_upload_release }.to raise_error CommandRunner::CommandFailed
             end
           end
+        end
 
+        context "when the Bosh was created with the :dirty option" do
+          let(:options) { { interactive: false, dirty: true } }
+
+          it "creates the release with --force" do
+            create_and_upload_release
+
+            expect(runner).to have_executed_serially(
+              bosh_command_in_release("create release --force")
+            )
+          end
         end
       end
 
@@ -237,7 +246,7 @@ module CfDeployer
         bosh.set_deployment("my-manifest.yml")
 
         expect(runner).to have_executed_serially(
-          [ "bundle exec bosh -n target http://example.com",
+          [ "bosh -n target http://example.com",
             command_options_with_transient_bosh_config
           ],
           bosh_command("deployment my-manifest.yml"),
@@ -256,7 +265,7 @@ module CfDeployer
         bosh.deploy
 
         expect(runner).to have_executed_serially(
-          [ /yes yes | bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
+          [ /yes yes | bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
             command_options_with_transient_bosh_config
           ]
         )
@@ -275,7 +284,7 @@ module CfDeployer
           bosh.deploy
 
           expect(runner).to have_executed_serially(
-            [ /bundle exec bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
+            [ /bosh -C [^ ]+ -t http:\/\/example.com -u boshuser -p boshpass deploy/,
               command_options_with_transient_bosh_config
             ]
           )
