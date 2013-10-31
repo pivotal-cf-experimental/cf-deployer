@@ -2,7 +2,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "cf_deployer"
-  s.version     = "0.1.0"
+  s.version     = "0.2.0"
   s.authors     = ["Cloud Foundry Team"]
   s.email       = %w(cf-eng@pivotallabs.com)
   s.homepage    = "http://github.com/cloudfoundry/cf-deployer"
