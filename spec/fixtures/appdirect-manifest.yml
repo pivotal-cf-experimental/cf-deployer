@@ -1,0 +1,48 @@
+properties:
+  cc:
+    srv_api_uri: http://api.example.com
+  appdirect_gateway:
+    services:
+      - name: cleardb
+        provider: cleardb
+        ad_name: mysql
+        ad_provider: cleardb
+        tags:
+        - mysql
+        - relational
+        auth_token: mongodb_rocks_yo
+
+  uaa:
+    scim:
+      users:
+      - admin|secret|scim.write,scim.read,openid,cloud_controller.admin
+
+
+jobs:
+- name: mysql_gateway
+  instances: 1
+  networks:
+  - name: services1
+    static_ips:
+    - 10.10.10.10
+  properties:
+    mysql_gateway:
+      cc_api_version: v2
+      check_orphan_interval: 9000
+      supported_versions:
+      - '5.5'
+      token: 2bits
+      version_aliases:
+        current: '5.5'
+- name: dev3_appdirect
+  properties:
+    appdirect_gateway:
+      services:
+        - name: dev3-happyfundb
+          provider: happyfun
+          ad_name: happyfun
+          ad_provider: happyfun
+          tags:
+          - explosive
+          - donottaunt
+          auth_token: secret

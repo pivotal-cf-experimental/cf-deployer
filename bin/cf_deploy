@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# vim: ft=ruby
+
+require "cf_deployer/cf_deploy"
+require "cf_deployer/command_runner"
+require "cf_deployer/logger"
+
+cli = CfDeployer::Cli.new(ARGV)
+
+cf_deploy = CfDeployer::CfDeploy.new(cli.parse!)
+
+logger = CfDeployer::Logger.new(`tput cols`.to_i)
+
+begin
+  cli.validate!
+
+  runner = CfDeployer::CommandRunner.new(logger)
+
+  cf_deploy.deploy(logger, runner)
+rescue => e
+  logger.log_exception e
+  exit 1
+end
