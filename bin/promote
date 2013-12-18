@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # vim: ft=ruby
 
-require "cf_deployer/cf_deploy_cli"
+require "cf_deployer/cli"
 require "cf_deployer/command_runner"
 require "cf_deployer/logger"
 require "cf_deployer/release_repo"

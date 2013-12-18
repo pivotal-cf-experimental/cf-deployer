@@ -1,6 +1,6 @@
 require "dogapi"
 
-require "cf_deployer/cf_deploy_cli"
+require "cf_deployer/cli"
 require "cf_deployer/release_repo"
 require "cf_deployer/deployment"
 require "cf_deployer/bosh"

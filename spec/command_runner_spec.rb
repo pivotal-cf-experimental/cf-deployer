@@ -1,6 +1,6 @@
 require "spec_helper"
 require "cf_deployer/command_runner"
-require "cf_deployer/cf_deploy_cli"
+require "cf_deployer/cli"
 
 module CfDeployer
   describe CommandRunner do
