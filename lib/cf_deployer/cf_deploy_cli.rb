@@ -40,6 +40,10 @@ module CfDeployer
       def rebase?
         !!rebase
       end
+
+      def dry_run?
+        false
+      end
     end
 
     def initialize(args)

@@ -51,14 +51,13 @@ module CfDeployer
         allow(DevDeploymentStrategy).to receive(:new).and_return(null_object)
         allow(DatadogEmitter).to receive(:new).and_return(null_object)
         allow(TokenInstaller).to receive(:new).and_return(null_object)
-        allow(CommandRunner).to receive(:bash_runner).and_return(runner)
+        allow(CommandRunner).to receive(:for).and_return(runner)
       end
 
       context "instantiation of collaborators" do
         specify CommandRunner do
           cf_deploy
-
-          expect(CommandRunner).to have_received(:bash_runner).with(logger)
+          expect(CommandRunner).to have_received(:for).with(logger, options)
         end
 
         specify Repo do

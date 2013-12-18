@@ -1,11 +1,10 @@
 require "spec_helper"
 require "cf_deployer/command_runner"
+require "cf_deployer/cf_deploy_cli"
 
 module CfDeployer
   describe CommandRunner do
     let(:logger) { FakeLogger.new }
-
-    subject(:runner) { described_class.bash_runner(logger) }
 
     before { @cmd_stdout, @cmd_stdin = runner_pipe }
 
@@ -13,43 +12,76 @@ module CfDeployer
       runner.run!(command, options.merge(out: @cmd_stdout, in: @cmd_stdin), &blk)
     end
 
-    it "runs a command" do
-      run "echo 'hello,\n world!'"
-      expect(output).to say("hello,\n world!\n")
-    end
+    describe ".for" do
+      let(:options) { double(Cli::Options, dry_run?: dry_run) }
+      let(:runner) { double(CommandRunner) }
+      let(:command_logger) { double(CommandRunner::CommandLogger) }
 
-    context "when given environment variables" do
-      it "executes the command without the caller's environment" do
-        run("echo ${FOO:-nope}", environment: { "FOO" => "bar" })
-        expect(output).to say("bar")
+      before do
+        allow(CommandRunner).to receive(:bash_runner).and_return(runner)
+        allow(CommandRunner::CommandLogger).to receive(:new).and_return(command_logger)
       end
 
-      it "does not pollute the caller's environment" do
-        expect {
-          run("echo $FOO", environment: { "FOO" => "bar" })
-        }.to_not change { ENV["FOO"] }.from(nil)
-      end
-    end
+      context "normally" do
+        let(:dry_run) { false }
 
-    it "reads standard input" do
-      run "read CAT; echo $CAT" do
-        stdin.puts "dog"
+        it "instantiates a CommandRunner" do
+          expect(CommandRunner.for(logger, options)).to be(runner)
+          expect(CommandRunner).to have_received(:bash_runner).with(logger)
+        end
       end
 
-      expect(output).to say("dog")
-    end
+      context "when dry-run is specified" do
+        let(:dry_run) { true }
 
-    context "when the command fails" do
-      it "raises an error and print the standard error" do
-        expect {
-          run "notacommand"
-        }.to raise_error(RuntimeError, /command failed.*notacommand/i)
+        it "instantiates a CommandLogger" do
+          expect(CommandRunner.for(logger, options)).to be(command_logger)
+          expect(CommandRunner::CommandLogger).to have_received(:new).with(logger)
+        end
       end
     end
 
-    it "logs the execution" do
-      run "ls"
-      expect(logger).to have_logged("ls")
+    describe "#run!" do
+      subject(:runner) { described_class.bash_runner(logger) }
+
+      it "runs a command" do
+        run "echo 'hello,\n world!'"
+        expect(output).to say("hello,\n world!\n")
+      end
+
+      context "when given environment variables" do
+        it "executes the command without the caller's environment" do
+          run("echo ${FOO:-nope}", environment: { "FOO" => "bar" })
+          expect(output).to say("bar")
+        end
+
+        it "does not pollute the caller's environment" do
+          expect {
+            run("echo $FOO", environment: { "FOO" => "bar" })
+          }.to_not change { ENV["FOO"] }.from(nil)
+        end
+      end
+
+      it "reads standard input" do
+        run "read CAT; echo $CAT" do
+          stdin.puts "dog"
+        end
+
+        expect(output).to say("dog")
+      end
+
+      context "when the command fails" do
+        it "raises an error and print the standard error" do
+          expect {
+            run "notacommand"
+          }.to raise_error(RuntimeError, /command failed.*notacommand/i)
+        end
+      end
+
+      it "logs the execution" do
+        run "ls"
+        expect(logger).to have_logged("ls")
+      end
     end
 
     describe "using zsh" do
@@ -61,7 +93,7 @@ module CfDeployer
     end
 
     describe "using bash" do
-      subject(:runner) { CommandRunner.new(logger, CommandRunner::CommandSpawner.new('bash', '-c')) }
+      subject(:runner) { CommandRunner.bash_runner(logger) }
 
       it "allows the client to specify a shell" do
         run('set -o pipefail && echo "hi"')

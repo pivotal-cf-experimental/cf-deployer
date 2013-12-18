@@ -6,6 +6,10 @@ module CfDeployer
       new(logger, CommandSpawner.new('bash', '-c'))
     end
 
+    def self.for(logger, options)
+      options.dry_run?? CommandLogger.new(logger) : bash_runner(logger)
+    end
+
     def initialize(logger, spawner)
       @logger = logger
       @spawner = spawner
@@ -25,6 +29,11 @@ module CfDeployer
       Process.wait(pid)
 
       raise CommandFailed, "Command failed: #{command.inspect} (options: #{options.inspect})" unless $?.success?
+    end
+
+    class CommandLogger
+      def initialize(logger)
+      end
     end
 
     class CommandSpawner
