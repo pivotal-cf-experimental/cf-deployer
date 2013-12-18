@@ -260,13 +260,16 @@ module CfDeployer
     end
 
     describe "#deploy" do
-      it "sets the deployment and deploys" do
+      it "shows the deployment diff and then deploys" do
         bosh.deploy
 
         expect(runner).to have_executed_serially(
-          [ "set -o pipefail && yes yes | bosh -t http://example.com -u boshuser -p boshpass deploy",
+          [ "set -o pipefail && echo no | bosh -t http://example.com -u boshuser -p boshpass deploy || true",
             command_options_with_transient_bosh_config
-          ]
+          ],
+          [ "set -o pipefail &&  bosh -t http://example.com -u boshuser -p boshpass -n deploy",
+            command_options_with_transient_bosh_config
+          ],
         )
       end
 

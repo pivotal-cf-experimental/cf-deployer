@@ -56,7 +56,11 @@ module CfDeployer
       if @options[:interactive]
         run_bosh("deploy", flags: bosh_flags)
       else
-        run_bosh("deploy", pre: "yes yes |", flags: bosh_flags(true))
+        # run an interactive deploy but cancel it so we see the deployment diff
+        run_bosh("deploy || true", pre: "echo no |", flags: bosh_flags(true))
+
+        # run the actual deploy non-interactively
+        run_bosh("deploy", flags: bosh_flags(false))
       end
     end
 
