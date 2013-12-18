@@ -1,15 +1,15 @@
 require "dogapi"
 
-require 'cf_deployer/cf_deploy_cli'
-require 'cf_deployer/release_repo'
-require 'cf_deployer/deployment'
-require 'cf_deployer/bosh'
-require 'cf_deployer/manifest_generator'
-require 'cf_deployer/dev_deployment_strategy'
-require 'cf_deployer/warden_deployment_strategy'
-require 'cf_deployer/final_deployment_strategy'
-require 'cf_deployer/hooks/datadog_emitter'
-require 'cf_deployer/hooks/token_installer'
+require "cf_deployer/cf_deploy_cli"
+require "cf_deployer/release_repo"
+require "cf_deployer/deployment"
+require "cf_deployer/bosh"
+require "cf_deployer/manifest_generator"
+require "cf_deployer/dev_deployment_strategy"
+require "cf_deployer/warden_deployment_strategy"
+require "cf_deployer/final_deployment_strategy"
+require "cf_deployer/hooks/datadog_emitter"
+require "cf_deployer/hooks/token_installer"
 
 module CfDeployer
   class CfDeploy
