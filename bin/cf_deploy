@@ -7,16 +7,13 @@ require "cf_deployer/logger"
 
 cli = CfDeployer::Cli.new(ARGV)
 
-cf_deploy = CfDeployer::CfDeploy.new(cli.parse!)
-
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
+cf_deploy = CfDeployer::CfDeploy.new(cli.parse!, logger)
 
 begin
   cli.validate!
-
   runner = CfDeployer::CommandRunner.new(logger)
-
-  cf_deploy.deploy(logger, runner)
+  cf_deploy.deploy(runner)
 rescue => e
   logger.log_exception e
   exit 1

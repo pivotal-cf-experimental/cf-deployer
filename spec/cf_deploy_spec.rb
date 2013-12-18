@@ -25,7 +25,8 @@ module CfDeployer
             install_tokens: false,
             promote_branch: nil,
             dirty: false,
-          ).as_null_object
+          ).as_null_object,
+          logger
         )
       end
 
@@ -48,7 +49,7 @@ module CfDeployer
 
       context "when the rebase option is false" do
         it "passes rebase=false into the Bosh instance" do
-          cf_deploy.deploy(logger, runner)
+          cf_deploy.deploy(runner)
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
             hash_including(rebase: false)
@@ -60,7 +61,7 @@ module CfDeployer
         let(:rebase) { true }
 
         it "passes the rebase option into the Bosh instance" do
-          cf_deploy.deploy(logger, runner)
+          cf_deploy.deploy(runner)
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
             hash_including(rebase: true)
@@ -73,7 +74,7 @@ module CfDeployer
 
         it "uses final deployment strategy" do
           expect(FinalDeploymentStrategy).to receive(:new).and_return(null_object)
-          cf_deploy.deploy(logger, runner)
+          cf_deploy.deploy(runner)
         end
       end
 
@@ -82,7 +83,7 @@ module CfDeployer
 
         it "uses warden deployment strategy" do
           expect(WardenDeploymentStrategy).to receive(:new).and_return(null_object)
-          cf_deploy.deploy(logger, runner)
+          cf_deploy.deploy(runner)
         end
       end
     end

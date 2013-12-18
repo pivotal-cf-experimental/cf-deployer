@@ -13,13 +13,14 @@ require "cf_deployer/hooks/token_installer"
 
 module CfDeployer
   class CfDeploy
-    def initialize(options)
+    def initialize(options, logger)
       @options = options
+      @logger = logger
     end
 
-    def deploy(logger, runner)
+    def deploy(runner)
       deployments_repo = Repo.new(
-        logger, runner, @options.repos_path, @options.deployments_repo,
+        @logger, runner, @options.repos_path, @options.deployments_repo,
         "origin/master")
 
       deployments_repo.sync! unless @options.dirty
@@ -40,7 +41,7 @@ module CfDeployer
       releases = {}
       @options.release_names.zip(@options.release_repos, @options.release_refs) do |name, repo, ref|
         release_repo = ReleaseRepo.new(
-          logger, runner, @options.repos_path, repo, ref)
+          @logger, runner, @options.repos_path, repo, ref)
 
         release_repo.sync! unless @options.dirty
 
@@ -53,7 +54,7 @@ module CfDeployer
         File.join(deployments_repo.path, @options.deployment_name))
 
       bosh = Bosh.new(
-        logger, runner, deployment.bosh_environment,
+        @logger, runner, deployment.bosh_environment,
         interactive: @options.interactive,
         rebase: @options.rebase,
         dirty: @options.dirty,
@@ -84,11 +85,11 @@ module CfDeployer
           env["DATADOG_APPLICATION_KEY"])
 
         strategy.install_hook(
-          DatadogEmitter.new(logger, dogapi, @options.deployment_name))
+          DatadogEmitter.new(@logger, dogapi, @options.deployment_name))
       end
 
       if @options.install_tokens
-        strategy.install_hook TokenInstaller.new(logger, manifest_generator, runner)
+        strategy.install_hook TokenInstaller.new(@logger, manifest_generator, runner)
       end
 
       strategy.deploy!
