@@ -17,7 +17,7 @@ module CfDeployer
     def initialize(options, logger)
       @options = options
       @logger = logger
-      @runner = CfDeployer::CommandRunner.new(logger)
+      @runner = CfDeployer::CommandRunner.bash_runner(logger)
     end
 
     def deploy

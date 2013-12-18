@@ -5,7 +5,7 @@ module CfDeployer
   describe CommandRunner do
     let(:logger) { FakeLogger.new }
 
-    subject(:runner) { described_class.new(logger) }
+    subject(:runner) { described_class.bash_runner(logger) }
 
     before { @cmd_stdout, @cmd_stdin = runner_pipe }
 
@@ -50,6 +50,23 @@ module CfDeployer
     it "logs the execution" do
       run "ls"
       expect(logger).to have_logged("ls")
+    end
+
+    describe "using zsh" do
+      subject(:runner) { CommandRunner.new(logger, CommandRunner::CommandSpawner.new('zsh', '-c')) }
+
+      it "allows the client to specify a shell" do
+        expect { run('set -o pipefail') }.to raise_error(RuntimeError, /command failed/i)
+      end
+    end
+
+    describe "using bash" do
+      subject(:runner) { CommandRunner.new(logger, CommandRunner::CommandSpawner.new('bash', '-c')) }
+
+      it "allows the client to specify a shell" do
+        run('set -o pipefail && echo "hi"')
+        expect(output).to say("hi")
+      end
     end
   end
 end

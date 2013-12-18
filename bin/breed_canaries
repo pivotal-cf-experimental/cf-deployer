@@ -16,7 +16,7 @@ logger = CfDeployer::Logger.new(`tput cols`.to_i)
 begin
   cli.validate!
 
-  runner = CfDeployer::CommandRunner.new(logger)
+  runner = CfDeployer::CommandRunner.bash_runner(logger)
 
   cf_deploy.breed(logger, runner)
 rescue => e
