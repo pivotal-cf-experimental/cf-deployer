@@ -1,10 +1,6 @@
 require "spec_helper"
 require "cf_deployer/cf_deploy"
 
-# TODO: can we do this with fakes instead?
-#
-# this is hella stubby and is just a puzzle when actually changing something
-
 module CfDeployer
   describe CfDeploy do
     describe "#deploy" do
@@ -55,37 +51,44 @@ module CfDeployer
         allow(DevDeploymentStrategy).to receive(:new).and_return(null_object)
         allow(DatadogEmitter).to receive(:new).and_return(null_object)
         allow(TokenInstaller).to receive(:new).and_return(null_object)
+        allow(CommandRunner).to receive(:new).and_return(runner)
       end
 
       context "instantiation of collaborators" do
+        specify CommandRunner do
+          cf_deploy
+
+          expect(CommandRunner).to have_received(:new).with(logger)
+        end
+
         specify Repo do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(Repo).to have_received(:new).with(logger, runner, "/path/to/repos", "fake-deployments_repo", "origin/master")
         end
 
         specify ReleaseRepo do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(ReleaseRepo).to have_received(:new).with(logger, runner, "/path/to/repos", "fake-release_repo", "fake-ref")
         end
 
         specify Bosh do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(Bosh).to have_received(:new)
                           .with(logger, runner, "bosh-environment", interactive: false, rebase: rebase, dirty: false)
         end
 
         specify ReleaseManifestGenerator do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(ReleaseManifestGenerator).to have_received(:new)
                                               .with(runner, release_repo, infrastructure, "new_deployment.yml")
         end
 
         specify TokenInstaller do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(TokenInstaller).to have_received(:new)
                                               .with(logger, manifest_generator, runner)
@@ -94,7 +97,7 @@ module CfDeployer
 
       context "when the rebase option is false" do
         it "passes rebase=false into the Bosh instance" do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
             hash_including(rebase: false)
@@ -106,7 +109,7 @@ module CfDeployer
         let(:rebase) { true }
 
         it "passes the rebase option into the Bosh instance" do
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
             hash_including(rebase: true)
@@ -119,7 +122,7 @@ module CfDeployer
 
         it "uses final deployment strategy" do
           expect(FinalDeploymentStrategy).to receive(:new).and_return(null_object)
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
         end
       end
 
@@ -128,7 +131,7 @@ module CfDeployer
 
         it "uses warden deployment strategy" do
           expect(WardenDeploymentStrategy).to receive(:new).and_return(null_object)
-          cf_deploy.deploy(runner)
+          cf_deploy.deploy
         end
       end
     end

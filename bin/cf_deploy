@@ -2,7 +2,6 @@
 # vim: ft=ruby
 
 require "cf_deployer/cf_deploy"
-require "cf_deployer/command_runner"
 require "cf_deployer/logger"
 
 cli = CfDeployer::Cli.new(ARGV)
@@ -12,8 +11,7 @@ cf_deploy = CfDeployer::CfDeploy.new(cli.parse!, logger)
 
 begin
   cli.validate!
-  runner = CfDeployer::CommandRunner.new(logger)
-  cf_deploy.deploy(runner)
+  cf_deploy.deploy
 rescue => e
   logger.log_exception e
   exit 1

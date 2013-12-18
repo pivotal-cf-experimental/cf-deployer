@@ -10,26 +10,26 @@ require "cf_deployer/warden_deployment_strategy"
 require "cf_deployer/final_deployment_strategy"
 require "cf_deployer/hooks/datadog_emitter"
 require "cf_deployer/hooks/token_installer"
+require "cf_deployer/command_runner"
 
 module CfDeployer
   class CfDeploy
     def initialize(options, logger)
       @options = options
       @logger = logger
+      @runner = CfDeployer::CommandRunner.new(logger)
     end
 
-    def deploy(runner)
+    def deploy
       deployments_repo = Repo.new(
-        @logger, runner, @options.repos_path, @options.deployments_repo,
+        @logger, @runner, @options.repos_path, @options.deployments_repo,
         "origin/master")
 
       deployments_repo.sync! unless @options.dirty
 
-      # TODO: this is a cludge around the fact that release repos contain their own deployment manifest generation scripts.
-      #
+      # This is a cludge around the fact that release repos contain their own deployment manifest generation scripts.
       # rather than adding another flag, this just makes it so the last release repo listed is the source of the manifest generation.
-      #
-      # this really should be its own separate concept but it's currently tied to releases.
+      # It really should be its own separate concept but it's currently tied to releases.
       #
       # how it probably should be:
       #
@@ -41,7 +41,7 @@ module CfDeployer
       releases = {}
       @options.release_names.zip(@options.release_repos, @options.release_refs) do |name, repo, ref|
         release_repo = ReleaseRepo.new(
-          @logger, runner, @options.repos_path, repo, ref)
+          @logger, @runner, @options.repos_path, repo, ref)
 
         release_repo.sync! unless @options.dirty
 
@@ -54,7 +54,7 @@ module CfDeployer
         File.join(deployments_repo.path, @options.deployment_name))
 
       bosh = Bosh.new(
-        @logger, runner, deployment.bosh_environment,
+        @logger, @runner, deployment.bosh_environment,
         interactive: @options.interactive,
         rebase: @options.rebase,
         dirty: @options.dirty,
@@ -62,7 +62,7 @@ module CfDeployer
 
       manifest_generator =
         ReleaseManifestGenerator.new(
-          runner, authoritative_release_repo, @options.infrastructure, "new_deployment.yml")
+          @runner, authoritative_release_repo, @options.infrastructure, "new_deployment.yml")
 
       strategy_type =
         if @options.final_release
@@ -76,7 +76,6 @@ module CfDeployer
       strategy = strategy_type.new(
         bosh, deployment, manifest_generator, releases)
 
-      # TODO: this is a bit dirty
       env = deployment.bosh_environment
 
       if env["DATADOG_API_KEY"]
@@ -89,7 +88,7 @@ module CfDeployer
       end
 
       if @options.install_tokens
-        strategy.install_hook TokenInstaller.new(@logger, manifest_generator, runner)
+        strategy.install_hook TokenInstaller.new(@logger, manifest_generator, @runner)
       end
 
       strategy.deploy!

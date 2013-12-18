@@ -1,7 +1,6 @@
 require "fileutils"
 require "tempfile"
 
-require "cf_deployer/command_runner"
 require "cf_deployer/release_repo"
 require "yaml"
 

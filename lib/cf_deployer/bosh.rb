@@ -1,4 +1,5 @@
 require "tempfile"
+require "cf_deployer/command_runner"
 
 module CfDeployer
   class Bosh

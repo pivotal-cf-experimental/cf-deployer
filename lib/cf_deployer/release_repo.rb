@@ -1,4 +1,3 @@
-require "cf_deployer/command_runner"
 require "cf_deployer/whats_in_the_deploy"
 require "cf_deployer/repo"
 

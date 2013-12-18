@@ -3,7 +3,6 @@ require "yaml"
 
 require "spec_helper"
 require "cf_deployer/bosh"
-require "cf_deployer/command_runner"
 
 module CfDeployer
   describe Bosh do
