@@ -73,7 +73,7 @@ module CfDeployer
       context "when the command fails" do
         it "raises an error and print the standard error" do
           expect {
-            run "notacommand"
+            run "notacommand 2>/dev/null"
           }.to raise_error(RuntimeError, /command failed.*notacommand/i)
         end
       end
@@ -88,7 +88,7 @@ module CfDeployer
       subject(:runner) { CommandRunner.new(logger, CommandRunner::CommandSpawner.new('zsh', '-c')) }
 
       it "allows the client to specify a shell" do
-        expect { run('set -o pipefail') }.to raise_error(RuntimeError, /command failed/i)
+        expect { run('set -o pipefail 2>/dev/null') }.to raise_error(RuntimeError, /command failed/i)
       end
     end
 
