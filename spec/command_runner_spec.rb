@@ -15,11 +15,11 @@ module CfDeployer
     describe ".for" do
       let(:options) { double(Cli::Options, dry_run?: dry_run) }
       let(:runner) { double(CommandRunner) }
-      let(:command_logger) { double(CommandRunner::CommandLogger) }
+      let(:command_logger) { double(CommandRunner::LogOnly) }
 
       before do
         allow(CommandRunner).to receive(:bash_runner).and_return(runner)
-        allow(CommandRunner::CommandLogger).to receive(:new).and_return(command_logger)
+        allow(CommandRunner::LogOnly).to receive(:new).and_return(command_logger)
       end
 
       context "normally" do
@@ -34,9 +34,9 @@ module CfDeployer
       context "when dry-run is specified" do
         let(:dry_run) { true }
 
-        it "instantiates a CommandLogger" do
+        it "instantiates a CommandRunner::OnlyLog" do
           expect(CommandRunner.for(logger, options)).to be(command_logger)
-          expect(CommandRunner::CommandLogger).to have_received(:new).with(logger)
+          expect(CommandRunner::LogOnly).to have_received(:new).with(logger)
         end
       end
     end
@@ -85,7 +85,7 @@ module CfDeployer
     end
 
     describe "using zsh" do
-      subject(:runner) { CommandRunner.new(logger, CommandRunner::CommandSpawner.new('zsh', '-c')) }
+      subject(:runner) { CommandRunner::SpawnAndWait.new(logger, CommandRunner::SpawnOnly.new('zsh', '-c')) }
 
       it "allows the client to specify a shell" do
         expect { run('set -o pipefail 2>/dev/null') }.to raise_error(RuntimeError, /command failed/i)
