@@ -4,8 +4,8 @@ require "cf_deployer/command_runner/log_only"
 
 module CfDeployer
   module CommandRunner
-    def self.for(logger, options)
-      options.dry_run?? LogOnly.new(logger) : SpawnAndWait.new(logger)
+    def self.for(logger,dry_run)
+      SpawnAndWait.new(logger, dry_run)
     end
   end
 end

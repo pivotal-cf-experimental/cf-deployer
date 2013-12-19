@@ -39,6 +39,7 @@ module CfDeployer
                install_tokens: true,
                promote_branch: nil,
                dirty: false,
+               dry_run?: true
         ).as_null_object
       end
 
@@ -57,7 +58,7 @@ module CfDeployer
       context "instantiation of collaborators" do
         specify CommandRunner do
           cf_deploy
-          expect(CommandRunner).to have_received(:for).with(logger, options)
+          expect(CommandRunner).to have_received(:for).with(logger, options.dry_run?)
         end
 
         specify Repo do

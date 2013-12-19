@@ -19,7 +19,7 @@ module CfDeployer
           {out: @cmd_stdout}
         end
 
-        subject(:runner) { SpawnAndWait.new(logger) }
+        subject(:runner) { SpawnAndWait.new(logger, dry_run) }
 
         before do
           allow(SpawnOnly).to receive(:new).and_return(spawner)
@@ -27,19 +27,29 @@ module CfDeployer
           allow(spawner).to receive(:wait)
         end
 
-        it "logs the execution" do
-          run "ls"
+        context "when dry-run is set to true" do
+          let(:dry_run) { true }
 
-          expect(logger).to have_logged("ls")
+          it "does not spawn a command but logs it" do
+            run "echo 'hello,\n world!'"
+
+            expect(spawner).not_to have_received(:spawn)
+            expect(logger).to have_logged("echo 'hello,\n world!'")
+          end
         end
 
-        it "spawns the command and waits for it to complete" do
-          expect(spawner).to receive(:spawn).ordered
-          expect(spawner).to receive(:wait).ordered
+        context "when dry-run is set to false" do
+          let(:dry_run) { false }
 
-          run "echo 'hello,\n world!'"
+          it "logs then spawns and waits for the command" do
+            expect(spawner).to receive(:spawn).ordered
+            expect(spawner).to receive(:wait).ordered
 
-          expect(SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options)
+            run "echo 'hello,\n world!'"
+
+            expect(SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options)
+            expect(logger).to have_logged("echo 'hello,\n world!'")
+          end
         end
       end
     end

@@ -13,7 +13,6 @@ module CfDeployer
     end
 
     describe ".for" do
-      let(:options) { double(Cli::Options, dry_run?: dry_run) }
       let(:runner) { double(CommandRunner::SpawnAndWait) }
       let(:command_logger) { double(CommandRunner::LogOnly) }
 
@@ -22,22 +21,9 @@ module CfDeployer
         allow(CommandRunner::LogOnly).to receive(:new).and_return(command_logger)
       end
 
-      context "normally" do
-        let(:dry_run) { false }
-
-        it "instantiates a CommandRunner" do
-          expect(CommandRunner.for(logger, options)).to be(runner)
-          expect(CommandRunner::SpawnAndWait).to have_received(:new).with(logger)
-        end
-      end
-
-      context "when dry-run is specified" do
-        let(:dry_run) { true }
-
-        it "instantiates a CommandRunner::OnlyLog" do
-          expect(CommandRunner.for(logger, options)).to be(command_logger)
-          expect(CommandRunner::LogOnly).to have_received(:new).with(logger)
-        end
+      it "instantiates a CommandRunner::SpawnAndWait" do
+        expect(CommandRunner.for(logger, false)).to be(runner)
+        expect(CommandRunner::SpawnAndWait).to have_received(:new).with(logger, false)
       end
     end
   end
