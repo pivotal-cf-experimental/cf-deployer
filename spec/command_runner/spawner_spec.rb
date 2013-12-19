@@ -1,15 +1,15 @@
 require 'spec_helper'
-require 'cf_deployer/command_runner/spawn_only'
+require 'cf_deployer/command_runner/spawner'
 
 module CfDeployer
   class CommandRunner
-    describe SpawnOnly do
+    describe Spawner do
       let(:logger) { FakeLogger.new }
       before { @cmd_stdout, @cmd_stdin = runner_pipe }
 
       describe "#spawn & #wait" do
         def spawn_and_wait(command, options={})
-          runner = SpawnOnly.new(command, options.merge(in: @cmd_stdin, out: @cmd_stdout))
+          runner = Spawner.new(command, options.merge(in: @cmd_stdin, out: @cmd_stdout))
           runner.spawn
           yield if block_given?
           runner.wait

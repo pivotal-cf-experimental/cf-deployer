@@ -1,6 +1,5 @@
-require 'spec_helper'
-require 'cf_deployer/command_runner'
-require 'cf_deployer/command_runner/spawn_only'
+require "spec_helper"
+require "cf_deployer/command_runner"
 
 module CfDeployer
   describe CommandRunner do
@@ -13,7 +12,7 @@ module CfDeployer
     end
 
     describe "#run!" do
-      let(:spawner) { double(CommandRunner::SpawnOnly) }
+      let(:spawner) { double(CommandRunner::Spawner) }
       let(:options) do
         {out: @cmd_stdout}
       end
@@ -21,7 +20,7 @@ module CfDeployer
       subject(:runner) { CommandRunner.new(logger, dry_run) }
 
       before do
-        allow(CommandRunner::SpawnOnly).to receive(:new).and_return(spawner)
+        allow(CommandRunner::Spawner).to receive(:new).and_return(spawner)
         allow(spawner).to receive(:spawn)
         allow(spawner).to receive(:wait)
       end
@@ -46,7 +45,7 @@ module CfDeployer
 
           run "echo 'hello,\n world!'"
 
-          expect(CommandRunner::SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options)
+          expect(CommandRunner::Spawner).to have_received(:new).with("echo 'hello,\n world!'", options)
           expect(logger).to have_logged("echo 'hello,\n world!'")
         end
       end

@@ -11,7 +11,7 @@ options = cli.parse!
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
 
 begin
-  runner = CfDeployer::CommandRunner.bash_runner(logger)
+  runner = CfDeployer::CommandRunner.new(logger, options.dry_run)
 
   repo = CfDeployer::ReleaseRepo.new(logger,
                                      runner,
