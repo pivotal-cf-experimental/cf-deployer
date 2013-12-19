@@ -39,7 +39,7 @@ module CfDeployer
 
     def director_uuid
       run_bosh("target #{bosh_director}", flags: "-n")
-      YAML.load_file(@bosh_config.path)["target_uuid"]
+      YAML.load_file(@bosh_config.path)["target_uuid"] unless @options[:dry_run]
     end
 
     def set_deployment(manifest)

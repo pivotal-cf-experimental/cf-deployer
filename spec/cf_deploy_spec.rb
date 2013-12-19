@@ -18,7 +18,7 @@ module CfDeployer
 
       let(:logger) { null_object }
       let(:runner) { double(CommandRunner) }
-      let(:deployment ) { double(Deployment, :bosh_environment => "bosh-environment") }
+      let(:deployment) { double(Deployment, :bosh_environment => "bosh-environment") }
       let(:manifest_generator) { double(ReleaseManifestGenerator) }
       let(:release_repo) { double(ReleaseRepo, :sync! => nil) }
       let(:is_final_release) { false }
@@ -39,7 +39,7 @@ module CfDeployer
                install_tokens: true,
                promote_branch: nil,
                dirty: false,
-               dry_run?: true
+               dry_run: true
         ).as_null_object
       end
 
@@ -58,7 +58,7 @@ module CfDeployer
       context "instantiation of collaborators" do
         specify CommandRunner do
           cf_deploy
-          expect(CommandRunner).to have_received(:new).with(logger, options.dry_run?)
+          expect(CommandRunner).to have_received(:new).with(logger, options.dry_run)
         end
 
         specify Repo do
@@ -77,7 +77,8 @@ module CfDeployer
           cf_deploy.deploy
 
           expect(Bosh).to have_received(:new)
-                          .with(logger, runner, "bosh-environment", interactive: false, rebase: rebase, dirty: false)
+                          .with(logger, runner, "bosh-environment",
+                                interactive: false, rebase: rebase, dirty: false, dry_run: true)
         end
 
         specify ReleaseManifestGenerator do
@@ -91,7 +92,7 @@ module CfDeployer
           cf_deploy.deploy
 
           expect(TokenInstaller).to have_received(:new)
-                                              .with(logger, manifest_generator, runner)
+                                    .with(logger, manifest_generator, runner)
         end
       end
 
@@ -100,8 +101,8 @@ module CfDeployer
           cf_deploy.deploy
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
-            hash_including(rebase: false)
-          )
+                                                   hash_including(rebase: false)
+                          )
         end
       end
 
@@ -112,8 +113,8 @@ module CfDeployer
           cf_deploy.deploy
 
           expect(Bosh).to have_received(:new).with(anything, anything, anything,
-            hash_including(rebase: true)
-          )
+                                                   hash_including(rebase: true)
+                          )
         end
       end
 

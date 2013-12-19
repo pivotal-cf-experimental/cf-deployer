@@ -25,7 +25,9 @@ module CfDeployer
 
       interactive: true,
 
-      install_tokens: false
+      install_tokens: false,
+
+      dry_run: false,
     }
 
     class Options < Struct.new(*OPTIONS.keys)
@@ -42,7 +44,7 @@ module CfDeployer
       end
 
       def dry_run?
-        false
+        !!dry_run
       end
     end
 
@@ -170,6 +172,12 @@ module CfDeployer
           "--install-tokens", "Install service auth tokens. DEFAULT: #{@options.install_tokens}"
         ) do |install_tokens|
           @options.install_tokens = install_tokens
+        end
+
+        opts.on(
+          "--dry-run", "Only print the commands that would run. DEFAULT: #{@options.dry_run}"
+        ) do |dry_run|
+          @options.dry_run = dry_run
         end
       end
     end

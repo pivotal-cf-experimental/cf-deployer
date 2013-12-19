@@ -17,7 +17,7 @@ module CfDeployer
     def initialize(options, logger)
       @options = options
       @logger = logger
-      @runner = CfDeployer::CommandRunner.new(logger, options.dry_run?)
+      @runner = CfDeployer::CommandRunner.new(logger, options.dry_run)
     end
 
     def deploy
@@ -58,6 +58,7 @@ module CfDeployer
         interactive: @options.interactive,
         rebase: @options.rebase,
         dirty: @options.dirty,
+        dry_run: @options.dry_run
       )
 
       manifest_generator =

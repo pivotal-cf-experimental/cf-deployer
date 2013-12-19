@@ -293,5 +293,19 @@ module CfDeployer
         end
       end
     end
+
+    describe "#director_uuid" do
+      context "when dry-run option is passed in" do
+        before do
+          options[:dry_run] = true
+        end
+
+        it "does not load bosh config because bosh target has not actually run" do
+          expect {
+            bosh.director_uuid
+          }.not_to raise_error
+        end
+      end
+    end
   end
 end
