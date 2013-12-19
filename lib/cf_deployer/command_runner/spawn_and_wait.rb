@@ -13,9 +13,7 @@ module CfDeployer
 
         spawn_opts = options.dup
 
-        env = spawn_opts.delete(:environment) || {}
-
-        pid = @spawner.spawn(env, command, spawn_opts)
+        pid = @spawner.spawn(command, spawn_opts)
 
         yield if block_given?
 

@@ -7,7 +7,9 @@ module CfDeployer
         @shell_args = shell_args
       end
 
-      def spawn(env, command, spawn_opts)
+      def spawn(command, spawn_opts)
+        env = spawn_opts.delete(:environment) || {}
+
         Process.spawn(env, *@shell_args, command, spawn_opts)
       rescue => e
         raise CommandFailed, "Spawning command failed: #{e.message}\n#{e.backtrace}"
