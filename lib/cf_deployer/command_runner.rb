@@ -1,11 +1,18 @@
-require "cf_deployer/command_runner/spawn_only"
-require "cf_deployer/command_runner/spawn_and_wait"
-require "cf_deployer/command_runner/log_only"
-
 module CfDeployer
-  module CommandRunner
-    def self.for(logger,dry_run)
-      SpawnAndWait.new(logger, dry_run)
+  class CommandRunner
+    def initialize(logger, dry_run)
+      @logger = logger
+      @dry_run = dry_run
+    end
+
+    def run!(command, options = {})
+      @logger.log_execution(command)
+
+      unless @dry_run
+        spawner = SpawnOnly.new(command, options)
+        spawner.spawn
+        spawner.wait
+      end
     end
   end
 end

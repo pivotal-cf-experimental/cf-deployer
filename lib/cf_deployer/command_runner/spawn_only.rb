@@ -1,7 +1,7 @@
 require "cf_deployer/command_runner/command_failed"
 
 module CfDeployer
-  module CommandRunner
+  class CommandRunner
     class SpawnOnly
       def initialize(command, options)
         @command = command

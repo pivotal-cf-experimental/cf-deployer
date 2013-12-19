@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'cf_deployer/command_runner/spawn_only'
 
 module CfDeployer
-  module CommandRunner
+  class CommandRunner
     describe SpawnOnly do
       let(:logger) { FakeLogger.new }
       before { @cmd_stdout, @cmd_stdin = runner_pipe }
