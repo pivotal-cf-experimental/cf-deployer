@@ -7,7 +7,7 @@ module CfDeployer
 
       def run!(command, options = {})
         @logger.log_execution(command)
-        spawner = SpawnOnly.new(command, options, "bash", "-c")
+        spawner = SpawnOnly.new(command, options)
         spawner.spawn
 
         yield if block_given?

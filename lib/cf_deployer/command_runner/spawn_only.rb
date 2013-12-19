@@ -3,15 +3,14 @@ require "cf_deployer/command_runner/command_failed"
 module CfDeployer
   module CommandRunner
     class SpawnOnly
-      def initialize(command, options, *shell_args)
+      def initialize(command, options)
         @command = command
         @options = options
-        @shell_args = shell_args
         @env = @options.delete(:environment) || {}
       end
 
       def spawn
-        @pid = Process.spawn(@env, *@shell_args, @command, @options)
+        @pid = Process.spawn(@env, "bash", "-c", @command, @options)
       rescue => e
         raise CommandFailed, "Spawning command failed: #{e.message}\n#{e.backtrace}"
       end

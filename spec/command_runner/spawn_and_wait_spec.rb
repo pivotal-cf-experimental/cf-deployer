@@ -39,7 +39,7 @@ module CfDeployer
 
           run "echo 'hello,\n world!'"
 
-          expect(SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options, "bash", "-c")
+          expect(SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options)
         end
       end
     end
