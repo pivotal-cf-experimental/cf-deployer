@@ -46,6 +46,7 @@ module CfDeployer
 
       it "allows the client to specify a shell" do
         run('set -o pipefail && echo "hi"')
+
         expect(output).to say("hi")
       end
     end
