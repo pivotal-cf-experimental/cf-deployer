@@ -5,7 +5,7 @@ require "cf_deployer/command_runner/log_only"
 module CfDeployer
   module CommandRunner
     def self.bash_runner(logger)
-      SpawnAndWait.new(logger, SpawnOnly.new("bash", "-c"))
+      SpawnAndWait.new(logger)
     end
 
     def self.for(logger, options)

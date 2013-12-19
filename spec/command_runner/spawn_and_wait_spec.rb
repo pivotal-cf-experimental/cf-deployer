@@ -15,16 +15,16 @@ module CfDeployer
 
       describe "#run!" do
         let(:spawner) { double(SpawnOnly) }
-        let(:pid) { 'fake-pid' }
         let(:options) do
           {out: @cmd_stdout}
         end
 
-        subject(:runner) { SpawnAndWait.new(logger, spawner) }
+        subject(:runner) { SpawnAndWait.new(logger) }
 
         before do
-          allow(spawner).to receive(:spawn).and_return(pid)
-          allow(Process).to receive(:wait)
+          allow(SpawnOnly).to receive(:new).and_return(spawner)
+          allow(spawner).to receive(:spawn)
+          allow(spawner).to receive(:wait)
         end
 
         it "logs the execution" do
@@ -34,22 +34,12 @@ module CfDeployer
         end
 
         it "spawns the command and waits for it to complete" do
+          expect(spawner).to receive(:spawn).ordered
+          expect(spawner).to receive(:wait).ordered
+
           run "echo 'hello,\n world!'"
 
-          expect(spawner).to have_received(:spawn).with("echo 'hello,\n world!'", options)
-          expect(Process).to have_received(:wait).with(pid)
-        end
-
-        context "when the command fails" do
-          it "raises an error and print the standard error" do
-            expect(Process).to receive(:wait).and_return do
-              system('fail')
-            end
-
-            expect {
-              run "notacommand 2>/dev/null"
-            }.to raise_error(RuntimeError, /command failed.*notacommand/i)
-          end
+          expect(SpawnOnly).to have_received(:new).with("echo 'hello,\n world!'", options, "bash", "-c")
         end
       end
     end
