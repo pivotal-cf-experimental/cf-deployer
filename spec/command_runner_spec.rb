@@ -14,11 +14,11 @@ module CfDeployer
 
     describe ".for" do
       let(:options) { double(Cli::Options, dry_run?: dry_run) }
-      let(:runner) { double(CommandRunner) }
+      let(:runner) { double(CommandRunner::SpawnAndWait) }
       let(:command_logger) { double(CommandRunner::LogOnly) }
 
       before do
-        allow(CommandRunner).to receive(:bash_runner).and_return(runner)
+        allow(CommandRunner::SpawnAndWait).to receive(:new).and_return(runner)
         allow(CommandRunner::LogOnly).to receive(:new).and_return(command_logger)
       end
 
@@ -27,7 +27,7 @@ module CfDeployer
 
         it "instantiates a CommandRunner" do
           expect(CommandRunner.for(logger, options)).to be(runner)
-          expect(CommandRunner).to have_received(:bash_runner).with(logger)
+          expect(CommandRunner::SpawnAndWait).to have_received(:new).with(logger)
         end
       end
 
@@ -38,16 +38,6 @@ module CfDeployer
           expect(CommandRunner.for(logger, options)).to be(command_logger)
           expect(CommandRunner::LogOnly).to have_received(:new).with(logger)
         end
-      end
-    end
-
-    describe ".bash_runner" do
-      subject(:runner) { CommandRunner.bash_runner(logger) }
-
-      it "allows the client to specify a shell" do
-        run('set -o pipefail && echo "hi"')
-
-        expect(output).to say("hi")
       end
     end
   end
