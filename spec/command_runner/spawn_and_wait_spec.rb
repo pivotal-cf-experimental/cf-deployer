@@ -1,6 +1,6 @@
 require 'spec_helper'
-require 'cf_deployer/command_runner'
-#require 'cf_deployer/command_runner/spawn_and_wait'
+require 'cf_deployer/command_runner/spawn_and_wait'
+require 'cf_deployer/command_runner/spawn_only'
 
 module CfDeployer
   module CommandRunner
@@ -9,50 +9,47 @@ module CfDeployer
 
       before { @cmd_stdout, @cmd_stdin = runner_pipe }
 
-      def run(command, options = {}, &blk)
-        runner.run!(command, options.merge(out: @cmd_stdout, in: @cmd_stdin), &blk)
+      def run(command, &blk)
+        runner.run!(command, options, &blk)
       end
 
       describe "#run!" do
-        subject(:runner) { CommandRunner.bash_runner(logger) }
-
-        it "runs a command" do
-          run "echo 'hello,\n world!'"
-          expect(output).to say("hello,\n world!\n")
+        let(:spawner) { double(SpawnOnly) }
+        let(:pid) { 'fake-pid' }
+        let(:options) do
+          {out: @cmd_stdout}
         end
 
-        context "when given environment variables" do
-          it "executes the command without the caller's environment" do
-            run("echo ${FOO:-nope}", environment: {"FOO" => "bar"})
-            expect(output).to say("bar")
-          end
+        subject(:runner) { SpawnAndWait.new(logger, spawner) }
 
-          it "does not pollute the caller's environment" do
-            expect {
-              run("echo $FOO", environment: {"FOO" => "bar"})
-            }.to_not change { ENV["FOO"] }.from(nil)
-          end
-        end
-
-        it "reads standard input" do
-          run "read CAT; echo $CAT" do
-            stdin.puts "dog"
-          end
-
-          expect(output).to say("dog")
-        end
-
-        context "when the command fails" do
-          it "raises an error and print the standard error" do
-            expect {
-              run "notacommand 2>/dev/null"
-            }.to raise_error(RuntimeError, /command failed.*notacommand/i)
-          end
+        before do
+          allow(spawner).to receive(:spawn).and_return(pid)
+          allow(Process).to receive(:wait)
         end
 
         it "logs the execution" do
           run "ls"
+
           expect(logger).to have_logged("ls")
+        end
+
+        it "spawns the command and waits for it to complete" do
+          run "echo 'hello,\n world!'"
+
+          expect(spawner).to have_received(:spawn).with("echo 'hello,\n world!'", options)
+          expect(Process).to have_received(:wait).with(pid)
+        end
+
+        context "when the command fails" do
+          it "raises an error and print the standard error" do
+            expect(Process).to receive(:wait).and_return do
+              system('fail')
+            end
+
+            expect {
+              run "notacommand 2>/dev/null"
+            }.to raise_error(RuntimeError, /command failed.*notacommand/i)
+          end
         end
       end
     end
