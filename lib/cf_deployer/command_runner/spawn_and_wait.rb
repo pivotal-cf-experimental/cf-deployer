@@ -9,9 +9,6 @@ module CfDeployer
         @logger.log_execution(command)
         spawner = SpawnOnly.new(command, options)
         spawner.spawn
-
-        yield if block_given?
-
         spawner.wait
       end
     end
