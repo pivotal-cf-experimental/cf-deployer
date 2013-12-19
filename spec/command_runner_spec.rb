@@ -41,58 +41,7 @@ module CfDeployer
       end
     end
 
-    describe "#run!" do
-      subject(:runner) { described_class.bash_runner(logger) }
-
-      it "runs a command" do
-        run "echo 'hello,\n world!'"
-        expect(output).to say("hello,\n world!\n")
-      end
-
-      context "when given environment variables" do
-        it "executes the command without the caller's environment" do
-          run("echo ${FOO:-nope}", environment: { "FOO" => "bar" })
-          expect(output).to say("bar")
-        end
-
-        it "does not pollute the caller's environment" do
-          expect {
-            run("echo $FOO", environment: { "FOO" => "bar" })
-          }.to_not change { ENV["FOO"] }.from(nil)
-        end
-      end
-
-      it "reads standard input" do
-        run "read CAT; echo $CAT" do
-          stdin.puts "dog"
-        end
-
-        expect(output).to say("dog")
-      end
-
-      context "when the command fails" do
-        it "raises an error and print the standard error" do
-          expect {
-            run "notacommand 2>/dev/null"
-          }.to raise_error(RuntimeError, /command failed.*notacommand/i)
-        end
-      end
-
-      it "logs the execution" do
-        run "ls"
-        expect(logger).to have_logged("ls")
-      end
-    end
-
-    describe "using zsh" do
-      subject(:runner) { CommandRunner::SpawnAndWait.new(logger, CommandRunner::SpawnOnly.new('zsh', '-c')) }
-
-      it "allows the client to specify a shell" do
-        expect { run('set -o pipefail 2>/dev/null') }.to raise_error(RuntimeError, /command failed/i)
-      end
-    end
-
-    describe "using bash" do
+    describe ".bash_runner" do
       subject(:runner) { CommandRunner.bash_runner(logger) }
 
       it "allows the client to specify a shell" do
