@@ -18,5 +18,10 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "dogapi", "~> 1.9"
   s.add_runtime_dependency "bosh_cli", "~> 1.5.0.pre.3"
-  s.add_runtime_dependency 'cf', '~> 5.2.2'
+  s.add_runtime_dependency "cf", "~> 5.2.2"
+
+  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "blue-shell"
+  s.add_development_dependency "timecop"
 end
