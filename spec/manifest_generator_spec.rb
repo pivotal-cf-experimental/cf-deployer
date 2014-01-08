@@ -15,13 +15,13 @@ module CfDeployer
     end
 
     describe "#generate!" do
-      it "installs and updates spiff" do
+      it "installs spiff" do
         subject.generate!(["/woah", "/stub/files"])
 
         gospace = File.join(Dir.pwd, "gospace")
 
         expect(runner).to have_executed_serially(
-          ["go get -u -v github.com/cloudfoundry-incubator/spiff", environment: { "GOPATH" => gospace }],
+          ["go get -v github.com/cloudfoundry-incubator/spiff", environment: { "GOPATH" => gospace }],
           [ "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml",
             environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
           ]

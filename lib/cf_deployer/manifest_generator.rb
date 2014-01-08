@@ -14,7 +14,7 @@ module CfDeployer
       gospace = File.expand_path("./gospace")
 
       FileUtils.mkdir_p(gospace)
-      @runner.run! "go get -u -v github.com/cloudfoundry-incubator/spiff",
+      @runner.run! "go get -v github.com/cloudfoundry-incubator/spiff",
         environment: { "GOPATH" => gospace }
 
       @runner.run! "#{@release.path}/generate_deployment_manifest #{@infrastructure} #{stub_files.join(" ")} > #{@destination}",
