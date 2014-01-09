@@ -25,14 +25,17 @@ describe CfDeployer::Logger do
 
     it "prints the timestamp on the right" do
       output.read_to_end
-      expect(output.output).to include("# #{Time.now}")
+      expect(output.output).to end_with("# #{Time.now}\n")
     end
 
     context "when the message is longer than the columns" do
-      before { capture_log(:message, "x" * 90) }
+      let(:log_message) { "x" * 90 }
+
+      before { capture_log(:message, log_message) }
 
       it "has padding between the message and the timestamp" do
-        expect(output).to say(/x{90}    # #{Time.now}\n?$/)
+        output.read_to_end
+        expect(output.output).to end_with("#{log_message}    # #{Time.now}\n")
       end
     end
   end
@@ -45,7 +48,8 @@ describe CfDeployer::Logger do
     end
 
     it "prints the timestamp as a comment on the right" do
-      expect(output).to say(/# #{Time.now}\n?$/)
+      output.read_to_end
+      expect(output.output).to end_with("# #{Time.now}\n")
     end
   end
 
