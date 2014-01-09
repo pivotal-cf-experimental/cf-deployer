@@ -25,7 +25,7 @@ describe CfDeployer::Logger do
 
     it "prints the timestamp on the right" do
       output.read_to_end
-      expect(output.output).to match(/# #{Time.now}\n?$/)
+      expect(output.output).to include("# #{Time.now}")
     end
 
     context "when the message is longer than the columns" do
