@@ -88,7 +88,7 @@ module CfDeployer
             "cd #{repo_path} && git checkout some-ref",
             "cd #{repo_path} && git clean --force --force -d",
             "cd #{repo_path} && git submodule sync --recursive",
-            "cd #{repo_path} && git submodule update --init --recursive",
+            "cd #{repo_path} && git submodule status | awk '{print $2}' | xargs -P10 -n1 git submodule update --init --recursive",
             "cd #{repo_path} && git submodule foreach --recursive git clean --force --force -d"
           )
         end

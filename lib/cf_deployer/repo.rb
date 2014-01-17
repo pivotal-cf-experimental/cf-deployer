@@ -61,7 +61,7 @@ module CfDeployer
       run_git! "checkout #{@ref}"
       run_git! "clean --force --force -d"
       run_git! "submodule sync --recursive"
-      run_git! "submodule update --init --recursive"
+      run_git! "submodule status | awk '{print $2}' | xargs -P10 -n1 git submodule update --init --recursive"
       run_git! "submodule foreach --recursive git clean --force --force -d"
     end
 
