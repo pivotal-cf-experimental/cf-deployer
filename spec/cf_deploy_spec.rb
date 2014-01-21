@@ -18,12 +18,14 @@ module CfDeployer
 
       let(:logger) { null_object }
       let(:runner) { double(CommandRunner) }
-      let(:deployment) { double(Deployment, :bosh_environment => "bosh-environment") }
+      let(:bosh_environment) { {} }
+      let(:deployment) { double(Deployment, :bosh_environment => bosh_environment) }
       let(:manifest_generator) { double(ReleaseManifestGenerator) }
       let(:release_repo) { double(ReleaseRepo, :sync! => nil) }
       let(:is_final_release) { false }
       let(:rebase) { false }
       let(:infrastructure) { "aws" }
+      let(:promote_branch) { nil }
       let(:options) do
         double(:options,
                rebase: rebase,
@@ -37,11 +39,12 @@ module CfDeployer
                infrastructure: infrastructure,
                final_release: is_final_release,
                install_tokens: true,
-               promote_branch: nil,
+               promote_branch: promote_branch,
                dirty: false,
                dry_run: true
         ).as_null_object
       end
+      let(:deployment_strategy) { null_object }
 
       before do
         allow(Repo).to receive(:new).and_return(null_object)
@@ -49,7 +52,7 @@ module CfDeployer
         allow(Deployment).to receive(:new).and_return(deployment)
         allow(Bosh).to receive(:new).and_return(null_object)
         allow(ReleaseManifestGenerator).to receive(:new).and_return(manifest_generator)
-        allow(DevDeploymentStrategy).to receive(:new).and_return(null_object)
+        allow(DevDeploymentStrategy).to receive(:new).and_return(deployment_strategy)
         allow(DatadogEmitter).to receive(:new).and_return(null_object)
         allow(TokenInstaller).to receive(:new).and_return(null_object)
         allow(CommandRunner).to receive(:new).and_return(runner)
@@ -77,7 +80,7 @@ module CfDeployer
           cf_deploy.deploy
 
           expect(Bosh).to have_received(:new)
-                          .with(logger, runner, "bosh-environment",
+                          .with(logger, runner, bosh_environment,
                                 interactive: false, rebase: rebase, dirty: false, dry_run: true)
         end
 
@@ -133,6 +136,37 @@ module CfDeployer
         it "uses warden deployment strategy" do
           expect(WardenDeploymentStrategy).to receive(:new).and_return(null_object)
           cf_deploy.deploy
+        end
+      end
+
+      context "when the bosh environment specifies the datadog environment variables" do
+        let(:fake_datadog_emitter) do
+          double(
+            pre_deploy: nil,
+            post_deploy: nil,
+          )
+        end
+
+        let(:bosh_environment) do
+          {"DATADOG_API_KEY" => "api", "DATADOG_APPLICATION_KEY" => "application"}
+        end
+
+        before do
+          DatadogEmitter.stub(:new).and_return(fake_datadog_emitter)
+        end
+
+        it "installs the datadog hooks" do
+          cf_deploy.deploy
+          expect(deployment_strategy).to have_received(:install_hook).with(fake_datadog_emitter)
+        end
+      end
+
+      context "when the promote_branch option is specified" do
+        let(:promote_branch) { "cool_branch" }
+
+        it "promotes to the branch" do
+          cf_deploy.deploy
+          expect(deployment_strategy).to have_received(:promote_to!).with(promote_branch)
         end
       end
     end
