@@ -1,5 +1,5 @@
 require 'yaml'
-require 'cf_deployer/manifest'
+require 'cf_deployer/release_manifest'
 
 module CfDeployer
   class ReleaseManifestGenerator

@@ -1,5 +1,5 @@
 require "spec_helper"
-require "cf_deployer/manifest"
+require "cf_deployer/release_manifest"
 
 module CfDeployer
   describe ReleaseManifest do

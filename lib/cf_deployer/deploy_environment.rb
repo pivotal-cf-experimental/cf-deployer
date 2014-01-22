@@ -1,7 +1,7 @@
 require "cf_deployer/release_repo"
 require "cf_deployer/deployment"
 require "cf_deployer/bosh"
-require "cf_deployer/manifest_generator"
+require "cf_deployer/release_manifest_generator"
 require "cf_deployer/dev_deployment_strategy"
 require "cf_deployer/final_deployment_strategy"
 require "cf_deployer/command_runner"

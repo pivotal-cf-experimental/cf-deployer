@@ -3,7 +3,7 @@ require "json"
 
 require "spec_helper"
 require "cf_deployer/deployment"
-require "cf_deployer/manifest_generator"
+require "cf_deployer/release_manifest_generator"
 require "cf_deployer/deployment_strategy"
 
 module CfDeployer
