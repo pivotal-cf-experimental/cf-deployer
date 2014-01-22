@@ -36,7 +36,7 @@ module CfDeployer
     end
 
     def bosh_command(command)
-      [ /set -o pipefail && bosh #{bosh_flags} #{command}/,
+      [ /set -o pipefail &&  bosh #{bosh_flags} #{command}/,
         command_options_with_transient_bosh_config
       ]
     end

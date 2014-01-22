@@ -6,22 +6,11 @@ class CommandExecutionMatcher
   def matches?(runner)
     @actual_commands = runner.iran
 
-    actual_commands = @actual_commands.dup
+    ranges_with_initial_match = @actual_commands.each_with_index.map do |actual, i|
+      i...(i+@expected_commands.length) if runner.command_matches?(@expected_commands[0], actual)
+    end.compact
 
-    matched = false
-
-    @expected_commands.each do |expected|
-      return false if actual_commands.empty?
-
-      while actual = actual_commands.shift
-        if runner.command_matches?(expected, actual)
-          matched = true
-          break
-        end
-      end
-    end
-
-    matched
+    ranges_with_initial_match.any? { |range| match_range(runner, @expected_commands, @actual_commands, range) }
   end
 
   def failure_message
@@ -44,6 +33,12 @@ MSG
   end
 
   private
+
+  def match_range(runner, expected_commands, actual_commands, range)
+    expected_commands.zip(actual_commands[range]).all? do |expected, actual|
+      runner.command_matches?(expected, actual)
+    end
+  end
 
   def pretty_command_list(commands)
     commands.collect do |c|
