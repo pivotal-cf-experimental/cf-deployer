@@ -42,5 +42,26 @@ module CfDeployer
         expect(result).to eq("#{Dir.pwd}/new_deployment.yml")
       end
     end
+
+    describe "overrides" do
+      it "includes overrides as the last stub_file" do
+        real_temp_file = Tempfile.new("overrides")
+        Tempfile.stub(:new).and_return(real_temp_file)
+        real_temp_file.stub(:unlink)
+
+        overrides = {"all" => {"your" => "overrides"}, "are" => "present"}
+        subject.overrides.merge!(overrides)
+
+        subject.generate!(["/woah", "/stub/files"])
+
+        expect(Tempfile).to have_received(:new).with("overrides")
+        expect(YAML.load_file(real_temp_file)).to eq(overrides)
+
+        expect(runner).to have_executed_serially(
+                            "./repos/cf-release/generate_deployment_manifest aws /woah /stub/files #{real_temp_file.path} > new_deployment.yml",
+                          )
+        expect(real_temp_file).to have_received(:unlink)
+      end
+    end
   end
 end

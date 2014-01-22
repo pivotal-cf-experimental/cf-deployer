@@ -3,15 +3,17 @@
 
 require "cf_deployer/cf_deploy"
 require "cf_deployer/logger"
+require "cf_deployer/deploy_environment"
 
 cli = CfDeployer::Cli.new(ARGV)
 
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
-cf_deploy = CfDeployer::CfDeploy.new(cli.parse!, logger)
 
 begin
+  options = cli.parse!
   cli.validate!
-  cf_deploy.deploy
+  deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
+  CfDeployer::CfDeploy.new(deploy_env, logger).deploy
 rescue => e
   logger.log_exception e
   exit 1

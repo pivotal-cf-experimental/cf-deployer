@@ -2,8 +2,7 @@ require "cf_deployer/hooks/hook"
 
 module CfDeployer
   class TokenInstaller < Hook
-    def initialize(logger, manifest_generator, runner)
-      @logger = logger
+    def initialize(manifest_generator, runner)
       @manifest_generator = manifest_generator
       @runner = runner
     end

@@ -6,13 +6,12 @@ module CfDeployer
   describe TokenInstaller do
     let(:generated_manifest) { File.open(File.expand_path('../../fixtures/appdirect-manifest.yml', __FILE__)) }
 
-    let(:logger) { FakeLogger.new }
     let(:runner) { FakeCommandRunner.new }
 
     let(:release) { FakeReleaseRepo.new './repos/appdirect-gateway' }
     let(:manifest_generator) { ReleaseManifestGenerator.new runner, release, 'doesnt-matter', generated_manifest.path }
 
-    subject { described_class.new(logger, manifest_generator, runner) }
+    subject { described_class.new(manifest_generator, runner) }
 
     describe '#post_deploy' do
       it 'registers tokens with the cloud controller' do
