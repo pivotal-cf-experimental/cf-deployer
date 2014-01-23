@@ -111,9 +111,7 @@ module CfDeployer
         it "overrides the director_uuid in the manifest" do
           described_class.new(options, logger)
           expected_overrides = {
-            "properties" => {
-              "director_uuid" => director_uuid
-            }
+            "director_uuid" => director_uuid
           }
           expect(manifest_generator.overrides).to eq(expected_overrides)
         end

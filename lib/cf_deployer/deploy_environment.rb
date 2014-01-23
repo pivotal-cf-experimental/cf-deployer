@@ -75,8 +75,7 @@ module CfDeployer
 
       needs_explicit_director_uuid = @options.infrastructure == "warden"
       if needs_explicit_director_uuid
-        manifest_generator.overrides["properties"] ||= {}
-        manifest_generator.overrides["properties"]["director_uuid"] = bosh.director_uuid
+        manifest_generator.overrides["director_uuid"] = bosh.director_uuid
       end
 
       if @options.manifest_domain
