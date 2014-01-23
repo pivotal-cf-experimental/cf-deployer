@@ -86,6 +86,7 @@ describe CfDeployer::Cli do
       expect(opts.interactive).to eq(true)
       expect(opts.install_tokens).to eq(false)
       expect(opts.dry_run).to eq(false)
+      expect(opts.manifest_domain).to be_nil
     end
 
     describe "overridden, non-required options" do
@@ -151,6 +152,14 @@ describe CfDeployer::Cli do
         expect(cli).to validate_successfully
         opts = cli.options
         expect(opts.dry_run).to eq(true)
+      end
+
+      it "exposes overridden --manifest-domain" do
+        args << "--manifest-domain=example.com"
+
+        expect(cli).to validate_successfully
+        opts = cli.options
+        expect(opts.manifest_domain).to eq("example.com")
       end
     end
   end

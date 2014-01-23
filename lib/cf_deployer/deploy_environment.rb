@@ -79,6 +79,11 @@ module CfDeployer
         manifest_generator.overrides["properties"]["director_uuid"] = bosh.director_uuid
       end
 
+      if @options.manifest_domain
+        manifest_generator.overrides["properties"] ||= {}
+        manifest_generator.overrides["properties"]["domain"] = @options.manifest_domain
+      end
+
       @strategy = strategy_type.new(bosh, deployment, manifest_generator, releases)
     end
   end

@@ -30,6 +30,8 @@ module CfDeployer
       install_tokens: false,
 
       dry_run: false,
+
+      manifest_domain: nil
     }
 
     class Options < Struct.new(*OPTIONS.keys); end
@@ -172,6 +174,12 @@ module CfDeployer
           "--dry-run", "Only print the commands that would run. DEFAULT: #{@options.dry_run}"
         ) do |dry_run|
           @options.dry_run = dry_run
+        end
+
+        opts.on(
+          "--manifest-domain DOMAIN", "Override properties.domain in the generated manifest. DEFAULT: #{@options.manifest_domain}"
+        ) do |manifest_domain|
+          @options.manifest_domain = manifest_domain
         end
       end
     end

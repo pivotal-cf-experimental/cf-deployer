@@ -18,6 +18,7 @@ module CfDeployer
     let(:release_repo) { double(:release_repo).as_null_object }
     let(:manifest_generator) { double(:manifest_generator, overrides: {}) }
     let(:bosh) { double(:bosh, director_uuid: director_uuid) }
+    let(:manifest_domain) { nil }
 
     let(:options) do
       double(:options,
@@ -34,7 +35,8 @@ module CfDeployer
              install_tokens: true,
              promote_branch: promote_branch,
              dirty: false,
-             dry_run: true
+             dry_run: true,
+             manifest_domain: manifest_domain
       ).as_null_object
     end
 
@@ -49,8 +51,6 @@ module CfDeployer
       allow(Bosh).to receive(:new).and_return(bosh)
       allow(ReleaseManifestGenerator).to receive(:new).and_return(manifest_generator)
       allow(DevDeploymentStrategy).to receive(:new).and_return(double(:deployment_strategy).as_null_object)
-      allow(DatadogEmitter).to receive(:new).and_return(double(:datadog_emitter).as_null_object)
-      allow(TokenInstaller).to receive(:new).and_return(double(:token_emitter).as_null_object)
       allow(CommandRunner).to receive(:new).and_return(runner)
     end
 
@@ -121,6 +121,26 @@ module CfDeployer
 
       context "when the infrastructure is not warden" do
         it "does not apply any overrides" do
+          described_class.new(options, logger)
+          expect(manifest_generator.overrides).to eq({})
+        end
+      end
+
+      context "when the manifest domain was specified at the CLI" do
+        let(:manifest_domain) { "example.com" }
+        it "overrides the domain in the manifest" do
+          described_class.new(options, logger)
+          expected_overrides = {
+            "properties" => {
+              "domain" => manifest_domain
+            }
+          }
+          expect(manifest_generator.overrides).to eq(expected_overrides)
+        end
+      end
+
+      context "when the manifest domain was not specified at the CLI" do
+        it "does not apply the domain override" do
           described_class.new(options, logger)
           expect(manifest_generator.overrides).to eq({})
         end
