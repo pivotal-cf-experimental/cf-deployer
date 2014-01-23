@@ -2,6 +2,7 @@
 # vim: ft=ruby
 
 require "cf_deployer/cf_deploy"
+require "cf_deployer/cli"
 require "cf_deployer/logger"
 require "cf_deployer/deploy_environment"
 
@@ -13,7 +14,7 @@ begin
   options = cli.parse!
   cli.validate!
   deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
-  CfDeployer::CfDeploy.new(deploy_env, logger).deploy
+  CfDeployer::CfDeploy.new(deploy_env, logger).deploy!
 rescue => e
   logger.log_exception e
   exit 1
