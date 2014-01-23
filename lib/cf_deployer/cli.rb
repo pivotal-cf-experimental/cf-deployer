@@ -2,21 +2,23 @@ require 'optparse'
 
 module CfDeployer
   class Cli
+    class OptionError < RuntimeError; end
+
     VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
 
     OPTIONS = {
-      release_names: [],
       release_repos: [],
+      release_names: [],
       release_refs: [],
 
-      deployment_name: nil,
       deployments_repo: nil,
+      deployment_name: nil,
+
+      infrastructure: nil,
 
       repos_path: "./repos",
 
       dirty: false,
-
-      infrastructure: nil,
 
       promote_branch: nil,
 
@@ -30,30 +32,17 @@ module CfDeployer
       dry_run: false,
     }
 
-    class Options < Struct.new(*OPTIONS.keys)
-      def tokens?
-        !!tokens
-      end
+    class Options < Struct.new(*OPTIONS.keys); end
 
-      def interactive?
-        !!interactive
-      end
-
-      def rebase?
-        !!rebase
-      end
-
-      def dry_run?
-        !!dry_run
-      end
-    end
+    attr_reader :options
 
     def initialize(args)
       @args = args
       @options = Options.new
 
       OPTIONS.each do |opt, default|
-        @options.send(:"#{opt}=", default)
+        val = default.dup rescue default
+        @options.send(:"#{opt}=", val)
       end
     end
 
@@ -63,49 +52,54 @@ module CfDeployer
     end
 
     def validate!
-      if @options.release_repos.nil?
-        fail "at least one --release-repo is required"
+      if @options.release_repos.empty?
+        die "at least one --release-repo is required"
       end
 
       if @options.release_names.empty?
-        fail "at least one --release-name is required"
+        die "at least one --release-name is required"
       end
 
       if @options.release_repos.size != @options.release_names.size
-        fail "missing --release-repo and --release-name pair"
+        die "missing --release-repo and --release-name pair"
       end
 
       if @options.deployments_repo.nil?
-        fail "--deployments-repo is required"
+        die "--deployments-repo is required"
       end
 
       if @options.deployment_name.nil?
-        fail "--deployment-name is required"
+        die "--deployment-name is required"
       end
 
       unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
-        fail "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
+        die "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
       end
 
-      if !@options.dirty && @options.release_refs.nil?
-        fail "--release-ref or --dirty is required"
+      if !@options.dirty && @options.release_refs.empty?
+        # CLI behavior WRT release refs doesn't seem to match release ref requirements in deploy_environment.rb
+        die "--release-ref or --dirty is required"
       end
     end
 
     private
 
+    def die(msg)
+      raise OptionError.new(msg)
+    end
+
     def parser
       @parser ||= OptionParser.new do |opts|
-        opts.on(
-          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
-        ) do |release_name|
-          @options.release_names << release_name
-        end
-
         opts.on(
           "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
         ) do |release_repo|
           @options.release_repos << release_repo
+        end
+
+        opts.on(
+          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
+        ) do |release_name|
+          @options.release_names << release_name
         end
 
         opts.on(
@@ -115,21 +109,15 @@ module CfDeployer
         end
 
         opts.on(
-          "--deployment-name DEPLOYMENT_NAME", "Name of environment to deploy to."
-        ) do |deployment_name|
-          @options.deployment_name = deployment_name
-        end
-
-        opts.on(
-          "--promote-to BRANCH", "Branch to push to after deploying (e.g. release-candidate)."
-        ) do |promote_branch|
-          @options.promote_branch = promote_branch
-        end
-
-        opts.on(
           "--deployments-repo DEPLOYMENTS_REPO_URI", "URI to the repository containing the deployment."
         ) do |deployments_repo|
           @options.deployments_repo = deployments_repo
+        end
+
+        opts.on(
+          "--deployment-name DEPLOYMENT_NAME", "Name of environment to deploy to."
+        ) do |deployment_name|
+          @options.deployment_name = deployment_name
         end
 
         opts.on(
@@ -139,21 +127,21 @@ module CfDeployer
         end
 
         opts.on(
-          "--non-interactive", "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
-        ) do |interactive|
-          @options.interactive = !interactive
-        end
-
-        opts.on(
-          "--rebase", "Upload the BOSH release to the director using the --rebase option. DEFAULT: #{@options.rebase}"
-        ) do |rebase|
-          @options.rebase = !!rebase
-        end
-
-        opts.on(
           "--repos REPOS_PATH", "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
         ) do |repos_path|
           @options.repos_path = repos_path
+        end
+
+        opts.on(
+          "--dirty", "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
+        ) do |dirty|
+          @options.dirty = dirty
+        end
+
+        opts.on(
+          "--promote-to BRANCH", "Branch to push to after deploying (e.g. release-candidate)."
+        ) do |promote_branch|
+          @options.promote_branch = promote_branch
         end
 
         opts.on(
@@ -163,9 +151,15 @@ module CfDeployer
         end
 
         opts.on(
-          "--dirty", "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
-        ) do |dirty|
-          @options.dirty = dirty
+          "--rebase", "Upload the BOSH release to the director using the --rebase option. DEFAULT: #{@options.rebase}"
+        ) do |rebase|
+          @options.rebase = !!rebase
+        end
+
+        opts.on(
+          "--non-interactive", "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
+        ) do |interactive|
+          @options.interactive = !interactive
         end
 
         opts.on(
