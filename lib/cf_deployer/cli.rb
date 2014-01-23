@@ -182,6 +182,8 @@ module CfDeployer
           @options.manifest_domain = manifest_domain
         end
       end
+      @parser.version = CfDeployer::VERSION
+      @parser
     end
   end
 end

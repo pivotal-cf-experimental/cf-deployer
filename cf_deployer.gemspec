@@ -1,8 +1,9 @@
 $:.push File.expand_path("../lib", __FILE__)
+require 'cf_deployer/version'
 
 Gem::Specification.new do |s|
   s.name        = "cf_deployer"
-  s.version     = "0.3.0"
+  s.version     = CfDeployer::VERSION
   s.authors     = ["Cloud Foundry Team"]
   s.email       = %w(cf-eng@pivotallabs.com)
   s.homepage    = "http://github.com/cloudfoundry/cf-deployer"
