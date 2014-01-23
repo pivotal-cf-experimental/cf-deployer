@@ -86,7 +86,6 @@ describe CfDeployer::Cli do
       expect(opts.interactive).to eq(true)
       expect(opts.install_tokens).to eq(false)
       expect(opts.dry_run).to eq(false)
-      expect(opts.)
     end
 
     describe "overridden, non-required options" do
