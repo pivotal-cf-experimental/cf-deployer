@@ -1,4 +1,5 @@
 require 'optparse'
+require 'cf_deployer/version'
 
 module CfDeployer
   class Cli
