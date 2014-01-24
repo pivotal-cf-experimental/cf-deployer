@@ -14,6 +14,7 @@ cf_deploy = CanaryBreeder::Breeder.new(cli.parse!)
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
 
 begin
+  options = cli.parse!
   cli.validate!
 
   runner = CfDeployer::CommandRunner.new(logger, options.dry_run)

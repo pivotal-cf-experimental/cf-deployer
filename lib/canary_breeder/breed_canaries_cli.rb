@@ -10,6 +10,7 @@ module CanaryBreeder
       target: nil,
       username: nil,
       password: nil,
+      dry_run: false,
     }
 
     class Options < Struct.new(*OPTIONS.keys)
@@ -114,6 +115,12 @@ module CanaryBreeder
           %Q{Password for the user.},
         ) do |password|
           @options.password = password
+        end
+
+        opts.on(
+          "--dry-run", "Only print the commands that would run. DEFAULT: #{@options.dry_run}"
+        ) do |dry_run|
+          @options.dry_run = dry_run
         end
       end
     end
