@@ -11,9 +11,9 @@ module CanaryBreeder
 
     def breed(logger, runner)
       logger.log_message "targeting and logging in"
-      runner.run! "go-cf api #{@options.target}"
-      runner.run! "go-cf login '#{@options.username}' '#{@options.password}'"
-      runner.run! "go-cf target -o pivotal -s coal-mine"
+      runner.run! "gcf api #{@options.target}"
+      runner.run! "gcf login -u '#{@options.username}' -p '#{@options.password}'"
+      runner.run! "gcf target -o pivotal -s coal-mine"
 
       logger.log_message "breeding canaries"
 
@@ -82,7 +82,7 @@ module CanaryBreeder
     def push_app(logger, runner, name, env = {}, options = {})
       directory_name = options.fetch(:directory_name, name)
       instances = options.fetch(:instances, 1)
-      memory = options.fetch(:memory, 256)
+      memory = options.fetch(:memory, "256M")
       buildpack = options.fetch(:buildpack, "")
 
       logger.log_message "pushing #{name} canary"
@@ -95,7 +95,7 @@ module CanaryBreeder
       logger.log_message "pushing!"
 
       runner.run! [
-        "go-cf push #{name} --no-start",
+        "gcf push #{name} --no-start",
         "-p #{canary_path(directory_name)}",
         "-n #{name} -d #{@options.app_domain}",
         "-i #{instances} -m #{memory}",
@@ -103,9 +103,9 @@ module CanaryBreeder
       ].join(" ")
 
       env.each do |k, v|
-        runner.run! "go-cf set-env #{name} #{k} '#{v}'"
+        runner.run! "gcf set-env #{name} #{k} '#{v}'"
       end
-      runner.run! "go-cf start #{name}"
+      runner.run! "gcf start #{name}"
     end
 
     def canary_path(name)
@@ -116,7 +116,7 @@ module CanaryBreeder
       logger.log_message "checking for app #{name}"
 
       begin
-        runner.run! "go-cf app #{name}"
+        runner.run! "gcf app #{name}"
         true
       rescue CfDeployer::CommandRunner::CommandFailed => e
         false
