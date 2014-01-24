@@ -2,6 +2,8 @@ require 'optparse'
 
 module CanaryBreeder
   class Cli
+    class OptionError < RuntimeError; end
+
     OPTIONS = {
       number_of_zero_downtime_apps: nil,
       number_of_instances_canary_instances: nil,
@@ -15,6 +17,8 @@ module CanaryBreeder
 
     class Options < Struct.new(*OPTIONS.keys)
     end
+
+    attr_reader :options
 
     def initialize(args)
       @args = args
@@ -32,35 +36,39 @@ module CanaryBreeder
 
     def validate!
       if @options.number_of_zero_downtime_apps.nil?
-        fail "--number-of-zero-downtime-apps is required"
+        die "--number-of-zero-downtime-apps is required"
       end
 
       if @options.number_of_instances_canary_instances.nil?
-        fail "--number-of-instances-canary-instances is required"
+        die "--number-of-instances-canary-instances is required"
       end
 
       if @options.app_domain.nil?
-        fail "--app-domain is required"
+        die "--app-domain is required"
       end
 
       if @options.canaries_path.nil?
-        fail "--canaries-path is required"
+        die "--canaries-path is required"
       end
 
       if @options.target.nil?
-        fail "--target is required"
+        die "--target is required"
       end
 
       if @options.username.nil?
-        fail "--username is required"
+        die "--username is required"
       end
 
       if @options.password.nil?
-        fail "--password is required"
+        die "--password is required"
       end
     end
 
     private
+
+    def die(msg)
+      raise OptionError.new(msg)
+    end
 
     def parser
       @parser ||= OptionParser.new do |opts|

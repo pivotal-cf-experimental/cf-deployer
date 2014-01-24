@@ -16,4 +16,5 @@ RSpec.configure do |config|
   config.include CommandHelper
   config.include FakeCommandRunnerMatchers
   config.include BlueShell::Matchers
+  config.include CliMatchers
 end

@@ -163,33 +163,4 @@ describe CfDeployer::Cli do
       end
     end
   end
-
-  matcher(:validate_successfully) do
-    match do |cli|
-      cli.parse!
-      cli.validate!
-      true
-    end
-  end
-
-  matcher(:fail_validation) do |message|
-    match do |cli|
-      cli.parse!
-      begin
-        cli.validate!
-      rescue CfDeployer::Cli::OptionError => e
-        @err = e
-      end
-
-      @err.to_s.match(message)
-    end
-
-    failure_message_for_should do |cli|
-      if @err.nil?
-        "Expected failure message matching #{message}, but got nothing"
-      else
-        "Expected failure message matching #{message}, got:\n#{@err.to_s}"
-      end
-    end
-  end
 end
