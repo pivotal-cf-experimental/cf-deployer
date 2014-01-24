@@ -63,7 +63,7 @@ module CanaryBreeder
     end
 
     def push_memory_canary(logger, runner)
-      push_app(logger, runner, "memory", { MEMORY: "112" })
+      push_app(logger, runner, "memory", { MEMORY: "112M" })
     end
 
     def push_network_canary(logger, runner)
@@ -74,7 +74,7 @@ module CanaryBreeder
       push_app(
         logger, runner, "instances-canary", {},
         instances: @options.number_of_instances_canary_instances,
-        memory: 128,
+        memory: "128M",
         directory_name: "instances"
       )
     end
