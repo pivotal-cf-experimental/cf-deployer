@@ -1,4 +1,5 @@
 require "thread"
+require "cf_deployer/command_runner"
 
 module CanaryBreeder
   ERLANG_BUILDPACK="https://github.com/archaelus/heroku-buildpack-erlang.git"
