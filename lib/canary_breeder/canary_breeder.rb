@@ -13,8 +13,7 @@ module CanaryBreeder
     def breed(logger, runner)
       logger.log_message "targeting and logging in"
       runner.run! "gcf api #{@options.target}"
-      runner.run! "gcf login -u '#{@options.username}' -p '#{@options.password}'"
-      runner.run! "gcf target -o pivotal -s coal-mine"
+      runner.run! "gcf login -u '#{@options.username}' -p '#{@options.password}' -o pivotal -s coal-mine"
 
       logger.log_message "breeding canaries"
 
@@ -49,7 +48,7 @@ module CanaryBreeder
         USERNAME: @options.username,
         PASSWORD: @options.password,
         DOMAIN: @options.app_domain,
-        NUM_INSTANCES: @options.number_of_instances_canary_instances
+        NUM_INSTANCES: @options.number_of_zero_downtime_apps
       }
 
       push_app(logger, runner, "aviary", env)
@@ -82,7 +81,7 @@ module CanaryBreeder
 
     def push_app(logger, runner, name, env = {}, options = {})
       directory_name = options.fetch(:directory_name, name)
-      instances = options.fetch(:instances, 1)
+      instances = options.fetch(:instances, @options.number_of_instances_per_app)
       memory = options.fetch(:memory, "256M")
       buildpack = options.fetch(:buildpack, "")
 

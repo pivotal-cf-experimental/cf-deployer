@@ -7,6 +7,7 @@ module CanaryBreeder
     OPTIONS = {
       number_of_zero_downtime_apps: nil,
       number_of_instances_canary_instances: nil,
+      number_of_instances_per_app: 1,
       app_domain: nil,
       canaries_path: nil,
       target: nil,
@@ -86,6 +87,13 @@ module CanaryBreeder
           %Q{Number of instances for the Instances canary application.}
         ) do |number_of_instances_canary_instances|
           @options.number_of_instances_canary_instances = number_of_instances_canary_instances.to_i
+        end
+
+        opts.on(
+          "--number-of-instances-per-app NUMBER_OF_INSTANCES_PER_APP",
+          %Q{Number of instances for each canary app (disk, memory, cpu, network, aviary).}
+        ) do |number_of_instances_per_app|
+          @options.number_of_instances_per_app = number_of_instances_per_app.to_i
         end
 
         opts.on(

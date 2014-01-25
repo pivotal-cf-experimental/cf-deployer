@@ -74,6 +74,7 @@ describe CanaryBreeder::Cli do
       expect(canary_breeder_cli).to validate_successfully
       opts = canary_breeder_cli.options
       expect(opts.dry_run).to eq(false)
+      expect(opts.number_of_instances_per_app).to eq(1)
     end
 
     describe "overridden, non-required options" do
@@ -83,6 +84,14 @@ describe CanaryBreeder::Cli do
         expect(canary_breeder_cli).to validate_successfully
         opts = canary_breeder_cli.options
         expect(opts.dry_run).to eq(true)
+      end
+
+      it "exposes overridden --number-of-instances-per-app" do
+        args << "--number-of-instances-per-app=2"
+
+        expect(canary_breeder_cli).to validate_successfully
+        opts = canary_breeder_cli.options
+        expect(opts.number_of_instances_per_app).to eq(2)
       end
     end
   end

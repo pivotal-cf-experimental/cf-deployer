@@ -11,6 +11,7 @@ module CanaryBreeder
              number_of_zero_downtime_apps: 2,
              app_domain: "app-domain",
              number_of_instances_canary_instances: 3,
+             number_of_instances_per_app: 4,
              canaries_path: "canaries-path"
       )
     end
@@ -25,17 +26,12 @@ module CanaryBreeder
         breeder.breed(logger, runner)
       end
 
-      it "logs in" do
-        expect(runner).to receive(:run!).with("gcf login -u 'username' -p 'password'")
+      it "logs in and selects pivotal organization and coal-mine space" do
+        expect(runner).to receive(:run!).with("gcf login -u 'username' -p 'password' -o pivotal -s coal-mine")
         breeder.breed(logger, runner)
       end
 
-      it "selects pivotal organization and coal-mine space" do
-        expect(runner).to receive(:run!).with("gcf target -o pivotal -s coal-mine")
-        breeder.breed(logger, runner)
-      end
-
-      def self.it_pushes_an_app_if_it_does_not_exist(app_name)
+      def self.it_pushes_an_app_if_it_does_not_exist(app_name, instances)
         context "when app exists?" do
           before do
             runner.stub(:run!).with("gcf app #{app_name}")
@@ -53,39 +49,40 @@ module CanaryBreeder
           end
 
           it "pushes an app" do
-            expect(runner).to receive(:run!).with(/gcf push #{app_name}/)
+            expected_command = /gcf push #{app_name} --no-start -p canaries-path\/.* -n #{app_name} -d app-domain -i #{instances}/
+            expect(runner).to receive(:run!).with(expected_command)
             breeder.breed(logger, runner)
           end
         end
       end
 
       describe "zero downtime canary" do
-        it_pushes_an_app_if_it_does_not_exist("zero-downtime-canary1")
-        it_pushes_an_app_if_it_does_not_exist("zero-downtime-canary2")
+        it_pushes_an_app_if_it_does_not_exist("zero-downtime-canary1", 4)
+        it_pushes_an_app_if_it_does_not_exist("zero-downtime-canary2", 4)
       end
 
       describe "aviary" do
-        it_pushes_an_app_if_it_does_not_exist("aviary")
+        it_pushes_an_app_if_it_does_not_exist("aviary", 4)
       end
 
       describe "cpu canary" do
-        it_pushes_an_app_if_it_does_not_exist("cpu")
+        it_pushes_an_app_if_it_does_not_exist("cpu", 4)
       end
 
       describe "disk canary" do
-        it_pushes_an_app_if_it_does_not_exist("disk")
+        it_pushes_an_app_if_it_does_not_exist("disk", 4)
       end
 
       describe "memory canary" do
-        it_pushes_an_app_if_it_does_not_exist("memory")
+        it_pushes_an_app_if_it_does_not_exist("memory", 4)
       end
 
       describe "network canary" do
-        it_pushes_an_app_if_it_does_not_exist("network")
+        it_pushes_an_app_if_it_does_not_exist("network", 4)
       end
 
       describe "instances canary" do
-        it_pushes_an_app_if_it_does_not_exist("instances-canary")
+        it_pushes_an_app_if_it_does_not_exist("instances-canary", 3)
       end
     end
   end
