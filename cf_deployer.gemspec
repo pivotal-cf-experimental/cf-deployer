@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.require_paths = %w(lib)
 
   s.add_runtime_dependency "dogapi", "~> 1.9"
-  s.add_runtime_dependency "bosh_cli", "~> 1.5.0.pre.3"
+  s.add_runtime_dependency "bosh_cli", "~> 1.0"
   s.add_runtime_dependency "cf", "~> 5.2.2"
 
   s.add_development_dependency "rake"
