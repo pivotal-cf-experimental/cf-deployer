@@ -14,6 +14,7 @@ begin
 
   logger = CfDeployer::Logger.new(`tput cols`.to_i)
   deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
+  deploy_env.prepare
   CfDeployer::CfDeploy.new(deploy_env, logger).create_final_release_and_deploy!
 rescue => e
   logger.log_exception e

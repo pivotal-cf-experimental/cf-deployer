@@ -14,11 +14,8 @@ module CfDeployer
       @options = options
       @logger = logger
       @runner = runner
-
-      prepare
     end
 
-    private
     def prepare
       deployments_repo = Repo.new(@logger, @runner, @options.repos_path, @options.deployments_repo, "origin/master")
 
@@ -63,6 +60,8 @@ module CfDeployer
 
       build_deployment_strategy(deployment, bosh, manifest_generator, releases)
     end
+
+    private
 
     def build_deployment_strategy(deployment, bosh, manifest_generator, releases)
       strategy_type =
