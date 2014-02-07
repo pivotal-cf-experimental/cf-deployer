@@ -17,4 +17,8 @@ RSpec.configure do |config|
   config.include FakeCommandRunnerMatchers
   config.include BlueShell::Matchers
   config.include CliMatchers
+
+  config.before do
+    Process.stub(:spawn).and_raise("It is unsafe to call Process.spawn in a spec")
+  end
 end

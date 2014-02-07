@@ -5,7 +5,10 @@ module CfDeployer
   class CommandRunner
     describe Spawner do
       let(:logger) { FakeLogger.new }
-      before { @cmd_stdout, @cmd_stdin = runner_pipe }
+      before do
+        Process.unstub(:spawn)
+        @cmd_stdout, @cmd_stdin = runner_pipe
+      end
 
       describe "#spawn & #wait" do
         def spawn_and_wait(command, options={})
