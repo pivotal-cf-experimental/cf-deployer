@@ -1,3 +1,5 @@
+require 'cf_deployer/shell_out'
+
 module CfDeployer
   class Repo
     def initialize(logger, runner, repos_path, repo_uri, ref)
@@ -76,7 +78,7 @@ module CfDeployer
       return unless File.directory?(path)
 
       Dir.chdir(path) do
-        top = `git rev-parse --show-toplevel 2>/dev/null`
+        top = ShellOut.capture_output('git rev-parse --show-toplevel 2>/dev/null')
 
         if $?.success?
           @git_toplevel = top.chomp

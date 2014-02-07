@@ -1,7 +1,9 @@
+require 'cf_deployer/shell_out'
+
 module CfDeployer
   class Logger
-    def initialize(columns)
-      @columns = columns
+    def initialize
+      @columns = ShellOut.capture_output("tput cols").to_i
     end
 
     def log_message(message)

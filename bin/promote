@@ -8,7 +8,7 @@ require "cf_deployer/release_repo"
 
 options_parser = CfDeployer::OptionsParser.new(ARGV)
 options = options_parser.parse!
-logger = CfDeployer::Logger.new(`tput cols`.to_i)
+logger = CfDeployer::Logger.new
 
 begin
   runner = CfDeployer::CommandRunner.new(logger, options.dry_run)

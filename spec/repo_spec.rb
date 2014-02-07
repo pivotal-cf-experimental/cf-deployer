@@ -30,6 +30,10 @@ module CfDeployer
     end
 
     describe "#sync!" do
+      before do
+        ShellOut.unstub(:capture_output)
+      end
+
       context "when the repo does not exist" do
         it "clones into the repo path" do
           subject.sync!

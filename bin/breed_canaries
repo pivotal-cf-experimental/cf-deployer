@@ -11,7 +11,7 @@ cli = CanaryBreeder::Cli.new(ARGV)
 
 cf_deploy = CanaryBreeder::Breeder.new(cli.parse!)
 
-logger = CfDeployer::Logger.new(`tput cols`.to_i)
+logger = CfDeployer::Logger.new
 
 begin
   options = cli.parse!

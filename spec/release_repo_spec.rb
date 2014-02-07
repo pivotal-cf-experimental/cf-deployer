@@ -38,6 +38,7 @@ module CfDeployer
     end
 
     before do
+      ShellOut.unstub(:capture_output)
       FileUtils.mkdir_p(File.dirname(release_index_path))
 
       File.open(release_index_path, "w") do |io|
