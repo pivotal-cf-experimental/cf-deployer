@@ -10,7 +10,7 @@ module CfDeployer
       @logger = logger
     end
 
-    def deploy!
+    def create_final_release_and_deploy!
       install_deployment_hooks(@env.strategy, @env.deployment, @env.manifest_generator)
 
       @env.strategy.deploy!

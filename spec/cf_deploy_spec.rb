@@ -48,7 +48,7 @@ module CfDeployer
         end
 
         it "installs the datadog hooks" do
-          cf_deploy.deploy!
+          cf_deploy.create_final_release_and_deploy!
           expect(env.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
       end
@@ -57,14 +57,14 @@ module CfDeployer
         let(:promote_branch) { "cool_branch" }
 
         it "promotes to the branch" do
-          cf_deploy.deploy!
+          cf_deploy.create_final_release_and_deploy!
           expect(deployment_strategy).to have_received(:promote_to!).with(promote_branch)
         end
       end
 
       specify TokenInstaller do
         TokenInstaller.stub(:new)
-        cf_deploy.deploy!
+        cf_deploy.create_final_release_and_deploy!
         expect(TokenInstaller).to have_received(:new).with(manifest_generator, runner)
       end
     end

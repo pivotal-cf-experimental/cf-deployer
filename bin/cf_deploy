@@ -14,7 +14,7 @@ begin
   options = cli.parse!
   cli.validate!
   deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
-  CfDeployer::CfDeploy.new(deploy_env, logger).deploy!
+  CfDeployer::CfDeploy.new(deploy_env, logger).create_final_release_and_deploy!
 rescue => e
   logger.log_exception e
   exit 1
