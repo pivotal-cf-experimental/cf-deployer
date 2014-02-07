@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 # vim: ft=ruby
 
-require "cf_deployer/cli"
+require "cf_deployer/options_parser"
 require "cf_deployer/command_runner"
 require "cf_deployer/logger"
 require "cf_deployer/release_repo"
 
-cli = CfDeployer::Cli.new(ARGV)
-options = cli.parse!
+options_parser = CfDeployer::OptionsParser.new(ARGV)
+options = options_parser.parse!
 logger = CfDeployer::Logger.new(`tput cols`.to_i)
 
 begin

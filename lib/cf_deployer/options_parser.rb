@@ -2,7 +2,7 @@ require 'optparse'
 require 'cf_deployer/version'
 
 module CfDeployer
-  class Cli
+  class OptionsParser
     class OptionError < RuntimeError; end
 
     VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
