@@ -10,17 +10,16 @@ module CfDeployer
   class DeployEnvironment
     attr_reader :deployment, :strategy, :manifest_generator, :options, :runner
 
-    def initialize(options, logger)
+    def initialize(options, logger, runner=CfDeployer::CommandRunner.new(logger, options.dry_run))
       @options = options
       @logger = logger
+      @runner = runner
 
       prepare
     end
 
     private
     def prepare
-      @runner = CfDeployer::CommandRunner.new(@logger, options.dry_run)
-
       deployments_repo = Repo.new(@logger, @runner, @options.repos_path, @options.deployments_repo, "origin/master")
 
       deployments_repo.sync! unless @options.dirty
