@@ -15,6 +15,7 @@ module CfDeployer
 
     describe "#bosh_environment" do
       before do
+        IO.unstub(:popen)
         File.open(File.join(@deployment_path, "bosh_environment"), "w") do |io|
           io.write <<EOF
 export FOO=1

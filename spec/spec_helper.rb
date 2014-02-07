@@ -17,5 +17,6 @@ RSpec.configure do |config|
   config.before do
     Process.stub(:spawn).and_raise("It is unsafe to call Process.spawn in a spec")
     CfDeployer::ShellOut.stub(:capture_output).and_raise("It is unsafe to call ShellOut.capture_output in a spec")
+    IO.stub(:popen).and_raise("It is unsafe to call IO.popen in a spec")
   end
 end
