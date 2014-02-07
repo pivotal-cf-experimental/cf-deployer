@@ -48,7 +48,9 @@ module CfDeployer
       bosh_environment = deployment_file("bosh_environment")
       raise "No bosh_environment file" unless bosh_environment
 
-      env = IO.popen ["bash", "-c", "source #{bosh_environment} && env", unsetenv_others: true]
+      command = "source #{bosh_environment} && env"
+
+      env = ShellOut.with_clean_env(command)
 
       bosh_env = {}
 
