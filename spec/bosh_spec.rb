@@ -277,6 +277,8 @@ module CfDeployer
         bosh.deploy
 
         expect(logger).to have_logged("DEPLOYING!")
+        expect(logger).to have_logged("Running an interactive deploy and cancelling it after it shows the deployment diff")
+        expect(logger).to have_logged("Running the actual deploy non-interactively")
       end
 
       context "when interactive" do
