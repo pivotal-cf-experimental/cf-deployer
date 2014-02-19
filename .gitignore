@@ -1,5 +1,7 @@
 .bundle
+.idea
 Gemfile.lock
 new_deployment.yml
+cf_deployer-*.gem
 gospace/
 repos/
