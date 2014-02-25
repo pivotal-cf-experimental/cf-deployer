@@ -2,6 +2,10 @@ require "cf_deployer/deployment_strategy"
 
 module CfDeployer
   class DevDeploymentStrategy < DeploymentStrategy
+    def promote_to!(branch)
+      @release_repo.promote_dev_release(branch)
+    end
+
     private
 
     def do_deploy
@@ -12,10 +16,6 @@ module CfDeployer
 
       @bosh.set_deployment(manifest)
       @bosh.deploy
-    end
-
-    def do_promote_to(branch)
-      @release_repo.promote_dev_release(branch)
     end
 
     def stub_files

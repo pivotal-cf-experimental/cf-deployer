@@ -8,6 +8,10 @@ module CfDeployer
       end
     end
 
+    def promote_to!(branch)
+      @release_repo.promote_final_release(branch)
+    end
+
     private
 
     def do_deploy
@@ -21,10 +25,6 @@ module CfDeployer
 
       @bosh.set_deployment(manifest)
       @bosh.deploy
-    end
-
-    def do_promote_to(branch)
-      @release_repo.promote_final_release(branch)
     end
   end
 end

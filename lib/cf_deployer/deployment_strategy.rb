@@ -22,16 +22,12 @@ module CfDeployer
     end
 
     def promote_to!(branch)
-      do_promote_to(branch)
+      raise NotImplementedError
     end
 
     private
 
     def do_deploy
-      raise NotImplementedError
-    end
-
-    def do_promote_to(branch)
       raise NotImplementedError
     end
   end
