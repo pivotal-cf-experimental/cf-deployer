@@ -71,7 +71,7 @@ module CfDeployer
 
             it "updates the release name to 'cf'" do
               expect {
-                create_and_upload_release
+                run_bosh_task
               }.to change {
                 YAML.load_file(dev_yml)
               }.from(
@@ -85,7 +85,7 @@ module CfDeployer
           context "when config/dev.yml does NOT exist" do
             it "writes it with the release name 'cf'" do
               expect {
-                create_and_upload_release
+                run_bosh_task
               }.to change {
                 YAML.load_file(dev_yml) if File.exists?(dev_yml)
               }.from(nil).to("dev_name" => release_name)
@@ -96,7 +96,7 @@ module CfDeployer
 
       def self.it_resets_config_final
         it "resets config/final.yml before creating the release" do
-          create_and_upload_release
+          run_bosh_task
 
           expect(runner).to have_executed_serially(
              "cd #{@release_repo} && git checkout -- config/final.yml",
@@ -105,8 +105,44 @@ module CfDeployer
         end
       end
 
+      describe "#create_dev_release" do
+        def run_bosh_task
+          bosh.create_dev_release(@release_repo, release_name)
+        end
+
+        it_sets_up_the_release_name
+        it_resets_config_final
+
+        it "logs the important bits" do
+          run_bosh_task
+
+          expect(logger).to have_logged("setting release name to 'some-release-name'")
+          expect(logger).to have_logged("creating dev release")
+        end
+
+        it "creates a dev release via bosh create release" do
+          run_bosh_task
+
+          expect(runner).to have_executed_serially(
+                              bosh_command_in_release("create release"),
+                            )
+        end
+
+        context "when the Bosh was created with the :dirty option" do
+          let(:options) { { interactive: false, dirty: true } }
+
+          it "creates the release with --force" do
+            run_bosh_task
+
+            expect(runner).to have_executed_serially(
+                                bosh_command_in_release("create release --force")
+                              )
+          end
+        end
+      end
+
       describe "#create_and_upload_dev_release" do
-        def create_and_upload_release
+        def run_bosh_task
           bosh.create_and_upload_dev_release(@release_repo, release_name)
         end
 
@@ -114,7 +150,7 @@ module CfDeployer
         it_resets_config_final
 
         it "logs the important bits" do
-          create_and_upload_release
+          run_bosh_task
 
           expect(logger).to have_logged("setting release name to 'some-release-name'")
           expect(logger).to have_logged("creating dev release")
@@ -122,7 +158,7 @@ module CfDeployer
         end
 
         it "creates a dev release via bosh create release" do
-          create_and_upload_release
+          run_bosh_task
 
           expect(runner).to have_executed_serially(
             bosh_command_in_release("create release"),
@@ -134,7 +170,7 @@ module CfDeployer
           let(:options) { { interactive: false, rebase: true } }
 
           it "uploads the release to the Bosh director using --rebase" do
-            create_and_upload_release
+            run_bosh_task
 
             expect(runner).to have_executed_serially(
               bosh_command_in_release("upload release --skip-if-exists --rebase")
@@ -142,7 +178,7 @@ module CfDeployer
           end
 
           it "logs the bosh output to a temporary bosh_output location" do
-            create_and_upload_release
+            run_bosh_task
 
             expect(runner).to have_executed_serially(
               bosh_command_in_release(
@@ -161,7 +197,7 @@ module CfDeployer
                 raise CommandRunner::CommandFailed
               end
 
-              expect { create_and_upload_release }.to_not raise_error
+              expect { run_bosh_task }.to_not raise_error
             end
           end
 
@@ -171,7 +207,7 @@ module CfDeployer
                 raise CommandRunner::CommandFailed
               end
 
-              expect{ create_and_upload_release }.to raise_error CommandRunner::CommandFailed
+              expect{ run_bosh_task }.to raise_error CommandRunner::CommandFailed
             end
           end
         end
@@ -180,7 +216,7 @@ module CfDeployer
           let(:options) { { interactive: false, dirty: true } }
 
           it "creates the release with --force" do
-            create_and_upload_release
+            run_bosh_task
 
             expect(runner).to have_executed_serially(
               bosh_command_in_release("create release --force")
@@ -189,10 +225,44 @@ module CfDeployer
         end
       end
 
+      describe "#create_final_release" do
+        let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
+
+        def run_bosh_task
+          bosh.create_final_release(@release_repo, release_name, "/some/config/private.yml")
+        end
+
+        it_sets_up_the_release_name
+        it_resets_config_final
+
+        it "logs the important bits" do
+          run_bosh_task
+
+          expect(logger).to have_logged("setting release name to 'some-release-name'")
+          expect(logger).to have_logged("creating final release")
+        end
+
+        it "executes bosh create release --final, resetting bosh crap" do
+          run_bosh_task
+
+          expect(runner).to have_executed_serially(
+            bosh_command_in_release("create release"),
+            "cd #@release_repo && git checkout -- config/final.yml .final_builds/",
+            "cp /some/config/private.yml #{private_yml}",
+            bosh_command_in_release("create release --final"),
+          )
+        end
+
+        it "logs that it's creating a final release" do
+          run_bosh_task
+          expect(logger).to have_logged("creating final release")
+        end
+      end
+
       describe "#create_and_upload_final_release" do
         let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
 
-        def create_and_upload_release
+        def run_bosh_task
           bosh.create_and_upload_final_release(@release_repo, release_name, "/some/config/private.yml")
         end
 
@@ -200,7 +270,7 @@ module CfDeployer
         it_resets_config_final
 
         it "logs the important bits" do
-          create_and_upload_release
+          run_bosh_task
 
           expect(logger).to have_logged("setting release name to 'some-release-name'")
           expect(logger).to have_logged("creating final release")
@@ -208,7 +278,7 @@ module CfDeployer
         end
 
         it "executes bosh create release --final, resetting bosh crap" do
-          create_and_upload_release
+          run_bosh_task
 
           expect(runner).to have_executed_serially(
             bosh_command_in_release("create release"),
@@ -220,7 +290,7 @@ module CfDeployer
         end
 
         it "logs that it's creating a final release" do
-          create_and_upload_release
+          run_bosh_task
           expect(logger).to have_logged("creating final release")
         end
 
@@ -228,7 +298,7 @@ module CfDeployer
           let(:options) { { interactive: false, rebase: true } }
 
           it "uploads the release to the Bosh director using --rebase" do
-            create_and_upload_release
+            run_bosh_task
 
             expect(runner).to have_executed_serially(
               bosh_command_in_release("upload release --skip-if-exists --rebase")

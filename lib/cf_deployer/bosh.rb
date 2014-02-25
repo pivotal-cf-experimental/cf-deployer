@@ -22,18 +22,21 @@ module CfDeployer
       @bosh_output_file = Tempfile.new("bosh_output")
     end
 
+    def create_dev_release(release_path, release_name)
+      create_release(release_path, release_name, force: @options.fetch(:dirty))
+    end
+
     def create_and_upload_dev_release(release_path, release_name)
-      create_release(release_path, release_name,
-        force: @options.fetch(:dirty),
-      )
+      create_dev_release(release_path, release_name)
       upload_release(release_path)
     end
 
+    def create_final_release(release_path, release_name, private_config)
+      create_release(release_path, release_name, final: true, private_config: private_config)
+    end
+
     def create_and_upload_final_release(release_path, release_name, private_config)
-      create_release(release_path, release_name,
-        final: true,
-        private_config: private_config,
-      )
+      create_final_release(release_path, release_name, private_config)
       upload_release(release_path)
     end
 
