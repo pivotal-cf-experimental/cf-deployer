@@ -3,12 +3,6 @@ require "cf_deployer/deploy_environment"
 
 module CfDeployer
   describe DeployEnvironment do
-    let(:release_names) do
-      release_names = double(:release_names)
-      release_names.stub(:zip).and_yield('fake-name', 'fake-release_repo', 'fake-ref')
-      release_names
-    end
-
     let(:director_uuid) { "FEED-DEAD-BEEF" }
     let(:is_final_release) { false }
     let(:rebase) { false }
@@ -25,9 +19,9 @@ module CfDeployer
              rebase: rebase,
              repos_path: '/path/to/repos',
              deployments_repo: 'fake-deployments_repo',
-             release_repo: nil,
-             release_names: release_names,
-             release_ref: nil,
+             release_repo: 'fake-release_repo',
+             release_name: 'fake-name',
+             release_ref: 'fake-ref',
              deployment_name: 'deployment-name',
              interactive: false,
              infrastructure: infrastructure,

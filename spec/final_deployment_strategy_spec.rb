@@ -8,11 +8,11 @@ module CfDeployer
 
     let(:bosh) { FakeBosh.new }
     let(:deployment) { Deployment.new(deployment_path) }
-    let(:release) { FakeReleaseRepo.new "./repos/cf-release" }
+    let(:release_repo) { FakeReleaseRepo.new "./repos/cf-release" }
     let(:manifest) { FakeManifest.new "some-manifest.yml" }
     let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, manifest, release_name => release) }
+    subject { described_class.new(bosh, deployment, manifest, release_name, release_repo) }
 
     after { FileUtils.rm_rf(deployment_path) }
 
@@ -52,7 +52,7 @@ module CfDeployer
             subject.deploy!
           }.to change {
             [bosh.final_release, bosh.private_config]
-          }.to([[release.path, "some-release-name"], private_config])
+          }.to([[release_repo.path, "some-release-name"], private_config])
         end
 
         it "generates the manifest using the stubs" do
@@ -86,7 +86,7 @@ module CfDeployer
         expect {
           subject.promote_to! "some-branch"
         }.to change {
-          release.promoted_final_release
+          release_repo.promoted_final_release
         }.to("some-branch")
       end
     end

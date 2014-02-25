@@ -13,11 +13,7 @@ logger = CfDeployer::Logger.new
 begin
   runner = CfDeployer::CommandRunner.new(logger, options.dry_run)
 
-  repo = CfDeployer::ReleaseRepo.new(logger,
-                                     runner,
-                                     options.repos_path,
-                                     options.release_repos[0],
-                                     options.release_refs[0])
+  repo = CfDeployer::ReleaseRepo.new(logger, runner, options.repos_path, options.release_repo, options.release_ref)
 
   repo.sync!
   repo.promote_dev_release(options.promote_branch)

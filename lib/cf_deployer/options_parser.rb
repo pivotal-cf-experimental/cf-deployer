@@ -8,9 +8,9 @@ module CfDeployer
     VALID_INFRASTRUCTURES = %w[aws warden vsphere].freeze
 
     OPTIONS = {
-      release_repos: [],
-      release_names: [],
-      release_refs: [],
+      release_repo: nil,
+      release_name: nil,
+      release_ref: nil,
 
       deployments_repo: nil,
       deployment_name: nil,
@@ -55,16 +55,12 @@ module CfDeployer
     end
 
     def validate!
-      if @options.release_repos.empty?
-        die "at least one --release-repo is required"
+      if @options.release_repo.nil?
+        die "exactly one --release-repo is required"
       end
 
-      if @options.release_names.empty?
-        die "at least one --release-name is required"
-      end
-
-      if @options.release_repos.size != @options.release_names.size
-        die "missing --release-repo and --release-name pair"
+      if @options.release_name.nil?
+        die "exactly one --release-name is required"
       end
 
       if @options.deployments_repo.nil?
@@ -79,7 +75,7 @@ module CfDeployer
         die "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
       end
 
-      if !@options.dirty && @options.release_refs.empty?
+      if !@options.dirty && @options.release_ref.nil?
         # CLI behavior WRT release refs doesn't seem to match release ref requirements in deploy_environment.rb
         die "--release-ref or --dirty is required"
       end
@@ -96,19 +92,19 @@ module CfDeployer
         opts.on(
           "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
         ) do |release_repo|
-          @options.release_repos << release_repo
+          @options.release_repo = release_repo
         end
 
         opts.on(
           "--release-name RELEASE_NAME", "Name of the BOSH release to create."
         ) do |release_name|
-          @options.release_names << release_name
+          @options.release_name = release_name
         end
 
         opts.on(
           "--release-ref RELEASE_REF", "Git ref to deploy from the release repository (e.g. master, v144)."
         ) do |release_ref|
-          @options.release_refs << release_ref
+          @options.release_ref = release_ref
         end
 
         opts.on(

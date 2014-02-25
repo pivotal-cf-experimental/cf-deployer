@@ -21,17 +21,12 @@ describe CfDeployer::OptionsParser do
 
     it "fails when release repo is not specified" do
       args.delete_if { |s| s.match /--release-repo/ }
-      expect(options_parser).to fail_validation(/at least one --release-repo is required/)
+      expect(options_parser).to fail_validation(/exactly one --release-repo is required/)
     end
 
     it "fails when release name is not specified" do
       args.delete_if { |s| s.match /--release-name/ }
-      expect(options_parser).to fail_validation(/at least one --release-name is required/)
-    end
-
-    it "fails when the number of release repos does not match the number of release names" do
-      args << "--release-name=my_other_release_name"
-      expect(options_parser).to fail_validation(/missing --release-repo and --release-name pair/)
+      expect(options_parser).to fail_validation(/exactly one --release-name is required/)
     end
 
     it "fails when deployments repo is not specified" do
@@ -66,9 +61,9 @@ describe CfDeployer::OptionsParser do
     it "exposes options matching the command line arguments" do
       expect(options_parser).to validate_successfully
       opts = options_parser.options
-      expect(opts.release_repos).to eq(%w(my_release_repo))
-      expect(opts.release_names).to eq(%w(my_release_name))
-      expect(opts.release_refs).to eq(%w(master))
+      expect(opts.release_repo).to eq("my_release_repo")
+      expect(opts.release_name).to eq("my_release_name")
+      expect(opts.release_ref).to eq("master")
 
       expect(opts.deployments_repo).to eq("my_deployments_repo")
       expect(opts.deployment_name).to eq("my_deployment_name")
