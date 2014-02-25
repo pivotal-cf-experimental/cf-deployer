@@ -34,8 +34,7 @@ module CfDeployer
 
       releases = {}
       @options.release_names.zip(@options.release_repos, @options.release_refs) do |name, repo, ref|
-        release_repo = ReleaseRepo.new(
-          @logger, @runner, @options.repos_path, repo, ref)
+        release_repo = ReleaseRepo.new(@logger, @runner, @options.repos_path, repo, ref)
 
         release_repo.sync! unless @options.dirty
 
@@ -55,8 +54,7 @@ module CfDeployer
       )
 
       @manifest_generator =
-        ReleaseManifestGenerator.new(
-          @runner, authoritative_release_repo, @options.infrastructure, "new_deployment.yml")
+        ReleaseManifestGenerator.new(@runner, authoritative_release_repo, @options.infrastructure, "new_deployment.yml")
 
       build_deployment_strategy(deployment, bosh, manifest_generator, releases)
     end
