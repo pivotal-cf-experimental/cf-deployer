@@ -21,7 +21,7 @@ module CfDeployer
         expect {
           subject.create_release
         }.to change {
-          bosh.dev_release
+          [bosh.dev_release, bosh.dev_release_name]
         }.to([release_repo.path, "some-release-name"])
       end
     end
@@ -31,7 +31,7 @@ module CfDeployer
         expect {
           subject.upload_release
         }.to change {
-          bosh.release_path
+          bosh.uploaded_release
         }.to(release_repo.path)
       end
     end
@@ -54,7 +54,7 @@ module CfDeployer
         expect {
           subject.deploy!
         }.to change {
-          bosh.dev_release
+          [bosh.dev_release, bosh.dev_release_name]
         }.to([release_repo.path, "some-release-name"])
       end
 

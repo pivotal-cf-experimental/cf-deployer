@@ -37,8 +37,8 @@ module CfDeployer
           expect {
             subject.create_release
           }.to change {
-            [bosh.final_release, bosh.private_config]
-          }.to([[release_repo.path, "some-release-name"], private_config])
+            [bosh.final_release, bosh.final_release_name, bosh.private_config]
+          }.to([release_repo.path, "some-release-name", private_config])
         end
       end
     end
@@ -48,7 +48,7 @@ module CfDeployer
         expect {
           subject.upload_release
         }.to change {
-          bosh.release_path
+          bosh.uploaded_release
         }.to(release_repo.path)
       end
     end
@@ -87,8 +87,8 @@ module CfDeployer
           expect {
             subject.deploy!
           }.to change {
-            [bosh.final_release, bosh.private_config]
-          }.to([[release_repo.path, "some-release-name"], private_config])
+            [bosh.final_release, bosh.final_release_name, bosh.private_config]
+          }.to([release_repo.path, "some-release-name", private_config])
         end
 
         it "generates the manifest using the stubs" do
