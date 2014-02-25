@@ -24,7 +24,6 @@ module CfDeployer
 
     def create_and_upload_dev_release(release_path, release_name)
       create_release(release_path, release_name,
-        rebase: @options.fetch(:rebase),
         force: @options.fetch(:dirty),
       )
       upload_release(release_path)
@@ -34,7 +33,6 @@ module CfDeployer
       create_release(release_path, release_name,
         final: true,
         private_config: private_config,
-        rebase: @options.fetch(:rebase),
       )
       upload_release(release_path)
     end
