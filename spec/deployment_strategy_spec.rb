@@ -21,6 +21,18 @@ module CfDeployer
 
     subject { described_class.new(bosh, deployment, manifest_generator, release_name, release_repo) }
 
+    it "does not implement #create_release" do
+      expect { subject.create_release }.to raise_error(NotImplementedError)
+    end
+
+    it "does not implement #upload_release" do
+      expect { subject.upload_release }.to raise_error(NotImplementedError)
+    end
+
+    it "does not implement #deploy_release" do
+      expect { subject.deploy_release }.to raise_error(NotImplementedError)
+    end
+
     describe "#install_hook" do
       let(:some_hook) do
         Class.new do

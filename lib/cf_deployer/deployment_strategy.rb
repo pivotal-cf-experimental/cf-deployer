@@ -14,6 +14,18 @@ module CfDeployer
       @hooks << hook
     end
 
+    def create_release
+      raise NotImplementedError
+    end
+
+    def upload_release
+      raise NotImplementedError
+    end
+
+    def deploy_release
+      raise NotImplementedError
+    end
+
     def deploy!
       @hooks.each(&:pre_deploy)
       do_deploy
