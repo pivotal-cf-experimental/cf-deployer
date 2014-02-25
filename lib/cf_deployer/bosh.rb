@@ -27,7 +27,7 @@ module CfDeployer
         rebase: @options.fetch(:rebase),
         force: @options.fetch(:dirty),
       )
-      upload_release(release_path, @options)
+      upload_release(release_path)
     end
 
     def create_and_upload_final_release(release_path, release_name, private_config)
@@ -36,7 +36,7 @@ module CfDeployer
         private_config: private_config,
         rebase: @options.fetch(:rebase),
       )
-      upload_release(release_path, @options)
+      upload_release(release_path)
     end
 
     def director_uuid
@@ -63,6 +63,19 @@ module CfDeployer
 
         @logger.log_message "Running the actual deploy non-interactively"
         run_bosh("deploy", flags: bosh_flags(false))
+      end
+    end
+
+    def upload_release(release_path)
+      @logger.log_message "uploading release"
+      rebase = @options.fetch(:rebase, false)
+      upload_flags = %w(--skip-if-exists)
+      upload_flags << '--rebase' if rebase
+      begin
+        run_bosh("upload release #{upload_flags.join(' ')} | tee #{bosh_output_file.path}", pre: "cd #{release_path} &&", flags: bosh_flags)
+      rescue CommandRunner::CommandFailed => e
+        contents = File.read(@bosh_output_file.path)
+        raise e unless contents.match(/Rebase is attempted without any job or package changes/)
       end
     end
 
@@ -122,19 +135,6 @@ module CfDeployer
 
       @logger.log_message "creating final release"
       bosh_create_release(release_path, final: true, force: force)
-    end
-
-    def upload_release(release_path, options = {})
-      @logger.log_message "uploading release"
-      rebase = options.fetch(:rebase, false)
-      upload_flags = %w(--skip-if-exists)
-      upload_flags << '--rebase' if rebase
-      begin
-        run_bosh("upload release #{upload_flags.join(' ')} | tee #{bosh_output_file.path}", pre: "cd #{release_path} &&", flags: bosh_flags)
-      rescue CommandRunner::CommandFailed => e
-        contents = File.read(@bosh_output_file.path)
-        raise e unless contents.match(/Rebase is attempted without any job or package changes/)
-      end
     end
 
     def run_bosh(command, options = {}, &blk)

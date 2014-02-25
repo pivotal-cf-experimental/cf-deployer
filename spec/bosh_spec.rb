@@ -16,6 +16,7 @@ module CfDeployer
       }
     end
 
+    let(:release_name) { "some-release-name" }
     let(:options) { { interactive: false } }
 
     subject(:bosh) { described_class.new(logger, runner, bosh_environment, options) }
@@ -41,21 +42,21 @@ module CfDeployer
       ]
     end
 
+    def bosh_command_in_release(command)
+      [ /set -o pipefail && cd #{@release_repo} && bosh #{bosh_flags} #{command}/,
+        command_options_with_transient_bosh_config
+      ]
+    end
+
+    around do |example|
+      Dir.mktmpdir("release_repo") do |release_repo|
+        @release_repo = release_repo
+        example.call
+      end
+    end
+
     describe "creating and uploading releases" do
-      around do |example|
-        Dir.mktmpdir("release_repo") do |release_repo|
-          @release_repo = release_repo
-          example.call
-        end
-      end
-
       let(:dev_yml) { File.join(@release_repo, "config", "dev.yml") }
-
-      def bosh_command_in_release(command)
-        [ /set -o pipefail && cd #{@release_repo} && bosh #{bosh_flags} #{command}/,
-          command_options_with_transient_bosh_config
-        ]
-      end
 
       def self.it_sets_up_the_release_name
         describe "setting the release name" do
@@ -105,8 +106,6 @@ module CfDeployer
       end
 
       describe "#create_and_upload_dev_release" do
-        let(:release_name) { "some-release-name" }
-
         def create_and_upload_release
           bosh.create_and_upload_dev_release(@release_repo, release_name)
         end
@@ -191,7 +190,6 @@ module CfDeployer
       end
 
       describe "#create_and_upload_final_release" do
-        let(:release_name) { "some-release-name" }
         let(:private_yml) { File.join(@release_repo, "config", "private.yml") }
 
         def create_and_upload_release
@@ -292,6 +290,92 @@ module CfDeployer
               command_options_with_transient_bosh_config
             ]
           )
+        end
+      end
+    end
+
+    describe "#upload_release" do
+      it "logs the important bits" do
+        bosh.upload_release(@release_repo)
+
+        expect(logger).to have_logged("uploading release")
+      end
+
+      context "when the Bosh was created without the :rebase option" do
+        context "when interactive is true" do
+          let(:options) { {interactive: true} }
+
+          it "uploads the release to the Bosh director without --rebase" do
+            bosh.upload_release(@release_repo)
+
+            expect(runner).to have_executed_serially(
+                                bosh_command_in_release("upload release --skip-if-exists")
+                              )
+          end
+        end
+
+        context "when interactive is false" do
+          it "uploads the release to the Bosh director without --rebase and logs the bosh output to a temporary bosh_output location" do
+            bosh.upload_release(@release_repo)
+
+            expect(runner).to have_executed_serially(
+                                bosh_command_in_release("upload release --skip-if-exists | tee #{bosh.bosh_output_file.path}")
+                              )
+          end
+        end
+      end
+
+      context "when the Bosh was created with the :rebase option" do
+        let(:options) { {rebase: true} }
+
+        context "when interactive is true" do
+          let(:options) { {interactive: true, rebase: true} }
+
+          it "uploads the release to the Bosh director using --rebase and logs the bosh output to a temporary bosh_output location" do
+            bosh.upload_release(@release_repo)
+
+            expect(runner).to have_executed_serially(
+                                bosh_command_in_release(
+                                  "upload release --skip-if-exists --rebase | tee #{bosh.bosh_output_file.path}"
+                                )
+                              )
+          end
+        end
+
+        context "when interactive is false" do
+          let(:options) { {interactive: false, rebase: true} }
+
+          it "uploads the release to the Bosh director using --rebase" do
+            bosh.upload_release(@release_repo)
+
+            expect(runner).to have_executed_serially(
+                                bosh_command_in_release("upload release --skip-if-exists --rebase")
+                              )
+          end
+        end
+
+        context "when the rebase has no job or package changes" do
+          it "continues without throwing error, despite bosh's unsucessful return code" do
+            runner.when_running(/upload release .* --rebase/) do
+              File.open(bosh.bosh_output_file.path, "w") do |file|
+                file.write("Rebase is attempted without any job or package changes")
+              end
+
+              raise CommandRunner::CommandFailed
+            end
+
+            expect { bosh.upload_release(@release_repo) }.to_not raise_error
+          end
+        end
+
+        context "when the bosh upload fails, without the error 'the rebase has no job or package changes'" do
+          it "continues without throwing error, despite bosh's unsucessful return code" do
+            runner.when_running(/upload release .* --rebase/) do
+              raise CommandRunner::CommandFailed
+            end
+
+            expect { bosh.upload_release(@release_repo) }.to raise_error CommandRunner::CommandFailed
+          end
         end
       end
     end
