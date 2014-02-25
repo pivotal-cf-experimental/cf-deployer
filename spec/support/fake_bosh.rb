@@ -1,6 +1,6 @@
 module CfDeployer
   class FakeBosh
-    attr_reader :dev_release, :final_release, :private_config, :deployment, :deployed
+    attr_reader :dev_release, :final_release, :private_config, :deployment, :deployed, :release_path
 
     def create_dev_release(release_path, release_name)
       @dev_release = [release_path, release_name]

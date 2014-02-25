@@ -16,6 +16,43 @@ module CfDeployer
 
     after { FileUtils.rm_rf(deployment_path) }
 
+    describe "#create_release" do
+      context "when config/private.yml is missing" do
+        it "raises an error" do
+          expect { subject.create_release }.to raise_error(FinalDeploymentStrategy::MissingPrivateConfig)
+        end
+      end
+
+      context "when there is a config/private.yml" do
+        let(:private_config) { File.join(deployment_path, "config", "private.yml") }
+
+        before do
+          FileUtils.mkdir_p(File.dirname(private_config))
+          File.open(private_config, "w") do |io|
+            io.write("--- {}")
+          end
+        end
+
+        it "creates dev release with the right name" do
+          expect {
+            subject.create_release
+          }.to change {
+            [bosh.final_release, bosh.private_config]
+          }.to([[release_repo.path, "some-release-name"], private_config])
+        end
+      end
+    end
+
+    describe "#upload_release" do
+      it "uploads the created release" do
+        expect {
+          subject.upload_release
+        }.to change {
+          bosh.release_path
+        }.to(release_repo.path)
+      end
+    end
+
     describe "#deploy!" do
       let(:generic_stub) { File.join(deployment_path, "cf-stub.yml") }
       let(:shared_secrets) { File.join(deployment_path, "cf-shared-secrets.yml") }
@@ -32,8 +69,7 @@ module CfDeployer
 
       context "when config/private.yml is missing" do
         it "raises an error" do
-          expect { subject.deploy! }.to raise_error(
-            FinalDeploymentStrategy::MissingPrivateConfig)
+          expect { subject.deploy! }.to raise_error(FinalDeploymentStrategy::MissingPrivateConfig)
         end
       end
 

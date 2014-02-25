@@ -16,6 +16,26 @@ module CfDeployer
 
     after { FileUtils.rm_rf(deployment_path) }
 
+    describe "#create_release" do
+      it "creates dev release with the right name" do
+        expect {
+          subject.create_release
+        }.to change {
+          bosh.dev_release
+        }.to([release_repo.path, "some-release-name"])
+      end
+    end
+
+    describe "#upload_release" do
+      it "uploads the created release" do
+        expect {
+          subject.upload_release
+        }.to change {
+          bosh.release_path
+        }.to(release_repo.path)
+      end
+    end
+
     describe "#deploy!" do
       let(:generic_stub) { File.join(deployment_path, "cf-stub.yml") }
       let(:shared_secrets) { File.join(deployment_path, "cf-shared-secrets.yml") }
