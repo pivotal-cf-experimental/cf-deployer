@@ -2,19 +2,8 @@ module CfDeployer
   class FakeBosh
     attr_reader :dev_release, :final_release, :private_config, :deployment, :deployed
 
-    def create_and_upload_dev_release(release_path, release_name)
-      @dev_release = [release_path, release_name]
-    end
-
     def create_dev_release(release_path, release_name)
       @dev_release = [release_path, release_name]
-    end
-
-    def create_and_upload_final_release(release_path, release_name, private_config)
-      raise "did not specify private config" unless private_config
-
-      @final_release = [release_path, release_name]
-      @private_config = private_config
     end
 
     def create_final_release(release_path, release_name, private_config)
