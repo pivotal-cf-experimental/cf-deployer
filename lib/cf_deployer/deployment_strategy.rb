@@ -22,10 +22,7 @@ module CfDeployer
     end
 
     def promote_to!(branch)
-      @hooks.each { |h| h.pre_promote(branch) }
       do_promote_to(branch)
-      @hooks.each { |h| h.post_promote(branch) }
-      nil
     end
 
     private
