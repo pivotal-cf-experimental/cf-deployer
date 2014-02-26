@@ -17,8 +17,7 @@ module CfDeployer
       gospace = File.expand_path("./gospace")
 
       FileUtils.mkdir_p(gospace)
-      @runner.run! "go get -v github.com/cloudfoundry-incubator/spiff",
-        environment: { "GOPATH" => gospace }
+      @runner.run!("go get -v github.com/cloudfoundry-incubator/spiff", environment: {"GOPATH" => gospace})
 
       overrides_file = Tempfile.new("overrides")
       begin
@@ -30,8 +29,8 @@ module CfDeployer
           all_stubs << overrides_file.path
         end
 
-        @runner.run! "#{@release.path}/generate_deployment_manifest #{@infrastructure} #{all_stubs.join(" ")} > #{@destination}",
-          environment: { "PATH" => "#{gospace}/bin:/usr/bin:/bin" }
+        @runner.run!("#{@release.path}/generate_deployment_manifest #{@infrastructure} #{all_stubs.join(" ")} > #{@destination}",
+                     environment: {"PATH" => "#{gospace}/bin:/usr/bin:/bin"})
 
         File.expand_path(@destination)
       ensure
