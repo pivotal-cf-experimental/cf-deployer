@@ -12,11 +12,10 @@ begin
   options = options_parser.parse!
   options_parser.validate!
 
-  logger = CfDeployer::Logger.new
-  deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
+  deploy_env = CfDeployer::DeployEnvironment.new(options)
   deploy_env.prepare
-  CfDeployer::CfDeploy.new(deploy_env, logger).create_upload_and_deploy_release!
+  CfDeployer::CfDeploy.new(deploy_env).create_upload_and_deploy_release!
 rescue => e
-  logger.log_exception e
+  deploy_env.logger.log_exception e
   exit 1
 end

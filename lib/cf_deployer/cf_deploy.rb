@@ -5,7 +5,7 @@ require "cf_deployer/hooks/token_installer"
 
 module CfDeployer
   class CfDeploy
-    def initialize(env, logger)
+    def initialize(env, logger = env.logger)
       @env = env
       @logger = logger
 

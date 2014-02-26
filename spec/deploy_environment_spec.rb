@@ -67,6 +67,10 @@ module CfDeployer
       expect(ReleaseRepo).to have_received(:new).with(logger, runner, "/path/to/repos", "fake-release_repo", "fake-ref")
     end
 
+    it "exposes its logger" do
+      expect(deploy_environment.logger).to eq(logger)
+    end
+
     context "when the rebase option is false" do
       specify Bosh do
         deploy_environment.prepare

@@ -20,6 +20,7 @@ module CfDeployer
              deployment: deployment,
              manifest_generator: manifest_generator,
              runner: runner,
+             logger: logger,
              options: double(:options,
                              deployment_name: "anchors aweigh",
                              install_tokens: true,
@@ -39,7 +40,7 @@ module CfDeployer
           fake_datadog_emitter = double(DatadogEmitter)
           allow(DatadogEmitter).to receive(:new).and_return(fake_datadog_emitter)
 
-          CfDeploy.new(env, double(:logger).as_null_object)
+          CfDeploy.new(env)
           expect(env.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
 
@@ -47,7 +48,7 @@ module CfDeployer
           expect(Dogapi::Client).to receive(:new).with("api", "application").and_return(fake_dogapi)
           expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, env.options.deployment_name)
 
-          CfDeploy.new(env, logger)
+          CfDeploy.new(env)
         end
       end
 
@@ -56,21 +57,21 @@ module CfDeployer
           fake_token_installer = double(TokenInstaller)
           allow(TokenInstaller).to receive(:new).and_return(fake_token_installer)
 
-          CfDeploy.new(env, double(:logger).as_null_object)
+          CfDeploy.new(env)
           expect(env.strategy).to have_received(:install_hook).with(fake_token_installer)
         end
 
         it "creates the hooks correctly" do
           expect(TokenInstaller).to receive(:new).with(manifest_generator, runner)
 
-          CfDeploy.new(env, logger)
+          CfDeploy.new(env)
         end
       end
     end
 
     describe "#create_upload_and_deploy_release!" do
       subject(:cf_deploy) do
-        described_class.new(env, logger)
+        described_class.new(env)
       end
 
       let(:release_repo) { double(ReleaseRepo, :sync! => nil) }
