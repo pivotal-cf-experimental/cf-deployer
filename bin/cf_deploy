@@ -17,7 +17,7 @@ begin
   cf_deploy.create_release
   cf_deploy.upload_release
   cf_deploy.deploy_release
-  cf_deploy.promote_branch
+  cf_deploy.promote_release
 rescue => e
   CfDeployer::Logger.new.log_exception e
   exit 1
