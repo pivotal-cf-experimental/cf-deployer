@@ -18,7 +18,7 @@ module CfDeployer
       @bosh.upload_release(@release_repo.path)
     end
 
-    def promote_to!(branch)
+    def promote_release(branch)
       @release_repo.promote_final_release(branch)
     end
   end

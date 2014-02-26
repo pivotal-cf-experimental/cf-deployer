@@ -53,10 +53,10 @@ module CfDeployer
       end
     end
 
-    describe "#promote!" do
+    describe "#promote_release" do
       it "promotes the final release" do
         expect {
-          subject.promote_to! "some-branch"
+          subject.promote_release "some-branch"
         }.to change {
           release_repo.promoted_final_release
         }.to("some-branch")

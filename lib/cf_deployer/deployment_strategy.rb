@@ -31,7 +31,7 @@ module CfDeployer
       end
     end
 
-    def promote_to!(branch)
+    def promote_release(branch)
       raise NotImplementedError
     end
 

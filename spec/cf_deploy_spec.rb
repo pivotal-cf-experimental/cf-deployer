@@ -92,7 +92,7 @@ module CfDeployer
     describe "#promote_release" do
       it "delegates to the DeployEnvironment#strategy" do
         cf_deploy.promote_release
-        expect(env.strategy).to have_received(:promote_to!).with(env.options.promote_branch)
+        expect(env.strategy).to have_received(:promote_release).with(env.options.promote_branch)
       end
 
       context "when the promote_branch is not set" do
@@ -100,7 +100,7 @@ module CfDeployer
 
         it "does not do any branch promotion" do
           cf_deploy.promote_release
-          expect(env.strategy).not_to have_received(:promote_to!)
+          expect(env.strategy).not_to have_received(:promote_release)
         end
       end
     end

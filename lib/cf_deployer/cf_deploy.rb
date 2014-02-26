@@ -27,7 +27,7 @@ module CfDeployer
     def promote_release
       return unless env.options.promote_branch
 
-      env.strategy.promote_to!(env.options.promote_branch)
+      env.strategy.promote_release(env.options.promote_branch)
     end
 
     private
