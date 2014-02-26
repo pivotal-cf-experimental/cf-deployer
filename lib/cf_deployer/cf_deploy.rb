@@ -8,14 +8,14 @@ module CfDeployer
     def initialize(env, logger)
       @env = env
       @logger = logger
+
+      install_deployment_hooks(env.strategy, env.deployment, env.manifest_generator)
     end
 
     def create_final_release_and_deploy!
-      install_deployment_hooks(@env.strategy, @env.deployment, @env.manifest_generator)
+      env.strategy.deploy!
 
-      @env.strategy.deploy!
-
-      promote_branch(@env.strategy)
+      promote_branch(env.strategy)
     end
 
     private
@@ -38,11 +38,11 @@ module CfDeployer
       strategy.install_hook TokenInstaller.new(manifest_generator, env.runner)
     end
 
-    def install_datadog_hook(strategy, env)
-      return unless env.has_key?("DATADOG_API_KEY")
+    def install_datadog_hook(strategy, bosh_environment)
+      return unless bosh_environment.has_key?("DATADOG_API_KEY")
 
-      dogapi = Dogapi::Client.new(env["DATADOG_API_KEY"], env["DATADOG_APPLICATION_KEY"])
-      strategy.install_hook(DatadogEmitter.new(@logger, dogapi, @env.options.deployment_name))
+      dogapi = Dogapi::Client.new(bosh_environment["DATADOG_API_KEY"], bosh_environment["DATADOG_APPLICATION_KEY"])
+      strategy.install_hook(DatadogEmitter.new(@logger, dogapi, env.options.deployment_name))
     end
   end
 end

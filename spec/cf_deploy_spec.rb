@@ -1,9 +1,12 @@
 require "spec_helper"
 require "cf_deployer/cf_deploy"
+require "cf_deployer/deployment"
+require "cf_deployer/command_runner"
+require "cf_deployer/release_manifest_generator"
 
 module CfDeployer
   describe CfDeploy do
-    describe "#deploy" do
+    describe "#create_final_release_and_deploy!" do
       let(:deployment_strategy) { double(:strategy).as_null_object }
       let(:bosh_environment) { {} }
       let(:deployment) { double(Deployment, :bosh_environment => bosh_environment) }
