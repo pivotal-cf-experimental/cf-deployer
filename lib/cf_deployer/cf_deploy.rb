@@ -12,7 +12,7 @@ module CfDeployer
       install_deployment_hooks(env.strategy, env.deployment, env.manifest_generator)
     end
 
-    def create_final_release_and_deploy!
+    def create_upload_and_deploy_release!
       env.strategy.deploy!
 
       promote_branch(env.strategy)

@@ -6,7 +6,7 @@ require "cf_deployer/release_manifest_generator"
 
 module CfDeployer
   describe CfDeploy do
-    describe "#create_final_release_and_deploy!" do
+    describe "#create_upload_and_deploy_release!" do
       let(:deployment_strategy) { double(:strategy).as_null_object }
       let(:bosh_environment) { {} }
       let(:deployment) { double(Deployment, :bosh_environment => bosh_environment) }
@@ -51,7 +51,7 @@ module CfDeployer
         end
 
         it "installs the datadog hooks" do
-          cf_deploy.create_final_release_and_deploy!
+          cf_deploy.create_upload_and_deploy_release!
           expect(env.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
       end
@@ -60,14 +60,14 @@ module CfDeployer
         let(:promote_branch) { "cool_branch" }
 
         it "promotes to the branch" do
-          cf_deploy.create_final_release_and_deploy!
+          cf_deploy.create_upload_and_deploy_release!
           expect(deployment_strategy).to have_received(:promote_to!).with(promote_branch)
         end
       end
 
       specify TokenInstaller do
         TokenInstaller.stub(:new)
-        cf_deploy.create_final_release_and_deploy!
+        cf_deploy.create_upload_and_deploy_release!
         expect(TokenInstaller).to have_received(:new).with(manifest_generator, runner)
       end
     end

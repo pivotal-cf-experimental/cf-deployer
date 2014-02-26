@@ -15,7 +15,7 @@ begin
   logger = CfDeployer::Logger.new
   deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
   deploy_env.prepare
-  CfDeployer::CfDeploy.new(deploy_env, logger).create_final_release_and_deploy!
+  CfDeployer::CfDeploy.new(deploy_env, logger).create_upload_and_deploy_release!
 rescue => e
   logger.log_exception e
   exit 1
