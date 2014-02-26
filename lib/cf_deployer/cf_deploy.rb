@@ -29,7 +29,7 @@ module CfDeployer
       upload_release
       deploy_release
 
-      promote_branch(env.strategy)
+      promote_branch
     end
 
     private
@@ -41,10 +41,10 @@ module CfDeployer
       install_token_hook(strategy, manifest_generator)
     end
 
-    def promote_branch(strategy)
+    def promote_branch
       return unless env.options.promote_branch
 
-      strategy.promote_to!(env.options.promote_branch)
+      env.strategy.promote_to!(env.options.promote_branch)
     end
 
     def install_token_hook(strategy, manifest_generator)
