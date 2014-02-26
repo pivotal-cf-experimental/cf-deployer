@@ -6,7 +6,6 @@ require "cf_deployer/options_parser"
 require "cf_deployer/logger"
 require "cf_deployer/deploy_environment"
 
-
 begin
   options_parser = CfDeployer::OptionsParser.new(ARGV)
   options = options_parser.parse!
@@ -16,6 +15,6 @@ begin
   deploy_env.prepare
   CfDeployer::CfDeploy.new(deploy_env).create_upload_and_deploy_release!
 rescue => e
-  deploy_env.logger.log_exception e
+  CfDeployer::Logger.new.log_exception e
   exit 1
 end
