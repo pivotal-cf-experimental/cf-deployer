@@ -1,22 +1,21 @@
 require "spec_helper"
 require "cf_deployer/cf_deploy"
-require "cf_deployer/deployment"
 require "cf_deployer/command_runner"
+require "cf_deployer/deploy_environment"
+require "cf_deployer/deployment"
+require "cf_deployer/deployment_strategy"
 require "cf_deployer/release_manifest_generator"
 
 module CfDeployer
   describe CfDeploy do
     let(:bosh_environment) { {} }
-    let(:deployment) { double(Deployment, :bosh_environment => bosh_environment) }
-    let(:deployment_strategy) { double(:strategy).as_null_object }
-    let(:manifest_generator) { double(ReleaseManifestGenerator) }
     let(:promote_branch) { "cool_branch" }
 
-    let(:env) {
-      double(:environment,
-             strategy: deployment_strategy,
-             deployment: deployment,
-             manifest_generator: manifest_generator,
+    let(:env) do
+      double(DeployEnvironment,
+             strategy: double(DeploymentStrategy).as_null_object,
+             deployment: double(Deployment, bosh_environment: bosh_environment),
+             manifest_generator: double(ReleaseManifestGenerator),
              runner: double(CommandRunner),
              logger: double(:logger).as_null_object,
              options: double(:options,
@@ -25,11 +24,9 @@ module CfDeployer
                              promote_branch: promote_branch
              )
       )
-    }
-
-    subject(:cf_deploy) do
-      described_class.new(env)
     end
+
+    subject(:cf_deploy) { described_class.new(env) }
 
     describe "#initialize" do
       context "when the bosh environment specifies the datadog environment variables" do
@@ -64,7 +61,7 @@ module CfDeployer
         end
 
         it "creates the hooks correctly" do
-          expect(TokenInstaller).to receive(:new).with(manifest_generator, env.runner)
+          expect(TokenInstaller).to receive(:new).with(env.manifest_generator, env.runner)
 
           CfDeploy.new(env)
         end
