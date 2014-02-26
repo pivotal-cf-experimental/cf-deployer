@@ -5,6 +5,7 @@ require "cf_deployer/deploy_environment"
 require "cf_deployer/deployment"
 require "cf_deployer/deployment_strategy"
 require "cf_deployer/release_manifest_generator"
+require "cf_deployer/options_parser"
 
 module CfDeployer
   describe CfDeploy do
@@ -27,6 +28,20 @@ module CfDeployer
     end
 
     subject(:cf_deploy) { described_class.new(env) }
+
+    describe ".build" do
+      it "constructs a DeployEnvironment and passes it to .new" do
+        options = double(OptionsParser::Options)
+        deploy_environment = double(DeployEnvironment)
+        cf_deploy = double(CfDeploy)
+
+        expect(DeployEnvironment).to receive(:new).with(options).and_return(deploy_environment)
+        expect(deploy_environment).to receive(:prepare).with(no_args)
+        expect(CfDeploy).to receive(:new).with(deploy_environment).and_return(cf_deploy)
+
+        expect(CfDeploy.build(options)).to eq(cf_deploy)
+      end
+    end
 
     describe "#initialize" do
       context "when the bosh environment specifies the datadog environment variables" do
