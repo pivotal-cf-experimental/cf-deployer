@@ -12,13 +12,28 @@ module CfDeployer
       install_deployment_hooks(env.strategy, env.deployment, env.manifest_generator)
     end
 
+    def create_release
+      env.strategy.create_release
+    end
+
+    def upload_release
+      env.strategy.upload_release
+    end
+
+    def deploy_release
+      env.strategy.deploy_release
+    end
+
     def create_upload_and_deploy_release!
-      env.strategy.deploy!
+      create_release
+      upload_release
+      deploy_release
 
       promote_branch(env.strategy)
     end
 
     private
+
     attr_reader :env
 
     def install_deployment_hooks(strategy, deployment, manifest_generator)
