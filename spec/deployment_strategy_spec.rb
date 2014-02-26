@@ -99,34 +99,5 @@ module CfDeployer
         }.to([true, true])
       end
     end
-
-    describe "#deploy!" do
-      it "calls pre_deploy and post_deploy hooks before and after deploying" do
-        sequence = []
-
-        some_hook =
-          Class.new do
-            define_method(:pre_deploy) do
-              sequence << :pre_deploy
-            end
-
-            define_method(:post_deploy) do
-              sequence << :post_deploy
-            end
-          end
-
-        subject.install_hook(some_hook.new)
-
-        subject.stub(:create_release) { bosh.create_dev_release(release_repo.path, release_name) }
-        subject.stub(:upload_release) { bosh.upload_release(release_repo.path) }
-        bosh.stub(:deploy) { sequence << :deploying }
-
-        expect {
-          subject.deploy!
-        }.to change {
-          sequence
-        }.from([]).to([:pre_deploy, :deploying, :post_deploy])
-      end
-    end
   end
 end

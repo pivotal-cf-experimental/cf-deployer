@@ -36,53 +36,6 @@ module CfDeployer
       end
     end
 
-    describe "#deploy!" do
-      let(:generic_stub) { File.join(deployment_path, "cf-stub.yml") }
-      let(:shared_secrets) { File.join(deployment_path, "cf-shared-secrets.yml") }
-
-      before do
-        File.open(generic_stub, "w") do |io|
-          io.write("--- {}")
-        end
-
-        File.open(shared_secrets, "w") do |io|
-          io.write("--- {}")
-        end
-      end
-
-      it "creates and uploads a dev release with the right name" do
-        expect {
-          subject.deploy!
-        }.to change {
-          [bosh.dev_release, bosh.dev_release_name]
-        }.to([release_repo.path, "some-release-name"])
-      end
-
-      it "generates the manifest using the stubs" do
-        expect {
-          subject.deploy!
-        }.to change {
-          manifest.stubs
-        }.to([generic_stub, shared_secrets])
-      end
-
-      it "sets the deployment" do
-        expect {
-          subject.deploy!
-        }.to change {
-          bosh.deployment
-        }.to("some-manifest.yml")
-      end
-
-      it "deploys" do
-        expect {
-          subject.deploy!
-        }.to change {
-          bosh.deployed
-        }.to(true)
-      end
-    end
-
     describe "#promote!" do
       it "promotes the dev release" do
         expect {
