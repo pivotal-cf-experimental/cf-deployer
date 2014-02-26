@@ -13,7 +13,11 @@ begin
 
   deploy_env = CfDeployer::DeployEnvironment.new(options)
   deploy_env.prepare
-  CfDeployer::CfDeploy.new(deploy_env).create_upload_and_deploy_release!
+  cf_deploy = CfDeployer::CfDeploy.new(deploy_env)
+  cf_deploy.create_release
+  cf_deploy.upload_release
+  cf_deploy.deploy_release
+  cf_deploy.promote_branch
 rescue => e
   CfDeployer::Logger.new.log_exception e
   exit 1

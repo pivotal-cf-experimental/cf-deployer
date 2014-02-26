@@ -9,18 +9,16 @@ module CfDeployer
     let(:bosh_environment) { {} }
     let(:deployment) { double(Deployment, :bosh_environment => bosh_environment) }
     let(:deployment_strategy) { double(:strategy).as_null_object }
-    let(:logger) { double(:logger).as_null_object }
     let(:manifest_generator) { double(ReleaseManifestGenerator) }
-    let(:promote_branch) { nil }
-    let(:runner) { double(CommandRunner) }
+    let(:promote_branch) { "cool_branch" }
 
     let(:env) {
       double(:environment,
              strategy: deployment_strategy,
              deployment: deployment,
              manifest_generator: manifest_generator,
-             runner: runner,
-             logger: logger,
+             runner: double(CommandRunner),
+             logger: double(:logger).as_null_object,
              options: double(:options,
                              deployment_name: "anchors aweigh",
                              install_tokens: true,
@@ -28,6 +26,10 @@ module CfDeployer
              )
       )
     }
+
+    subject(:cf_deploy) do
+      described_class.new(env)
+    end
 
     describe "#initialize" do
       context "when the bosh environment specifies the datadog environment variables" do
@@ -46,7 +48,7 @@ module CfDeployer
 
         it "creates the hooks correctly" do
           expect(Dogapi::Client).to receive(:new).with("api", "application").and_return(fake_dogapi)
-          expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, env.options.deployment_name)
+          expect(DatadogEmitter).to receive(:new).with(env.logger, fake_dogapi, env.options.deployment_name)
 
           CfDeploy.new(env)
         end
@@ -62,26 +64,46 @@ module CfDeployer
         end
 
         it "creates the hooks correctly" do
-          expect(TokenInstaller).to receive(:new).with(manifest_generator, runner)
+          expect(TokenInstaller).to receive(:new).with(manifest_generator, env.runner)
 
           CfDeploy.new(env)
         end
       end
     end
 
-    describe "#create_upload_and_deploy_release!" do
-      subject(:cf_deploy) do
-        described_class.new(env)
+    describe "#create_release" do
+      it "delegates to the DeployEnvironment#strategy" do
+        cf_deploy.create_release
+        expect(env.strategy).to have_received(:create_release)
+      end
+    end
+
+    describe "#upload_release" do
+      it "delegates to the DeployEnvironment#strategy" do
+        cf_deploy.upload_release
+        expect(env.strategy).to have_received(:upload_release)
+      end
+    end
+
+    describe "#deploy_release" do
+      it "delegates to the DeployEnvironment#strategy" do
+        cf_deploy.deploy_release
+        expect(env.strategy).to have_received(:deploy_release)
+      end
+    end
+
+    describe "#promote_release" do
+      it "delegates to the DeployEnvironment#strategy" do
+        cf_deploy.promote_release
+        expect(env.strategy).to have_received(:promote_to!).with(env.options.promote_branch)
       end
 
-      let(:release_repo) { double(ReleaseRepo, :sync! => nil) }
+      context "when the promote_branch is not set" do
+        let(:promote_branch) { nil }
 
-      context "when the promote_branch option is specified" do
-        let(:promote_branch) { "cool_branch" }
-
-        it "promotes to the branch" do
-          cf_deploy.create_upload_and_deploy_release!
-          expect(deployment_strategy).to have_received(:promote_to!).with(promote_branch)
+        it "does not do any branch promotion" do
+          cf_deploy.promote_release
+          expect(env.strategy).not_to have_received(:promote_to!)
         end
       end
     end

@@ -24,12 +24,10 @@ module CfDeployer
       env.strategy.deploy_release
     end
 
-    def create_upload_and_deploy_release!
-      create_release
-      upload_release
-      deploy_release
+    def promote_release
+      return unless env.options.promote_branch
 
-      promote_branch
+      env.strategy.promote_to!(env.options.promote_branch)
     end
 
     private
@@ -39,12 +37,6 @@ module CfDeployer
     def install_deployment_hooks(strategy, deployment, manifest_generator)
       install_datadog_hook(strategy, deployment.bosh_environment)
       install_token_hook(strategy, manifest_generator)
-    end
-
-    def promote_branch
-      return unless env.options.promote_branch
-
-      env.strategy.promote_to!(env.options.promote_branch)
     end
 
     def install_token_hook(strategy, manifest_generator)
