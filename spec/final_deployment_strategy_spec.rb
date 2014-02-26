@@ -9,7 +9,7 @@ module CfDeployer
     let(:bosh) { FakeBosh.new }
     let(:deployment) { Deployment.new(deployment_path) }
     let(:release_repo) { FakeReleaseRepo.new "./repos/cf-release" }
-    let(:manifest) { FakeManifest.new "some-manifest.yml" }
+    let(:manifest) { FakeReleaseManifestGenerator.new "some-manifest.yml" }
     let(:release_name) { "some-release-name" }
 
     subject { described_class.new(bosh, deployment, manifest, release_name, release_repo) }

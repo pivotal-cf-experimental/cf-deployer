@@ -23,13 +23,18 @@ module CfDeployer
     end
 
     def deploy_release
-      raise NotImplementedError
+      with_deployment_hooks do
+        manifest = @manifest.generate!(@deployment.stub_files)
+
+        @bosh.set_deployment(manifest)
+        @bosh.deploy
+      end
     end
 
     def deploy!
-      with_deployment_hooks do
-        do_deploy
-      end
+      create_release
+      upload_release
+      deploy_release
     end
 
     def promote_to!(branch)
@@ -37,10 +42,6 @@ module CfDeployer
     end
 
     private
-
-    def do_deploy
-      raise NotImplementedError
-    end
 
     def with_deployment_hooks
       @hooks.each(&:pre_deploy)

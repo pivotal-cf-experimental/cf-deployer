@@ -16,10 +16,10 @@ module CfDeployer
     let(:bosh) { FakeBosh.new }
     let(:deployment) { Deployment.new(deployment_path) }
     let(:release_repo) { FakeReleaseRepo.new "./repos/cf-release" }
-    let(:manifest_generator) { ReleaseManifestGenerator.new runner, release_repo, "doesnt-matter", generated_manifest.path }
+    let(:manifest) { FakeReleaseManifestGenerator.new "some-manifest.yml" }
     let(:release_name) { "some-release-name" }
 
-    subject { described_class.new(bosh, deployment, manifest_generator, release_name, release_repo) }
+    subject { described_class.new(bosh, deployment, manifest, release_name, release_repo) }
 
     it "does not implement #create_release" do
       expect { subject.create_release }.to raise_error(NotImplementedError)
@@ -29,8 +29,46 @@ module CfDeployer
       expect { subject.upload_release }.to raise_error(NotImplementedError)
     end
 
-    it "does not implement #deploy_release" do
-      expect { subject.deploy_release }.to raise_error(NotImplementedError)
+    describe "#deploy_release" do
+      let(:generic_stub) { File.join(deployment_path, "cf-stub.yml") }
+      let(:shared_secrets) { File.join(deployment_path, "cf-shared-secrets.yml") }
+
+      before do
+        bosh.create_dev_release(release_repo.path, release_name)
+        bosh.upload_release(release_repo.path)
+
+        File.open(generic_stub, "w") do |io|
+          io.write("--- {}")
+        end
+
+        File.open(shared_secrets, "w") do |io|
+          io.write("--- {}")
+        end
+      end
+
+      it "generates the manifest using the stubs" do
+        expect {
+          subject.deploy_release
+        }.to change {
+          manifest.stubs
+        }.to([generic_stub, shared_secrets])
+      end
+
+      it "sets the deployment" do
+        expect {
+          subject.deploy_release
+        }.to change {
+          bosh.deployment
+        }.to("some-manifest.yml")
+      end
+
+      it "deploys" do
+        expect {
+          subject.deploy_release
+        }.to change {
+          bosh.deployed
+        }.to(true)
+      end
     end
 
     describe "#install_hook" do
@@ -49,16 +87,15 @@ module CfDeployer
       end
 
       it "sets up a hook for deploying" do
-        subject.stub(:do_deploy)
+        bosh.create_dev_release(release_repo.path, release_name)
+        bosh.upload_release(release_repo.path)
 
         subject.install_hook(some_hook)
 
         expect {
-          subject.deploy!
+          subject.deploy_release
         }.to change {
-          [ some_hook.triggered_pre_deploy,
-            some_hook.triggered_post_deploy,
-          ]
+          [some_hook.triggered_pre_deploy, some_hook.triggered_post_deploy]
         }.to([true, true])
       end
     end
@@ -80,7 +117,9 @@ module CfDeployer
 
         subject.install_hook(some_hook.new)
 
-        subject.stub(:do_deploy) { sequence << :deploying }
+        subject.stub(:create_release) { bosh.create_dev_release(release_repo.path, release_name) }
+        subject.stub(:upload_release) { bosh.upload_release(release_repo.path) }
+        bosh.stub(:deploy) { sequence << :deploying }
 
         expect {
           subject.deploy!

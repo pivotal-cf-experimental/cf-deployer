@@ -21,17 +21,5 @@ module CfDeployer
     def promote_to!(branch)
       @release_repo.promote_final_release(branch)
     end
-
-    private
-
-    def do_deploy
-      create_release
-      upload_release
-
-      manifest = @manifest.generate!(@deployment.stub_files)
-
-      @bosh.set_deployment(manifest)
-      @bosh.deploy
-    end
   end
 end
