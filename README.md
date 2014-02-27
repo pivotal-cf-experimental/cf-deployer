@@ -13,3 +13,25 @@ $ bundle exec rake install
 cf_deployer 0.3.1 built to pkg/cf_deployer-0.3.1.gem.
 cf_deployer (0.3.1) installed.
 ```
+
+## Using `cf_deploy_uploaded_release`
+
+This command deploys the latest uploaded release on the targeted director for the given release name and deployment.
+
+It is not yet possible to specify a particular release version.
+`latest` is used, unless specifically overridden in the deployment manifest, manually.
+
+```bash
+# --release-repo        => e.g. git@github.com:cloudfoundry/cf-release
+# --release-name        => e.g. my-cf-release
+# --deployments-repo    => e.g. git@github.com:my-org/my-deployments (this must contian a directory named <release name>)
+# --deployment-name     => e.g. my-cf-deployment
+
+$ cf_deploy_uploaded_release \
+    --release-repo <release repository>  \
+    --release-ref master \
+    --release-name <release name> \
+    --deployments-repo <deployments repository> \
+    --deployment-name <deployment name> \
+    --infrastructure {aws, vsphere, warden} # pick one
+```
