@@ -13,7 +13,7 @@ module CfDeployer
     let(:promote_branch) { "cool_branch" }
     let(:logger) { double(Logger).as_null_object }
 
-    let(:env) do
+    let(:deploy_environment) do
       double(DeployEnvironment,
              strategy: double(DeploymentStrategy).as_null_object,
              deployment: double(Deployment, bosh_environment: bosh_environment),
@@ -27,7 +27,7 @@ module CfDeployer
       )
     end
 
-    subject(:cf_deploy) { described_class.new(env, logger) }
+    subject(:cf_deploy) { described_class.new(deploy_environment, logger) }
 
     describe ".build" do
       it "constructs a DeployEnvironment and passes it to .new" do
@@ -54,15 +54,15 @@ module CfDeployer
           fake_datadog_emitter = double(DatadogEmitter)
           allow(DatadogEmitter).to receive(:new).and_return(fake_datadog_emitter)
 
-          CfDeploy.new(env, logger)
-          expect(env.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
+          CfDeploy.new(deploy_environment, logger)
+          expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
 
         it "creates the hooks correctly" do
           expect(Dogapi::Client).to receive(:new).with("api", "application").and_return(fake_dogapi)
-          expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, env.options.deployment_name)
+          expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, deploy_environment.options.deployment_name)
 
-          CfDeploy.new(env, logger)
+          CfDeploy.new(deploy_environment, logger)
         end
       end
 
@@ -71,14 +71,14 @@ module CfDeployer
           fake_token_installer = double(TokenInstaller)
           allow(TokenInstaller).to receive(:new).and_return(fake_token_installer)
 
-          CfDeploy.new(env, logger)
-          expect(env.strategy).to have_received(:install_hook).with(fake_token_installer)
+          CfDeploy.new(deploy_environment, logger)
+          expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_token_installer)
         end
 
         it "creates the hooks correctly" do
-          expect(TokenInstaller).to receive(:new).with(env.manifest_generator, env.runner)
+          expect(TokenInstaller).to receive(:new).with(deploy_environment.manifest_generator, deploy_environment.runner)
 
-          CfDeploy.new(env, logger)
+          CfDeploy.new(deploy_environment, logger)
         end
       end
     end
@@ -86,28 +86,28 @@ module CfDeployer
     describe "#create_release" do
       it "delegates to the DeployEnvironment#strategy" do
         cf_deploy.create_release
-        expect(env.strategy).to have_received(:create_release)
+        expect(deploy_environment.strategy).to have_received(:create_release)
       end
     end
 
     describe "#upload_release" do
       it "delegates to the DeployEnvironment#strategy" do
         cf_deploy.upload_release
-        expect(env.strategy).to have_received(:upload_release)
+        expect(deploy_environment.strategy).to have_received(:upload_release)
       end
     end
 
     describe "#deploy_release" do
       it "delegates to the DeployEnvironment#strategy" do
         cf_deploy.deploy_release
-        expect(env.strategy).to have_received(:deploy_release)
+        expect(deploy_environment.strategy).to have_received(:deploy_release)
       end
     end
 
     describe "#promote_release" do
       it "delegates to the DeployEnvironment#strategy" do
         cf_deploy.promote_release
-        expect(env.strategy).to have_received(:promote_release).with(env.options.promote_branch)
+        expect(deploy_environment.strategy).to have_received(:promote_release).with(deploy_environment.options.promote_branch)
       end
 
       context "when the promote_branch is not set" do
@@ -115,7 +115,7 @@ module CfDeployer
 
         it "does not do any branch promotion" do
           cf_deploy.promote_release
-          expect(env.strategy).not_to have_received(:promote_release)
+          expect(deploy_environment.strategy).not_to have_received(:promote_release)
         end
       end
     end
