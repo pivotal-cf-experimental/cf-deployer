@@ -11,6 +11,7 @@ module CfDeployer
   describe CfDeploy do
     let(:bosh_environment) { {} }
     let(:promote_branch) { "cool_branch" }
+    let(:logger) { double(Logger).as_null_object }
 
     let(:env) do
       double(DeployEnvironment,
@@ -18,7 +19,6 @@ module CfDeployer
              deployment: double(Deployment, bosh_environment: bosh_environment),
              manifest_generator: double(ReleaseManifestGenerator),
              runner: double(CommandRunner),
-             logger: double(:logger).as_null_object,
              options: double(:options,
                              deployment_name: "anchors aweigh",
                              install_tokens: true,
@@ -27,19 +27,19 @@ module CfDeployer
       )
     end
 
-    subject(:cf_deploy) { described_class.new(env) }
+    subject(:cf_deploy) { described_class.new(env, logger) }
 
     describe ".build" do
       it "constructs a DeployEnvironment and passes it to .new" do
         options = double(OptionsParser::Options)
         deploy_environment = double(DeployEnvironment)
-        cf_deploy = double(CfDeploy)
-
-        expect(DeployEnvironment).to receive(:new).with(options).and_return(deploy_environment)
+        expect(DeployEnvironment).to receive(:new).with(options, logger).and_return(deploy_environment)
         expect(deploy_environment).to receive(:prepare).with(no_args)
-        expect(CfDeploy).to receive(:new).with(deploy_environment).and_return(cf_deploy)
 
-        expect(CfDeploy.build(options)).to eq(cf_deploy)
+        cf_deploy = double(CfDeploy)
+        expect(CfDeploy).to receive(:new).with(deploy_environment, logger).and_return(cf_deploy)
+
+        expect(CfDeploy.build(options, logger)).to eq(cf_deploy)
       end
     end
 
@@ -54,15 +54,15 @@ module CfDeployer
           fake_datadog_emitter = double(DatadogEmitter)
           allow(DatadogEmitter).to receive(:new).and_return(fake_datadog_emitter)
 
-          CfDeploy.new(env)
+          CfDeploy.new(env, logger)
           expect(env.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
 
         it "creates the hooks correctly" do
           expect(Dogapi::Client).to receive(:new).with("api", "application").and_return(fake_dogapi)
-          expect(DatadogEmitter).to receive(:new).with(env.logger, fake_dogapi, env.options.deployment_name)
+          expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, env.options.deployment_name)
 
-          CfDeploy.new(env)
+          CfDeploy.new(env, logger)
         end
       end
 
@@ -71,14 +71,14 @@ module CfDeployer
           fake_token_installer = double(TokenInstaller)
           allow(TokenInstaller).to receive(:new).and_return(fake_token_installer)
 
-          CfDeploy.new(env)
+          CfDeploy.new(env, logger)
           expect(env.strategy).to have_received(:install_hook).with(fake_token_installer)
         end
 
         it "creates the hooks correctly" do
           expect(TokenInstaller).to receive(:new).with(env.manifest_generator, env.runner)
 
-          CfDeploy.new(env)
+          CfDeploy.new(env, logger)
         end
       end
     end

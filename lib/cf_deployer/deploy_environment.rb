@@ -8,9 +8,9 @@ require "cf_deployer/command_runner"
 
 module CfDeployer
   class DeployEnvironment
-    attr_reader :deployment, :strategy, :manifest_generator, :options, :logger, :runner
+    attr_reader :deployment, :strategy, :manifest_generator, :options, :runner
 
-    def initialize(options, logger = CfDeployer::Logger.new, runner = CfDeployer::CommandRunner.new(logger, options.dry_run))
+    def initialize(options, logger, runner = CfDeployer::CommandRunner.new(logger, options.dry_run))
       @options = options
       @logger = logger
       @runner = runner

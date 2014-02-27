@@ -1,17 +1,19 @@
 require "dogapi"
 
+require "cf_deployer/deploy_environment"
 require "cf_deployer/hooks/datadog_emitter"
 require "cf_deployer/hooks/token_installer"
+require "cf_deployer/logger"
 
 module CfDeployer
   class CfDeploy
-    def self.build(options)
-      deploy_env = CfDeployer::DeployEnvironment.new(options)
+    def self.build(options, logger = CfDeployer::Logger.new)
+      deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
       deploy_env.prepare
-      new(deploy_env)
+      new(deploy_env, logger)
     end
 
-    def initialize(env, logger = env.logger)
+    def initialize(env, logger)
       @env = env
       @logger = logger
 
