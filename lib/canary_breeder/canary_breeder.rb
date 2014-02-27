@@ -118,7 +118,7 @@ module CanaryBreeder
       begin
         runner.run! "gcf app #{name}"
         true
-      rescue CfDeployer::CommandRunner::CommandFailed => e
+      rescue CfDeployer::CommandRunner::CommandFailed
         false
       end
     end

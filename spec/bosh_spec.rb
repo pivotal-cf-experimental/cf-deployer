@@ -163,7 +163,7 @@ module CfDeployer
 
           expect(runner).to have_executed_serially(
             bosh_command_in_release('create release'),
-            "cd #@release_repo && git checkout -- config/final.yml .final_builds/",
+            "cd #{@release_repo} && git checkout -- config/final.yml .final_builds/",
             "cp /some/config/private.yml #{private_yml}",
             bosh_command_in_release('create release --final'),
           )

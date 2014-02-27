@@ -42,12 +42,12 @@ MSG
 
   def pretty_command_list(commands)
     commands.collect do |c|
-      command = nil
+      command = ''
 
       case c
       when Array
         cmd, opts, blk = c
-        command = cmd.respond_to?(:<<) ? cmd.dup : cmd.inspect
+        command << cmd.respond_to?(:<<) ? cmd.dup : cmd.inspect
         command << " with options #{opts.inspect}" if opts && opts != {}
         command << ' with a callback' if blk
       when String

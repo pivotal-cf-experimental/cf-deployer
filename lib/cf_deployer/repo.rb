@@ -13,8 +13,8 @@ module CfDeployer
     def sync!
       unless cloned?
         log_message 'not found; cloning'
-        @runner.run! "mkdir -p #@repos_path"
-        @runner.run! "git clone #@repo_uri #{path}"
+        @runner.run! "mkdir -p #{@repos_path}"
+        @runner.run! "git clone #{@repo_uri} #{path}"
       end
 
       unless git_toplevel
@@ -22,7 +22,7 @@ module CfDeployer
         return
       end
 
-      log_message "syncing with #@ref"
+      log_message "syncing with #{@ref}"
       sync_with_origin
     end
 
