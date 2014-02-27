@@ -15,9 +15,9 @@ RSpec.configure do |config|
   config.include CliMatchers
 
   config.before do
-    Process.stub(:spawn).and_raise('It is unsafe to call Process.spawn in a spec')
-    CfDeployer::ShellOut.stub(:capture_output).and_raise('It is unsafe to call ShellOut.capture_output in a spec')
-    CfDeployer::ShellOut.stub(:with_clean_env).and_raise('It is unsafe to call ShellOut.with_clean_env in a spec')
-    IO.stub(:popen).and_raise('It is unsafe to call IO.popen in a spec')
+    allow(Process).to receive(:spawn).and_raise('It is unsafe to call Process.spawn in a spec')
+    allow(CfDeployer::ShellOut).to receive(:capture_output).and_raise('It is unsafe to call ShellOut.capture_output in a spec')
+    allow(CfDeployer::ShellOut).to receive(:with_clean_env).and_raise('It is unsafe to call ShellOut.with_clean_env in a spec')
+    allow(IO).to receive(:popen).and_raise('It is unsafe to call IO.popen in a spec')
   end
 end
