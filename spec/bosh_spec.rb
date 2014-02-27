@@ -69,7 +69,7 @@ module CfDeployer
               end
             end
 
-            it "updates the release name to 'cf'" do
+            it 'updates the release name to "cf"' do
               expect {
                 run_bosh_task
               }.to change {
@@ -169,7 +169,7 @@ module CfDeployer
           )
         end
 
-        it "logs that it's creating a final release" do
+        it 'logs that final release creation' do
           run_bosh_task
           expect(logger).to have_logged('creating final release')
         end
@@ -188,7 +188,7 @@ module CfDeployer
         )
       end
 
-      it "logs what it's setting the deployment to" do
+      it 'logs what the deployment is set to' do
         bosh.set_deployment('my-manifest.yml')
 
         expect(logger).to have_logged('setting deployment to my-manifest.yml')
@@ -293,7 +293,7 @@ module CfDeployer
         end
 
         context 'when the rebase has no job or package changes' do
-          it "continues without throwing error, despite bosh's unsucessful return code" do
+          it 'continues without throwing error, despite an unsucessful return code from bosh' do
             runner.when_running(/upload release .* --rebase/) do
               File.open(bosh.bosh_output_file.path, 'w') do |file|
                 file.write('Rebase is attempted without any job or package changes')
@@ -306,8 +306,8 @@ module CfDeployer
           end
         end
 
-        context "when the bosh upload fails, without the error 'the rebase has no job or package changes'" do
-          it "continues without throwing error, despite bosh's unsucessful return code" do
+        context 'when the bosh upload fails, without the error "the rebase has no job or package changes"' do
+          it 'continues without throwing error, despite an unsucessful return code from bosh' do
             runner.when_running(/upload release .* --rebase/) do
               raise CommandRunner::CommandFailed
             end
