@@ -1,9 +1,9 @@
-require "dogapi"
+require 'dogapi'
 
-require "cf_deployer/deploy_environment"
-require "cf_deployer/hooks/datadog_emitter"
-require "cf_deployer/hooks/token_installer"
-require "cf_deployer/logger"
+require 'cf_deployer/deploy_environment'
+require 'cf_deployer/hooks/datadog_emitter'
+require 'cf_deployer/hooks/token_installer'
+require 'cf_deployer/logger'
 
 module CfDeployer
   class CfDeploy
@@ -54,9 +54,9 @@ module CfDeployer
     end
 
     def install_datadog_hook(strategy, bosh_environment)
-      return unless bosh_environment.has_key?("DATADOG_API_KEY")
+      return unless bosh_environment.has_key?('DATADOG_API_KEY')
 
-      dogapi = Dogapi::Client.new(bosh_environment["DATADOG_API_KEY"], bosh_environment["DATADOG_APPLICATION_KEY"])
+      dogapi = Dogapi::Client.new(bosh_environment['DATADOG_API_KEY'], bosh_environment['DATADOG_APPLICATION_KEY'])
       strategy.install_hook(DatadogEmitter.new(@logger, dogapi, deploy_environment.options.deployment_name))
     end
   end

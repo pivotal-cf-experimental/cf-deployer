@@ -1,16 +1,16 @@
-require "spec_helper"
-require "cf_deployer/cf_deploy"
-require "cf_deployer/command_runner"
-require "cf_deployer/deploy_environment"
-require "cf_deployer/deployment"
-require "cf_deployer/deployment_strategy"
-require "cf_deployer/release_manifest_generator"
-require "cf_deployer/options_parser"
+require 'spec_helper'
+require 'cf_deployer/cf_deploy'
+require 'cf_deployer/command_runner'
+require 'cf_deployer/deploy_environment'
+require 'cf_deployer/deployment'
+require 'cf_deployer/deployment_strategy'
+require 'cf_deployer/release_manifest_generator'
+require 'cf_deployer/options_parser'
 
 module CfDeployer
   describe CfDeploy do
     let(:bosh_environment) { {} }
-    let(:promote_branch) { "cool_branch" }
+    let(:promote_branch) { 'cool_branch' }
     let(:logger) { double(Logger).as_null_object }
 
     let(:deploy_environment) do
@@ -20,7 +20,7 @@ module CfDeployer
              manifest_generator: double(ReleaseManifestGenerator),
              runner: double(CommandRunner),
              options: double(:options,
-                             deployment_name: "anchors aweigh",
+                             deployment_name: 'anchors aweigh',
                              install_tokens: true,
                              promote_branch: promote_branch
              )
@@ -29,8 +29,8 @@ module CfDeployer
 
     subject(:cf_deploy) { described_class.new(deploy_environment, logger) }
 
-    describe ".build" do
-      it "constructs a DeployEnvironment and passes it to .new" do
+    describe '.build' do
+      it 'constructs a DeployEnvironment and passes it to .new' do
         options = double(OptionsParser::Options)
         deploy_environment = double(DeployEnvironment)
         expect(DeployEnvironment).to receive(:new).with(options, logger).and_return(deploy_environment)
@@ -43,14 +43,14 @@ module CfDeployer
       end
     end
 
-    describe "#initialize" do
-      context "when the bosh environment specifies the datadog environment variables" do
+    describe '#initialize' do
+      context 'when the bosh environment specifies the datadog environment variables' do
         let(:fake_dogapi) { double(Dogapi::Client) }
         let(:bosh_environment) do
-          {"DATADOG_API_KEY" => "api", "DATADOG_APPLICATION_KEY" => "application"}
+          {'DATADOG_API_KEY' => 'api', 'DATADOG_APPLICATION_KEY' => 'application'}
         end
 
-        it "installs the datadog hooks" do
+        it 'installs the datadog hooks' do
           fake_datadog_emitter = double(DatadogEmitter)
           allow(DatadogEmitter).to receive(:new).and_return(fake_datadog_emitter)
 
@@ -58,16 +58,16 @@ module CfDeployer
           expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
 
-        it "creates the hooks correctly" do
-          expect(Dogapi::Client).to receive(:new).with("api", "application").and_return(fake_dogapi)
+        it 'creates the hooks correctly' do
+          expect(Dogapi::Client).to receive(:new).with('api', 'application').and_return(fake_dogapi)
           expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, deploy_environment.options.deployment_name)
 
           CfDeploy.new(deploy_environment, logger)
         end
       end
 
-      describe "token hooks" do
-        it "installs the token hooks" do
+      describe 'token hooks' do
+        it 'installs the token hooks' do
           fake_token_installer = double(TokenInstaller)
           allow(TokenInstaller).to receive(:new).and_return(fake_token_installer)
 
@@ -75,7 +75,7 @@ module CfDeployer
           expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_token_installer)
         end
 
-        it "creates the hooks correctly" do
+        it 'creates the hooks correctly' do
           expect(TokenInstaller).to receive(:new).with(deploy_environment.manifest_generator, deploy_environment.runner)
 
           CfDeploy.new(deploy_environment, logger)
@@ -83,37 +83,37 @@ module CfDeployer
       end
     end
 
-    describe "#create_release" do
-      it "delegates to the DeployEnvironment#strategy" do
+    describe '#create_release' do
+      it 'delegates to the DeployEnvironment#strategy' do
         cf_deploy.create_release
         expect(deploy_environment.strategy).to have_received(:create_release)
       end
     end
 
-    describe "#upload_release" do
-      it "delegates to the DeployEnvironment#strategy" do
+    describe '#upload_release' do
+      it 'delegates to the DeployEnvironment#strategy' do
         cf_deploy.upload_release
         expect(deploy_environment.strategy).to have_received(:upload_release)
       end
     end
 
-    describe "#deploy_release" do
-      it "delegates to the DeployEnvironment#strategy" do
+    describe '#deploy_release' do
+      it 'delegates to the DeployEnvironment#strategy' do
         cf_deploy.deploy_release
         expect(deploy_environment.strategy).to have_received(:deploy_release)
       end
     end
 
-    describe "#promote_release" do
-      it "delegates to the DeployEnvironment#strategy" do
+    describe '#promote_release' do
+      it 'delegates to the DeployEnvironment#strategy' do
         cf_deploy.promote_release
         expect(deploy_environment.strategy).to have_received(:promote_release).with(deploy_environment.options.promote_branch)
       end
 
-      context "when the promote_branch is not set" do
+      context 'when the promote_branch is not set' do
         let(:promote_branch) { nil }
 
-        it "does not do any branch promotion" do
+        it 'does not do any branch promotion' do
           cf_deploy.promote_release
           expect(deploy_environment.strategy).not_to have_received(:promote_release)
         end

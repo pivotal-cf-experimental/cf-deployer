@@ -1,6 +1,6 @@
-require "cf_deployer/logger"
-require "cf_deployer/cf_deploy"
-require "cf_deployer/options_parser"
+require 'cf_deployer/logger'
+require 'cf_deployer/cf_deploy'
+require 'cf_deployer/options_parser'
 
 module CfDeployer
   class CLI

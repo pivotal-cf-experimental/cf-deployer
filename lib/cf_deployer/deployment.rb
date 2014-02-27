@@ -1,8 +1,8 @@
-require "fileutils"
-require "tempfile"
+require 'fileutils'
+require 'tempfile'
 
-require "cf_deployer/release_repo"
-require "yaml"
+require 'cf_deployer/release_repo'
+require 'yaml'
 
 module CfDeployer
   class Deployment
@@ -11,9 +11,9 @@ module CfDeployer
     end
 
     def stub_files
-      [ deployment_file("cf-stub.yml"),
-        deployment_file("cf-aws-stub.yml"),
-        deployment_file("cf-shared-secrets.yml"),
+      [ deployment_file('cf-stub.yml'),
+        deployment_file('cf-aws-stub.yml'),
+        deployment_file('cf-shared-secrets.yml'),
       ].compact
     end
 
@@ -22,14 +22,14 @@ module CfDeployer
     end
 
     def private_config
-      deployment_file(File.join("config", "private.yml"))
+      deployment_file(File.join('config', 'private.yml'))
     end
 
     def director_uuid_stub_file(director_uuid)
       @director_uuid_stub ||= begin
-        director_uuid_file = Tempfile.new("director-uuid")
-        stub = { "director_uuid" => director_uuid }
-        File.open(director_uuid_file, "w") { |f| f.write(YAML.dump(stub)) }
+        director_uuid_file = Tempfile.new('director-uuid')
+        stub = { 'director_uuid' => director_uuid }
+        File.open(director_uuid_file, 'w') { |f| f.write(YAML.dump(stub)) }
         director_uuid_file.path
       end
     end
@@ -45,8 +45,8 @@ module CfDeployer
     end
 
     def sanitized_bosh_environment
-      bosh_environment = deployment_file("bosh_environment")
-      raise "No bosh_environment file" unless bosh_environment
+      bosh_environment = deployment_file('bosh_environment')
+      raise 'No bosh_environment file' unless bosh_environment
 
       command = "source #{bosh_environment} && env"
 
@@ -55,7 +55,7 @@ module CfDeployer
       bosh_env = {}
 
       env.each_line do |line|
-        name, val = line.split("=", 2)
+        name, val = line.split('=', 2)
         next if %w[PWD SHLVL _].include?(name)
 
         bosh_env[name] = val[0..-2]
@@ -68,7 +68,7 @@ module CfDeployer
       env = {}
 
       output.split("\n").each do |line|
-        name, val = line.split("=", 2)
+        name, val = line.split('=', 2)
         next if %w[PWD SHLVL _].include?(name)
 
         env[name] = val

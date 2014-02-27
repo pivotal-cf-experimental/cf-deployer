@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # vim: ft=ruby
 
-require "cf_deployer/options_parser"
-require "cf_deployer/command_runner"
-require "cf_deployer/logger"
-require "cf_deployer/release_repo"
+require 'cf_deployer/options_parser'
+require 'cf_deployer/command_runner'
+require 'cf_deployer/logger'
+require 'cf_deployer/release_repo'
 
 options_parser = CfDeployer::OptionsParser.new(ARGV)
 options = options_parser.parse!

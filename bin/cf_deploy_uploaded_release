@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # vim: ft=ruby
 
-require "cf_deployer/cli"
+require 'cf_deployer/cli'
 
 CfDeployer::CLI.start(ARGV) do |cf_deploy|
   cf_deploy.deploy_release

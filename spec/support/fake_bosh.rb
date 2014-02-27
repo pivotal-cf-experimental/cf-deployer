@@ -8,7 +8,7 @@ module CfDeployer
     end
 
     def create_final_release(release_path, release_name, private_config)
-      raise "did not specify private config" unless private_config
+      raise 'did not specify private config' unless private_config
 
       @final_release = release_path
       @final_release_name = release_name
@@ -25,26 +25,26 @@ module CfDeployer
 
     def deploy
       unless @dev_release || @final_release
-        raise "did not create"
+        raise 'did not create'
       end
 
       unless @uploaded_release
-        raise "did not upload release"
+        raise 'did not upload release'
       end
 
       unless [@final_release, @dev_release].include?(@uploaded_release)
-        raise "uploaded release is not the one you intend to deploy"
+        raise 'uploaded release is not the one you intend to deploy'
       end
 
       unless @deployment
-        raise "did not set deployment"
+        raise 'did not set deployment'
       end
 
       @deployed = true
     end
 
     def director_uuid
-      "director-uuid"
+      'director-uuid'
     end
   end
 end

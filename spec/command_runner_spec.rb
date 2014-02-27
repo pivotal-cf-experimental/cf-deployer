@@ -1,5 +1,5 @@
-require "spec_helper"
-require "cf_deployer/command_runner"
+require 'spec_helper'
+require 'cf_deployer/command_runner'
 
 module CfDeployer
   describe CommandRunner do
@@ -11,7 +11,7 @@ module CfDeployer
       runner.run!(command, options, &blk)
     end
 
-    describe "#run!" do
+    describe '#run!' do
       let(:spawner) { double(CommandRunner::Spawner) }
       let(:options) do
         {out: @cmd_stdout}
@@ -25,10 +25,10 @@ module CfDeployer
         allow(spawner).to receive(:wait)
       end
 
-      context "when dry-run is set to true" do
+      context 'when dry-run is set to true' do
         let(:dry_run) { true }
 
-        it "does not spawn a command but logs it" do
+        it 'does not spawn a command but logs it' do
           run "echo 'hello,\n world!'"
 
           expect(spawner).not_to have_received(:spawn)
@@ -36,10 +36,10 @@ module CfDeployer
         end
       end
 
-      context "when dry-run is set to false" do
+      context 'when dry-run is set to false' do
         let(:dry_run) { false }
 
-        it "logs then spawns and waits for the command" do
+        it 'logs then spawns and waits for the command' do
           expect(spawner).to receive(:spawn).ordered
           expect(spawner).to receive(:wait).ordered
 

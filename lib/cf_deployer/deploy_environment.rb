@@ -1,10 +1,10 @@
-require "cf_deployer/release_repo"
-require "cf_deployer/deployment"
-require "cf_deployer/bosh"
-require "cf_deployer/release_manifest_generator"
-require "cf_deployer/dev_deployment_strategy"
-require "cf_deployer/final_deployment_strategy"
-require "cf_deployer/command_runner"
+require 'cf_deployer/release_repo'
+require 'cf_deployer/deployment'
+require 'cf_deployer/bosh'
+require 'cf_deployer/release_manifest_generator'
+require 'cf_deployer/dev_deployment_strategy'
+require 'cf_deployer/final_deployment_strategy'
+require 'cf_deployer/command_runner'
 
 module CfDeployer
   class DeployEnvironment
@@ -17,7 +17,7 @@ module CfDeployer
     end
 
     def prepare
-      deployments_repo = Repo.new(@logger, @runner, options.repos_path, options.deployments_repo, "origin/master")
+      deployments_repo = Repo.new(@logger, @runner, options.repos_path, options.deployments_repo, 'origin/master')
       deployments_repo.sync! unless options.dirty
 
       release_repo = ReleaseRepo.new(@logger, @runner, options.repos_path, options.release_repo, options.release_ref)
@@ -33,7 +33,7 @@ module CfDeployer
         dry_run: options.dry_run
       )
 
-      @manifest_generator = ReleaseManifestGenerator.new(@runner, release_repo, options.infrastructure, "new_deployment.yml")
+      @manifest_generator = ReleaseManifestGenerator.new(@runner, release_repo, options.infrastructure, 'new_deployment.yml')
 
       build_deployment_strategy(bosh, release_repo)
     end
@@ -48,14 +48,14 @@ module CfDeployer
           DevDeploymentStrategy
         end
 
-      needs_explicit_director_uuid = options.infrastructure == "warden"
+      needs_explicit_director_uuid = options.infrastructure == 'warden'
       if needs_explicit_director_uuid
-        manifest_generator.overrides["director_uuid"] = bosh.director_uuid
+        manifest_generator.overrides['director_uuid'] = bosh.director_uuid
       end
 
       if options.manifest_domain
-        manifest_generator.overrides["properties"] ||= {}
-        manifest_generator.overrides["properties"]["domain"] = options.manifest_domain
+        manifest_generator.overrides['properties'] ||= {}
+        manifest_generator.overrides['properties']['domain'] = options.manifest_domain
       end
 
       @strategy = strategy_type.new(bosh, deployment, manifest_generator, options.release_name, release_repo)

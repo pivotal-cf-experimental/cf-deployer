@@ -14,11 +14,11 @@ module CfDeployer
     end
 
     def api_endpoint
-      find_in_manifest("properties", "cc", "srv_api_uri")
+      find_in_manifest('properties', 'cc', 'srv_api_uri')
     end
 
     def services_credentials
-      creds = find_in_manifest("properties", "uaa_client_auth_credentials")
+      creds = find_in_manifest('properties', 'uaa_client_auth_credentials')
       creds ? [creds['username'], creds['password']] : nil
     end
 
@@ -31,7 +31,7 @@ module CfDeployer
     attr_reader :content
 
     def appdirect_tokens
-      global = find_in_manifest("properties", "appdirect_gateway", "services") || []
+      global = find_in_manifest('properties', 'appdirect_gateway', 'services') || []
 
       jobs = content['jobs'] || []
       service_lists = jobs.map { |job| job['properties']['appdirect_gateway']['services'] rescue nil }

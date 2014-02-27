@@ -1,4 +1,4 @@
-require "cf_deployer/deployment_strategy"
+require 'cf_deployer/deployment_strategy'
 
 module CfDeployer
   class DevDeploymentStrategy < DeploymentStrategy

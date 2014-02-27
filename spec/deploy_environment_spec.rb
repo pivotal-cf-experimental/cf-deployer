@@ -1,12 +1,12 @@
-require "spec_helper"
-require "cf_deployer/deploy_environment"
+require 'spec_helper'
+require 'cf_deployer/deploy_environment'
 
 module CfDeployer
   describe DeployEnvironment do
-    let(:director_uuid) { "FEED-DEAD-BEEF" }
+    let(:director_uuid) { 'FEED-DEAD-BEEF' }
     let(:is_final_release) { false }
     let(:rebase) { false }
-    let(:infrastructure) { "aws" }
+    let(:infrastructure) { 'aws' }
     let(:promote_branch) { nil }
     let(:bosh_environment) { {} }
     let(:release_repo) { double(:release_repo).as_null_object }
@@ -59,15 +59,15 @@ module CfDeployer
 
     specify Repo do
       deploy_environment.prepare
-      expect(Repo).to have_received(:new).with(logger, runner, "/path/to/repos", "fake-deployments_repo", "origin/master")
+      expect(Repo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-deployments_repo', 'origin/master')
     end
 
     specify ReleaseRepo do
       deploy_environment.prepare
-      expect(ReleaseRepo).to have_received(:new).with(logger, runner, "/path/to/repos", "fake-release_repo", "fake-ref")
+      expect(ReleaseRepo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-release_repo', 'fake-ref')
     end
 
-    context "when the rebase option is false" do
+    context 'when the rebase option is false' do
       specify Bosh do
         deploy_environment.prepare
         expect(Bosh).to have_received(:new)
@@ -76,7 +76,7 @@ module CfDeployer
       end
     end
 
-    context "when the rebase option is set to true" do
+    context 'when the rebase option is set to true' do
       let(:rebase) { true }
 
       specify Bosh do
@@ -90,53 +90,53 @@ module CfDeployer
     specify ReleaseManifestGenerator do
       deploy_environment.prepare
       expect(ReleaseManifestGenerator).to have_received(:new)
-                                          .with(runner, release_repo, infrastructure, "new_deployment.yml")
+                                          .with(runner, release_repo, infrastructure, 'new_deployment.yml')
     end
 
-    context "when the final option is true" do
+    context 'when the final option is true' do
       let(:is_final_release) { true }
 
-      it "uses final deployment strategy" do
+      it 'uses final deployment strategy' do
         expect(FinalDeploymentStrategy).to receive(:new).and_return(double(:final_deployment_strategy))
         described_class.new(options, logger).prepare
       end
     end
 
-    describe "manifest generator overrides" do
-      context "when the infrastructure is warden" do
-        let(:infrastructure) { "warden" }
+    describe 'manifest generator overrides' do
+      context 'when the infrastructure is warden' do
+        let(:infrastructure) { 'warden' }
 
-        it "overrides the director_uuid in the manifest" do
+        it 'overrides the director_uuid in the manifest' do
           deploy_environment.prepare
           expected_overrides = {
-            "director_uuid" => director_uuid
+            'director_uuid' => director_uuid
           }
           expect(manifest_generator.overrides).to eq(expected_overrides)
         end
       end
 
-      context "when the infrastructure is not warden" do
-        it "does not apply any overrides" do
+      context 'when the infrastructure is not warden' do
+        it 'does not apply any overrides' do
           deploy_environment.prepare
           expect(manifest_generator.overrides).to eq({})
         end
       end
 
-      context "when the manifest domain was specified at the CLI" do
-        let(:manifest_domain) { "example.com" }
-        it "overrides the domain in the manifest" do
+      context 'when the manifest domain was specified at the CLI' do
+        let(:manifest_domain) { 'example.com' }
+        it 'overrides the domain in the manifest' do
           deploy_environment.prepare
           expected_overrides = {
-            "properties" => {
-              "domain" => manifest_domain
+            'properties' => {
+              'domain' => manifest_domain
             }
           }
           expect(manifest_generator.overrides).to eq(expected_overrides)
         end
       end
 
-      context "when the manifest domain was not specified at the CLI" do
-        it "does not apply the domain override" do
+      context 'when the manifest domain was not specified at the CLI' do
+        it 'does not apply the domain override' do
           deploy_environment.prepare
           expect(manifest_generator.overrides).to eq({})
         end

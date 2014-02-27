@@ -1,4 +1,4 @@
-require "cf_deployer/command_runner/spawner"
+require 'cf_deployer/command_runner/spawner'
 
 module CfDeployer
   class CommandRunner

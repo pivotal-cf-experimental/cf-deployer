@@ -1,5 +1,5 @@
-require "spec_helper"
-require "cf_deployer/release_manifest"
+require 'spec_helper'
+require 'cf_deployer/release_manifest'
 
 module CfDeployer
   describe ReleaseManifest do
@@ -14,38 +14,38 @@ module CfDeployer
       it 'should construct a manifest using the hash in the yaml file' do
         ReleaseManifest.should_receive(:new).with(content_hash)
 
-        Dir.mktmpdir("working_dir") do |working_dir|
+        Dir.mktmpdir('working_dir') do |working_dir|
           Dir.chdir(working_dir) do
-            File.open("new_deployment.yml", "w") do |io|
+            File.open('new_deployment.yml', 'w') do |io|
               io.write(content_hash.to_yaml)
             end
 
-            ReleaseManifest.load_file("new_deployment.yml")
+            ReleaseManifest.load_file('new_deployment.yml')
           end
         end
       end
 
-      context "file does not exist" do
+      context 'file does not exist' do
         it 'gives a meaninful error' do
           expect {
-            ReleaseManifest.load_file("/tmp/doesnotexist")
+            ReleaseManifest.load_file('/tmp/doesnotexist')
           }.to raise_error(/No such file/)
         end
       end
     end
 
-    describe "#services_credentials" do
-      context "when the manifest does not contain services credentials" do
+    describe '#services_credentials' do
+      context 'when the manifest does not contain services credentials' do
         let(:content_hash) do
           { 'properties' => nil }
         end
 
-        it "returns nil" do
+        it 'returns nil' do
           expect(manifest.services_credentials).to be_nil
         end
       end
 
-      context "when the manifest contains properties.uaa_client_auth_credentials" do
+      context 'when the manifest contains properties.uaa_client_auth_credentials' do
         let(:content_hash) do
           {
             'properties' => {
@@ -56,19 +56,19 @@ module CfDeployer
             }
           }
         end
-        it "returns the username and password as an array" do
-          expect(manifest.services_credentials).to eq(["services", "letmein"])
+        it 'returns the username and password as an array' do
+          expect(manifest.services_credentials).to eq(['services', 'letmein'])
         end
       end
     end
 
-    describe "#service_tokens" do
+    describe '#service_tokens' do
       context 'when the manifest has no tokens' do
         let(:content_hash) do
           {'properties' => nil}
         end
 
-        it "returns an empty array" do
+        it 'returns an empty array' do
           expect(manifest.service_tokens).to eq([])
         end
       end
@@ -162,18 +162,18 @@ module CfDeployer
       end
     end
 
-    describe "#api_endpoint" do
-      context "and it does not contain the api endpoint" do
+    describe '#api_endpoint' do
+      context 'and it does not contain the api endpoint' do
         let(:content_hash) do
           { 'properties' => nil }
         end
 
-        it "returns nil" do
+        it 'returns nil' do
           expect(manifest.api_endpoint).to be_nil
         end
       end
 
-      context "and the manifest contains properties.cc.srv_api_url" do
+      context 'and the manifest contains properties.cc.srv_api_url' do
         let(:content_hash) do
           {
             'properties' => {
@@ -184,8 +184,8 @@ module CfDeployer
           }
         end
 
-        it "returns their username and password" do
-          expect(manifest.api_endpoint).to eq("http://api.example.com")
+        it 'returns their username and password' do
+          expect(manifest.api_endpoint).to eq('http://api.example.com')
         end
       end
     end

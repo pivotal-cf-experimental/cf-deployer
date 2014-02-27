@@ -49,7 +49,7 @@ MSG
         cmd, opts, blk = c
         command = cmd.respond_to?(:<<) ? cmd.dup : cmd.inspect
         command << " with options #{opts.inspect}" if opts && opts != {}
-        command << " with a callback" if blk
+        command << ' with a callback' if blk
       when String
         command = c
       when Regexp

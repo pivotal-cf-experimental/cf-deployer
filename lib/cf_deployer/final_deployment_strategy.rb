@@ -1,10 +1,10 @@
-require "cf_deployer/deployment_strategy"
+require 'cf_deployer/deployment_strategy'
 
 module CfDeployer
   class FinalDeploymentStrategy < DeploymentStrategy
     class MissingPrivateConfig < RuntimeError
       def message
-        "config/private.yml does not exist in your deployment"
+        'config/private.yml does not exist in your deployment'
       end
     end
 

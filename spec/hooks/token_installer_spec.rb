@@ -1,6 +1,6 @@
-require "spec_helper"
-require "cf_deployer/release_manifest_generator"
-require "cf_deployer/hooks/token_installer"
+require 'spec_helper'
+require 'cf_deployer/release_manifest_generator'
+require 'cf_deployer/hooks/token_installer'
 
 module CfDeployer
   describe TokenInstaller do

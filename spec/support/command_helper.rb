@@ -1,13 +1,13 @@
-require "pty"
-require "blue-shell"
-require "stringio"
+require 'pty'
+require 'blue-shell'
+require 'stringio'
 
 module CommandHelper
   attr_reader :stdout, :stderr, :stdin, :status
 
   def runner_pipe
     @stdout, cmd_stdout = PTY.open
-    system("stty raw", :in => cmd_stdout)
+    system('stty raw', :in => cmd_stdout)
     cmd_stdin, @stdin = IO.pipe
 
     [cmd_stdout, cmd_stdin]

@@ -1,4 +1,4 @@
-require "cf_deployer/hooks/hook"
+require 'cf_deployer/hooks/hook'
 
 module CfDeployer
   class TokenInstaller < Hook

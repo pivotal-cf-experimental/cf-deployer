@@ -17,7 +17,7 @@ module CfDeployer
 
       infrastructure: nil,
 
-      repos_path: "./repos",
+      repos_path: './repos',
 
       dirty: false,
 
@@ -56,19 +56,19 @@ module CfDeployer
 
     def validate!
       if @options.release_repo.nil?
-        die "exactly one --release-repo is required"
+        die 'exactly one --release-repo is required'
       end
 
       if @options.release_name.nil?
-        die "exactly one --release-name is required"
+        die 'exactly one --release-name is required'
       end
 
       if @options.deployments_repo.nil?
-        die "--deployments-repo is required"
+        die '--deployments-repo is required'
       end
 
       if @options.deployment_name.nil?
-        die "--deployment-name is required"
+        die '--deployment-name is required'
       end
 
       unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
@@ -77,7 +77,7 @@ module CfDeployer
 
       if !@options.dirty && @options.release_ref.nil?
         # CLI behavior WRT release refs doesn't seem to match release ref requirements in deploy_environment.rb
-        die "--release-ref or --dirty is required"
+        die '--release-ref or --dirty is required'
       end
     end
 
@@ -90,91 +90,91 @@ module CfDeployer
     def parser
       @parser ||= OptionParser.new do |opts|
         opts.on(
-          "--release-repo RELEASE_REPO_URI", "URI to the release repository to deploy."
+          '--release-repo RELEASE_REPO_URI', 'URI to the release repository to deploy.'
         ) do |release_repo|
           @options.release_repo = release_repo
         end
 
         opts.on(
-          "--release-name RELEASE_NAME", "Name of the BOSH release to create."
+          '--release-name RELEASE_NAME', 'Name of the BOSH release to create.'
         ) do |release_name|
           @options.release_name = release_name
         end
 
         opts.on(
-          "--release-ref RELEASE_REF", "Git ref to deploy from the release repository (e.g. master, v144)."
+          '--release-ref RELEASE_REF', 'Git ref to deploy from the release repository (e.g. master, v144).'
         ) do |release_ref|
           @options.release_ref = release_ref
         end
 
         opts.on(
-          "--deployments-repo DEPLOYMENTS_REPO_URI", "URI to the repository containing the deployment."
+          '--deployments-repo DEPLOYMENTS_REPO_URI', 'URI to the repository containing the deployment.'
         ) do |deployments_repo|
           @options.deployments_repo = deployments_repo
         end
 
         opts.on(
-          "--deployment-name DEPLOYMENT_NAME", "Name of environment to deploy to."
+          '--deployment-name DEPLOYMENT_NAME', 'Name of environment to deploy to.'
         ) do |deployment_name|
           @options.deployment_name = deployment_name
         end
 
         opts.on(
-          "--infrastructure INFRASTRUCTURE", "Which infrastructure to deploy."
+          '--infrastructure INFRASTRUCTURE', 'Which infrastructure to deploy.'
         ) do |infrastructure|
           @options.infrastructure = infrastructure
         end
 
         opts.on(
-          "--repos REPOS_PATH", "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
+          '--repos REPOS_PATH', "Where to place release/deployment repositories. DEFAULT: #{@options.repos_path}"
         ) do |repos_path|
           @options.repos_path = repos_path
         end
 
         opts.on(
-          "--dirty", "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
+          '--dirty', "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
         ) do |dirty|
           @options.dirty = dirty
         end
 
         opts.on(
-          "--promote-to BRANCH", "Branch to push to after deploying (e.g. release-candidate)."
+          '--promote-to BRANCH', 'Branch to push to after deploying (e.g. release-candidate).'
         ) do |promote_branch|
           @options.promote_branch = promote_branch
         end
 
         opts.on(
-          "--final", "Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}"
+          '--final', "Create upload and deploy a final release instead of a dev release. DEFAULT: #{@options.final_release}"
         ) do |final_release|
           @options.final_release = final_release
         end
 
         opts.on(
-          "--rebase", "Upload the BOSH release to the director using the --rebase option. DEFAULT: #{@options.rebase}"
+          '--rebase', "Upload the BOSH release to the director using the --rebase option. DEFAULT: #{@options.rebase}"
         ) do |rebase|
           @options.rebase = !!rebase
         end
 
         opts.on(
-          "--non-interactive", "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
+          '--non-interactive', "Run BOSH non-interactively. DEFAULT: #{@options.interactive}"
         ) do |interactive|
           @options.interactive = !interactive
         end
 
         opts.on(
-          "--install-tokens", "Install service auth tokens. DEFAULT: #{@options.install_tokens}"
+          '--install-tokens', "Install service auth tokens. DEFAULT: #{@options.install_tokens}"
         ) do |install_tokens|
           @options.install_tokens = install_tokens
         end
 
         opts.on(
-          "--dry-run", "Only print the commands that would run. DEFAULT: #{@options.dry_run}"
+          '--dry-run', "Only print the commands that would run. DEFAULT: #{@options.dry_run}"
         ) do |dry_run|
           @options.dry_run = dry_run
         end
 
         opts.on(
-          "--manifest-domain DOMAIN", "Override properties.domain in the generated manifest. DEFAULT: #{@options.manifest_domain}"
+          '--manifest-domain DOMAIN', "Override properties.domain in the generated manifest. DEFAULT: #{@options.manifest_domain}"
         ) do |manifest_domain|
           @options.manifest_domain = manifest_domain
         end

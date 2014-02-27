@@ -12,17 +12,17 @@ module CfDeployer
       short_log = Dir.chdir(@submodule) do
         `git log #{@sha1}..#{@sha2} --pretty="%H|||%an|||%ad|||%s|||%bSPLITHERE"`
       end
-      commit_chunks = short_log.split("SPLITHERE")
+      commit_chunks = short_log.split('SPLITHERE')
       commits = []
       commit_chunks.each do |chunk|
-        segments = chunk.split("|||")
+        segments = chunk.split('|||')
         next if segments.size < 3
         commits << {
           sha: segments[0],
           author: segments[1],
           date: segments[2],
           subject: segments[3],
-          body: segments[4] ? segments[4].gsub("\n", "<br>") : ""
+          body: segments[4] ? segments[4].gsub("\n", '<br>') : ''
         }
       end
       commits
@@ -41,21 +41,21 @@ module CfDeployer
     end
 
     def generate_html(f)
-      f << "<details>"
+      f << '<details>'
       f << "<summary><h2>#{submodule_anchor} (#{@commits.count} changes)</h2></summary>"
       f << "<H3>#{commit_anchor(@sha1[0..7])}..#{commit_anchor(@sha2[0..7])} (#{comparison_anchor})</H3>"
-      f << %Q{<div class="no-changes">No Changes</div>} if @commits.count == 0
+      f << '<div class="no-changes">No Changes</div>' if @commits.count == 0
       @commits.each do |commit|
-        f << %Q{<details class="commit">}
+        f << '<details class="commit">'
         f << %Q{<summary class="subject">#{commit[:subject]}</summary>}
 
         f << %Q{<div class="sha">#{commit_anchor(commit[:sha])}</div>}
         f << %Q{<div class="body">#{linkify(commit[:body])}</div>}
         f << %Q{<div class="author">#{commit[:author]}</div>}
         f << %Q{<div class="date">#{commit[:date]}</div>}
-        f << %Q{</details>}
+        f << '</details>'
       end
-      f << "</details>"
+      f << '</details>'
     end
 
     private
@@ -98,7 +98,7 @@ module CfDeployer
     end
 
     def compare_submodules
-      @submodule_logs << SubmoduleLog.new(".", "http://github.com/cloudfoundry/cf-release", @sha1, @sha2)
+      @submodule_logs << SubmoduleLog.new('.', 'http://github.com/cloudfoundry/cf-release', @sha1, @sha2)
 
       @submodules.each do |submodule, url|
         sub_sha1 = get_submodule_commit(@sha1, submodule)
@@ -119,7 +119,7 @@ module CfDeployer
         @submodule_logs.each do |submodule_log|
           submodule_log.generate_html(f)
         end
-        f << "</body></html>"
+        f << '</body></html>'
       end
     end
 
@@ -130,7 +130,7 @@ module CfDeployer
       gitmodules = File.read('.gitmodules')
       gitmodules.scan(/path = (.+)\n\s+url = (.+)\n/) do |match|
         path = match[0]
-        url = match[1].chomp(".git")
+        url = match[1].chomp('.git')
         if Dir.glob("#{path}/*").length > 0
           submodules[path] = url
         end
@@ -149,7 +149,7 @@ module CfDeployer
     if ARGV
       production_tag, rc_sha = ARGV
     else
-      puts "Please provide the tag currently deployed to production:"
+      puts 'Please provide the tag currently deployed to production:'
       production_tag = gets.chomp
 
       puts "Please provide the sha for the Release Candidate commit you'd like to compare to:"
@@ -159,11 +159,11 @@ module CfDeployer
     puts "#{production_tag}..#{rc_sha}"
 
     whats_in_the_deploy = WhatsInTheDeploy.new(production_tag, rc_sha)
-    puts "Comparing submodules...."
+    puts 'Comparing submodules....'
     whats_in_the_deploy.compare_submodules
-    puts "Generating HTML...."
+    puts 'Generating HTML....'
 
-    output_path = ENV.fetch("WITD_OUT", "#{ENV["HOME"]}/Dropbox/product/WhatsInTheDeploy.html")
+    output_path = ENV.fetch('WITD_OUT', "#{ENV['HOME']}/Dropbox/product/WhatsInTheDeploy.html")
     whats_in_the_deploy.generate_html(output_path)
     puts "HTML Generated: #{output_path}"
     `open #{output_path}`

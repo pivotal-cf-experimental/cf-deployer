@@ -12,13 +12,13 @@ module CfDeployer
 
     def sync!
       unless cloned?
-        log_message "not found; cloning"
+        log_message 'not found; cloning'
         @runner.run! "mkdir -p #@repos_path"
         @runner.run! "git clone #@repo_uri #{path}"
       end
 
       unless git_toplevel
-        log_message "not a repo; skipping"
+        log_message 'not a repo; skipping'
         return
       end
 
@@ -49,7 +49,7 @@ module CfDeployer
     end
 
     def repo_name
-      File.basename(@repo_uri).sub(/\.git$/, "")
+      File.basename(@repo_uri).sub(/\.git$/, '')
     end
 
     def repo_owner
@@ -57,15 +57,15 @@ module CfDeployer
     end
 
     def sync_with_origin
-      run_git! "reset --hard"
-      run_git! "clean --force --force -d"
-      run_git! "fetch"
+      run_git! 'reset --hard'
+      run_git! 'clean --force --force -d'
+      run_git! 'fetch'
       run_git! "checkout #{@ref}"
-      run_git! "clean --force --force -d"
-      run_git! "submodule sync --recursive"
-      run_git! "submodule init"
+      run_git! 'clean --force --force -d'
+      run_git! 'submodule sync --recursive'
+      run_git! 'submodule init'
       run_git! "submodule status | awk '{print $2}' | xargs -P10 -n1 git submodule update --init --recursive"
-      run_git! "submodule foreach --recursive git clean --force --force -d"
+      run_git! 'submodule foreach --recursive git clean --force --force -d'
     end
 
     def run_git!(command)

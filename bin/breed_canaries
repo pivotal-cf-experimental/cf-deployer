@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 # vim: ft=ruby
 
-require "cf_deployer/command_runner"
-require "cf_deployer/logger"
+require 'cf_deployer/command_runner'
+require 'cf_deployer/logger'
 
-require "canary_breeder/breed_canaries_cli"
-require "canary_breeder/canary_breeder"
+require 'canary_breeder/breed_canaries_cli'
+require 'canary_breeder/canary_breeder'
 
 cli = CanaryBreeder::Cli.new(ARGV)
 
