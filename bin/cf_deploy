@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-# vim: ft=ruby
 
 require 'cf_deployer/cli'
 
