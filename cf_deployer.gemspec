@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.version     = CfDeployer::VERSION
   spec.authors     = ['Cloud Foundry Team']
   spec.email       = %w(cf-eng@pivotallabs.com)
-  spec.homepage    = 'http://github.com/cloudfoundry/cf-deployer'
+  spec.homepage    = 'http://github.com/pivotal-cf-experimental/cf-deployer'
   spec.summary     = %q{
     Friendly command-line interface for Cloud Foundry deploys.
   }
