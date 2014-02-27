@@ -1,27 +1,7 @@
-require 'cf_deployer/whats_in_the_deploy'
 require 'cf_deployer/repo'
 
 module CfDeployer
   class ReleaseRepo < Repo
-    def whats_in_the_deploy(opts)
-      log_message "checking what's in the deploy"
-      return
-
-      opts = { interactive: true }.merge(opts)
-      output_html = 'deploy.html'
-
-      deploy = WhatsInTheDeploy.new(previous_version, branch)
-      deploy.generate_html(output_html)
-
-      if opts[:interactive]
-        run! "open #{output_html}"
-
-        puts 'Is the deployment correct (yes/no)?'
-
-        fail 'Did not accept the deployment' if $stdin.gets.chomp !~ /^y/i
-      end
-    end
-
     def promote_final_release(branch)
       latest_release = current_final_release
 
