@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'cf_deployer/cf_deploy'
+require 'cf_deployer/release'
 require 'cf_deployer/command_runner'
 require 'cf_deployer/deploy_environment'
 require 'cf_deployer/deployment'
@@ -8,7 +8,7 @@ require 'cf_deployer/release_manifest_generator'
 require 'cf_deployer/options_parser'
 
 module CfDeployer
-  describe CfDeploy do
+  describe Release do
     let(:bosh_environment) { {} }
     let(:promote_branch) { 'cool_branch' }
     let(:logger) { double(Logger).as_null_object }
@@ -27,7 +27,7 @@ module CfDeployer
       )
     end
 
-    subject(:cf_deploy) { described_class.new(deploy_environment, logger) }
+    subject(:release) { described_class.new(deploy_environment, logger) }
 
     describe '.build' do
       it 'constructs a DeployEnvironment and passes it to .new' do
@@ -36,10 +36,10 @@ module CfDeployer
         expect(DeployEnvironment).to receive(:new).with(options, logger).and_return(deploy_environment)
         expect(deploy_environment).to receive(:prepare).with(no_args)
 
-        cf_deploy = double(CfDeploy)
-        expect(CfDeploy).to receive(:new).with(deploy_environment, logger).and_return(cf_deploy)
+        release = double(Release)
+        expect(Release).to receive(:new).with(deploy_environment, logger).and_return(release)
 
-        expect(CfDeploy.build(options, logger)).to eq(cf_deploy)
+        expect(Release.build(options, logger)).to eq(release)
       end
     end
 
@@ -54,7 +54,7 @@ module CfDeployer
           fake_datadog_emitter = double(DatadogEmitter)
           allow(DatadogEmitter).to receive(:new).and_return(fake_datadog_emitter)
 
-          CfDeploy.new(deploy_environment, logger)
+          Release.new(deploy_environment, logger)
           expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_datadog_emitter)
         end
 
@@ -62,7 +62,7 @@ module CfDeployer
           expect(Dogapi::Client).to receive(:new).with('api', 'application').and_return(fake_dogapi)
           expect(DatadogEmitter).to receive(:new).with(logger, fake_dogapi, deploy_environment.options.deployment_name)
 
-          CfDeploy.new(deploy_environment, logger)
+          Release.new(deploy_environment, logger)
         end
       end
 
@@ -71,42 +71,42 @@ module CfDeployer
           fake_token_installer = double(TokenInstaller)
           allow(TokenInstaller).to receive(:new).and_return(fake_token_installer)
 
-          CfDeploy.new(deploy_environment, logger)
+          Release.new(deploy_environment, logger)
           expect(deploy_environment.strategy).to have_received(:install_hook).with(fake_token_installer)
         end
 
         it 'creates the hooks correctly' do
           expect(TokenInstaller).to receive(:new).with(deploy_environment.manifest_generator, deploy_environment.runner)
 
-          CfDeploy.new(deploy_environment, logger)
+          Release.new(deploy_environment, logger)
         end
       end
     end
 
-    describe '#create_release' do
+    describe '#create' do
       it 'delegates to the DeployEnvironment#strategy' do
-        cf_deploy.create_release
+        release.create
         expect(deploy_environment.strategy).to have_received(:create_release)
       end
     end
 
-    describe '#upload_release' do
+    describe '#upload' do
       it 'delegates to the DeployEnvironment#strategy' do
-        cf_deploy.upload_release
+        release.upload
         expect(deploy_environment.strategy).to have_received(:upload_release)
       end
     end
 
-    describe '#deploy_release' do
+    describe '#deploy' do
       it 'delegates to the DeployEnvironment#strategy' do
-        cf_deploy.deploy_release
+        release.deploy
         expect(deploy_environment.strategy).to have_received(:deploy_release)
       end
     end
 
-    describe '#promote_release' do
+    describe '#promote' do
       it 'delegates to the DeployEnvironment#strategy' do
-        cf_deploy.promote_release
+        release.promote
         expect(deploy_environment.strategy).to have_received(:promote_release).with(deploy_environment.options.promote_branch)
       end
 
@@ -114,7 +114,7 @@ module CfDeployer
         let(:promote_branch) { nil }
 
         it 'does not do any branch promotion' do
-          cf_deploy.promote_release
+          release.promote
           expect(deploy_environment.strategy).not_to have_received(:promote_release)
         end
       end

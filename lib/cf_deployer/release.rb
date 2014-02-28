@@ -6,7 +6,7 @@ require 'cf_deployer/hooks/token_installer'
 require 'cf_deployer/logger'
 
 module CfDeployer
-  class CfDeploy
+  class Release
     def self.build(options, logger = CfDeployer::Logger.new)
       deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
       deploy_env.prepare
@@ -20,19 +20,19 @@ module CfDeployer
       install_deployment_hooks(deploy_environment.strategy, deploy_environment.deployment, deploy_environment.manifest_generator)
     end
 
-    def create_release
+    def create
       deploy_environment.strategy.create_release
     end
 
-    def upload_release
+    def upload
       deploy_environment.strategy.upload_release
     end
 
-    def deploy_release
+    def deploy
       deploy_environment.strategy.deploy_release
     end
 
-    def promote_release
+    def promote
       return unless deploy_environment.options.promote_branch
 
       deploy_environment.strategy.promote_release(deploy_environment.options.promote_branch)

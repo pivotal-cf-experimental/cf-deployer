@@ -2,9 +2,4 @@
 
 require 'cf_deployer/cli'
 
-CfDeployer::CLI.start(ARGV) do |cf_deploy|
-  cf_deploy.create_release
-  cf_deploy.upload_release
-  cf_deploy.deploy_release
-  cf_deploy.promote_release
-end
+CfDeployer::CLI.start ARGV, %w(create upload deploy promote)
