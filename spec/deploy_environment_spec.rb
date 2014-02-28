@@ -37,7 +37,7 @@ module CfDeployer
     let(:logger) { double(:logger) }
     let(:runner) { double(:runner).as_null_object }
 
-    subject(:deploy_environment) do
+    subject(:new_deploy_environment) do
       DeployEnvironment.new(options, logger)
     end
 
@@ -53,23 +53,23 @@ module CfDeployer
     end
 
     specify CommandRunner do
-      deploy_environment.prepare
+      new_deploy_environment
       expect(CommandRunner).to have_received(:new).with(logger, options.dry_run)
     end
 
     specify Repo do
-      deploy_environment.prepare
+      DeployEnvironment.new(options, logger)
       expect(Repo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-deployments_repo', 'origin/master')
     end
 
     specify ReleaseRepo do
-      deploy_environment.prepare
+      DeployEnvironment.new(options, logger)
       expect(ReleaseRepo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-release_repo', 'fake-ref')
     end
 
     context 'when the rebase option is false' do
       specify Bosh do
-        deploy_environment.prepare
+        DeployEnvironment.new(options, logger)
         expect(Bosh).to have_received(:new)
                         .with(logger, runner, bosh_environment,
                               interactive: false, rebase: rebase, dirty: false, dry_run: true)
@@ -80,7 +80,7 @@ module CfDeployer
       let(:rebase) { true }
 
       specify Bosh do
-        deploy_environment.prepare
+        DeployEnvironment.new(options, logger)
         expect(Bosh).to have_received(:new)
                         .with(logger, runner, bosh_environment,
                               interactive: false, rebase: rebase, dirty: false, dry_run: true)
@@ -88,7 +88,7 @@ module CfDeployer
     end
 
     specify ReleaseManifestGenerator do
-      deploy_environment.prepare
+      DeployEnvironment.new(options, logger)
       expect(ReleaseManifestGenerator).to have_received(:new)
                                           .with(runner, release_repo, infrastructure, 'new_deployment.yml')
     end
@@ -98,7 +98,7 @@ module CfDeployer
 
       it 'uses final deployment strategy' do
         expect(FinalDeploymentStrategy).to receive(:new).and_return(double(:final_deployment_strategy))
-        described_class.new(options, logger).prepare
+        DeployEnvironment.new(options, logger)
       end
     end
 
@@ -107,7 +107,7 @@ module CfDeployer
         let(:infrastructure) { 'warden' }
 
         it 'overrides the director_uuid in the manifest' do
-          deploy_environment.prepare
+          new_deploy_environment
           expected_overrides = {
             'director_uuid' => director_uuid
           }
@@ -117,7 +117,7 @@ module CfDeployer
 
       context 'when the infrastructure is not warden' do
         it 'does not apply any overrides' do
-          deploy_environment.prepare
+          new_deploy_environment
           expect(manifest_generator.overrides).to eq({})
         end
       end
@@ -125,7 +125,7 @@ module CfDeployer
       context 'when the manifest domain was specified at the CLI' do
         let(:manifest_domain) { 'example.com' }
         it 'overrides the domain in the manifest' do
-          deploy_environment.prepare
+          new_deploy_environment
           expected_overrides = {
             'properties' => {
               'domain' => manifest_domain
@@ -137,7 +137,7 @@ module CfDeployer
 
       context 'when the manifest domain was not specified at the CLI' do
         it 'does not apply the domain override' do
-          deploy_environment.prepare
+          new_deploy_environment
           expect(manifest_generator.overrides).to eq({})
         end
       end

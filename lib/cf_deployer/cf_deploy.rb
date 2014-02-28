@@ -8,9 +8,7 @@ require 'cf_deployer/logger'
 module CfDeployer
   class CfDeploy
     def self.build(options, logger = CfDeployer::Logger.new)
-      deploy_env = CfDeployer::DeployEnvironment.new(options, logger)
-      deploy_env.prepare
-      new(deploy_env, logger)
+      new CfDeployer::DeployEnvironment.new(options, logger), logger
     end
 
     def initialize(deploy_environment, logger)

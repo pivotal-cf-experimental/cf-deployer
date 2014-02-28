@@ -9,10 +9,10 @@ module CfDeployer
   describe Repo do
     let(:logger) { FakeLogger.new }
     let(:runner) { FakeCommandRunner.new }
-    let(:repo_uri) { 'git@github.com:cloudfoundry/some-repo.git' }
+    let(:uri) { 'git@github.com:cloudfoundry/some-repo.git' }
     let(:ref) { 'some-ref' }
 
-    subject { described_class.new(logger, runner, @repos_path, repo_uri, ref) }
+    subject { described_class.new(logger, runner, @repos_path, uri, ref) }
 
     around do |example|
       Dir.mktmpdir('repos_path') do |release_repo|
@@ -22,7 +22,7 @@ module CfDeployer
     end
 
     def repo_name
-      repo_uri[/([^\.:\/]+)(\.git)?$/, 1]
+      uri[/([^\.:\/]+)(\.git)?$/, 1]
     end
 
     def repo_path
@@ -104,7 +104,7 @@ module CfDeployer
         end
 
         context 'with a http uri' do
-          let(:repo_uri) { 'https://github.com/cloudfoundry/some-repo.git' }
+          let(:uri) { 'https://github.com/cloudfoundry/some-repo.git' }
 
           it 'logs the proper owner/repo name' do
             subject.sync!
@@ -116,21 +116,21 @@ module CfDeployer
 
     describe '#path' do
       context 'with a ssh git uri' do
-        let(:repo_uri) { 'git@github.com:foo/some-repo.git' }
+        let(:uri) { 'git@github.com:foo/some-repo.git' }
 
         its(:path) { should == "#{@repos_path}/some-repo" }
       end
 
       context 'with a https git uri' do
-        let(:repo_uri) { 'https://github.com/foo/some-repo.git' }
+        let(:uri) { 'https://github.com/foo/some-repo.git' }
 
         its(:path) { should == "#{@repos_path}/some-repo" }
       end
 
       context 'with a local path' do
-        let(:repo_uri) { Dir.mktmpdir }
+        let(:uri) { Dir.mktmpdir }
 
-        its(:path) { should == repo_uri }
+        its(:path) { should == uri }
       end
     end
   end

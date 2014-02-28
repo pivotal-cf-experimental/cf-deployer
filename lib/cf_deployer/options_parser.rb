@@ -55,30 +55,12 @@ module CfDeployer
     end
 
     def validate!
-      if @options.release_repo.nil?
-        die 'exactly one --release-repo is required'
-      end
-
-      if @options.release_name.nil?
-        die 'exactly one --release-name is required'
-      end
-
-      if @options.deployments_repo.nil?
-        die '--deployments-repo is required'
-      end
-
-      if @options.deployment_name.nil?
-        die '--deployment-name is required'
-      end
-
-      unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
-        die "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}"
-      end
-
-      if !@options.dirty && @options.release_ref.nil?
-        # CLI behavior WRT release refs doesn't seem to match release ref requirements in deploy_environment.rb
-        die '--release-ref or --dirty is required'
-      end
+      die 'exactly one --release-repo is required' unless @options.release_repo
+      die 'exactly one --release-name is required' unless @options.release_name
+      die '--deployments-repo is required' unless @options.deployments_repo
+      die '--deployment-name is required' unless @options.deployment_name
+      die "--infrastructure must be one of #{VALID_INFRASTRUCTURES.inspect}" unless VALID_INFRASTRUCTURES.include?(@options.infrastructure)
+      die '--release-ref or --dirty is required' unless @options.dirty || @options.release_ref
     end
 
     private

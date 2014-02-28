@@ -34,7 +34,6 @@ module CfDeployer
         options = double(OptionsParser::Options)
         deploy_environment = double(DeployEnvironment)
         expect(DeployEnvironment).to receive(:new).with(options, logger).and_return(deploy_environment)
-        expect(deploy_environment).to receive(:prepare).with(no_args)
 
         cf_deploy = double(CfDeploy)
         expect(CfDeploy).to receive(:new).with(deploy_environment, logger).and_return(cf_deploy)

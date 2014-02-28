@@ -2,11 +2,11 @@ require 'cf_deployer/shell_out'
 
 module CfDeployer
   class Repo
-    def initialize(logger, runner, repos_path, repo_uri, ref)
+    def initialize(logger, runner, repos_path, uri, ref)
       @logger = logger
       @runner = runner
       @repos_path = repos_path
-      @repo_uri = repo_uri
+      @uri = uri
       @ref = ref
     end
 
@@ -14,7 +14,7 @@ module CfDeployer
       unless cloned?
         log_message 'not found; cloning'
         @runner.run! "mkdir -p #{@repos_path}"
-        @runner.run! "git clone #{@repo_uri} #{path}"
+        @runner.run! "git clone #{@uri} #{path}"
       end
 
       unless git_toplevel
@@ -27,11 +27,7 @@ module CfDeployer
     end
 
     def path
-      if File.directory?(@repo_uri)
-        @repo_uri
-      else
-        File.join(@repos_path, repo_name)
-      end
+      File.directory?(@uri) ? @uri : File.join(@repos_path, repo_name)
     end
 
     def cloned?
@@ -49,11 +45,11 @@ module CfDeployer
     end
 
     def repo_name
-      File.basename(@repo_uri).sub(/\.git$/, '')
+      File.basename(@uri).sub(/\.git$/, '')
     end
 
     def repo_owner
-      @repo_uri[/[\/:]([^\/]+)\/([^\.:\/]+)(\.git)?$/, 1]
+      @uri[/[\/:]([^\/]+)\/([^\.:\/]+)(\.git)?$/, 1]
     end
 
     def sync_with_origin

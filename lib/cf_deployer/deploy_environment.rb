@@ -14,6 +14,7 @@ module CfDeployer
       @options = options
       @logger = logger
       @runner = runner
+      prepare
     end
 
     def prepare
