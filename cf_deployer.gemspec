@@ -10,9 +10,11 @@ Gem::Specification.new do |spec|
   spec.summary     = %q{
     Friendly command-line interface for Cloud Foundry deploys.
   }
-  spec.executables = %w{cf_deploy promote}
 
-  spec.files         = %w(LICENSE) + Dir['lib/**/*']
+  spec.files         = %w(LICENSE README.md) + Dir['lib/**/*']
+
+  spec.executables   = Dir['bin/*'].map { |f| File.basename(f) }
+
   spec.license       = 'Apache 2.0'
   spec.test_files    = Dir['spec/**/*']
   spec.require_paths = %w(lib)
