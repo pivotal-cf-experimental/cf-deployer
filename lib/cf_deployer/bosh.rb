@@ -74,7 +74,6 @@ module CfDeployer
 
     def create_release(release_path, release_name, options={})
       final = options.fetch(:final, false)
-      private_config = options[:private_config]
       force = options.fetch(:force, false)
       reset_bosh_final_build_stupidity(release_path, FINAL_CONFIG)
 
@@ -83,7 +82,11 @@ module CfDeployer
 
       @logger.log_message 'creating dev release'
       bosh_create_release(release_path, final: false, force: force)
-      bosh_create_final_release(force, private_config, release_path) if final
+
+      if final
+        private_config = options[:private_config]
+        bosh_create_final_release(force, private_config, release_path)
+      end
     end
 
     def reset_bosh_final_build_stupidity(release_path, *to_checkout)
