@@ -195,6 +195,18 @@ module CfDeployer
       end
     end
 
+    describe '#show_version' do
+      it 'calls bosh with --version' do
+        bosh.show_version
+
+        expect(runner).to have_executed_serially(
+                            [ 'set -o pipefail &&  bosh  --version',
+                              command_options_with_transient_bosh_config
+                            ],
+                          )
+      end
+    end
+
     describe '#deploy' do
       it 'shows the deployment diff and then deploys' do
         bosh.deploy

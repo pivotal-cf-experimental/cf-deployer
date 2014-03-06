@@ -22,6 +22,10 @@ module CfDeployer
       @bosh_output_file = Tempfile.new('bosh_output')
     end
 
+    def show_version
+      run_bosh('--version')
+    end
+
     def create_dev_release(release_path, release_name)
       create_release(release_path, release_name, force: @options.fetch(:dirty))
     end

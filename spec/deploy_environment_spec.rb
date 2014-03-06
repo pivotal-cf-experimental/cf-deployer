@@ -37,7 +37,7 @@ module CfDeployer
     let(:logger) { double(:logger) }
     let(:runner) { double(:runner).as_null_object }
 
-    subject(:new_deploy_environment) do
+    def make_new_deploy_environment
       DeployEnvironment.new(options, logger)
     end
 
@@ -47,29 +47,30 @@ module CfDeployer
 
       allow(ReleaseRepo).to receive(:new).and_return(release_repo)
       allow(Bosh).to receive(:new).and_return(bosh)
+      allow(bosh).to receive(:show_version).with(no_args)
       allow(ReleaseManifestGenerator).to receive(:new).and_return(manifest_generator)
       allow(DevDeploymentStrategy).to receive(:new).and_return(double(:deployment_strategy).as_null_object)
       allow(CommandRunner).to receive(:new).and_return(runner)
     end
 
     specify CommandRunner do
-      new_deploy_environment
+      make_new_deploy_environment
       expect(CommandRunner).to have_received(:new).with(logger, options.dry_run)
     end
 
     specify Repo do
-      DeployEnvironment.new(options, logger)
+      make_new_deploy_environment
       expect(Repo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-deployments_repo', 'origin/master')
     end
 
     specify ReleaseRepo do
-      DeployEnvironment.new(options, logger)
+      make_new_deploy_environment
       expect(ReleaseRepo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-release_repo', 'fake-ref')
     end
 
     context 'when the rebase option is false' do
       specify Bosh do
-        DeployEnvironment.new(options, logger)
+        make_new_deploy_environment
         expect(Bosh).to have_received(:new)
                         .with(logger, runner, bosh_environment,
                               interactive: false, rebase: rebase, dirty: false, dry_run: true)
@@ -80,7 +81,7 @@ module CfDeployer
       let(:rebase) { true }
 
       specify Bosh do
-        DeployEnvironment.new(options, logger)
+        make_new_deploy_environment
         expect(Bosh).to have_received(:new)
                         .with(logger, runner, bosh_environment,
                               interactive: false, rebase: rebase, dirty: false, dry_run: true)
@@ -88,7 +89,7 @@ module CfDeployer
     end
 
     specify ReleaseManifestGenerator do
-      DeployEnvironment.new(options, logger)
+      make_new_deploy_environment
       expect(ReleaseManifestGenerator).to have_received(:new)
                                           .with(runner, release_repo, infrastructure, 'new_deployment.yml')
     end
@@ -98,8 +99,13 @@ module CfDeployer
 
       it 'uses final deployment strategy' do
         expect(FinalDeploymentStrategy).to receive(:new).and_return(double(:final_deployment_strategy))
-        DeployEnvironment.new(options, logger)
+        make_new_deploy_environment
       end
+    end
+
+    it 'shows the bosh version when a deploy environment is created' do
+      expect(bosh).to receive(:show_version).with(no_args)
+      make_new_deploy_environment
     end
 
     describe 'manifest generator overrides' do
@@ -107,7 +113,7 @@ module CfDeployer
         let(:infrastructure) { 'warden' }
 
         it 'overrides the director_uuid in the manifest' do
-          new_deploy_environment
+          make_new_deploy_environment
           expected_overrides = {
             'director_uuid' => director_uuid
           }
@@ -117,7 +123,7 @@ module CfDeployer
 
       context 'when the infrastructure is not warden' do
         it 'does not apply any overrides' do
-          new_deploy_environment
+          make_new_deploy_environment
           expect(manifest_generator.overrides).to eq({})
         end
       end
@@ -125,7 +131,7 @@ module CfDeployer
       context 'when the manifest domain was specified at the CLI' do
         let(:manifest_domain) { 'example.com' }
         it 'overrides the domain in the manifest' do
-          new_deploy_environment
+          make_new_deploy_environment
           expected_overrides = {
             'properties' => {
               'domain' => manifest_domain
@@ -137,7 +143,7 @@ module CfDeployer
 
       context 'when the manifest domain was not specified at the CLI' do
         it 'does not apply the domain override' do
-          new_deploy_environment
+          make_new_deploy_environment
           expect(manifest_generator.overrides).to eq({})
         end
       end

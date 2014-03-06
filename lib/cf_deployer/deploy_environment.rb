@@ -17,6 +17,8 @@ module CfDeployer
       prepare
     end
 
+    private
+
     def prepare
       deployments_repo = Repo.new(@logger, @runner, options.repos_path, options.deployments_repo, 'origin/master')
       deployments_repo.sync! unless options.dirty
@@ -34,12 +36,12 @@ module CfDeployer
         dry_run: options.dry_run
       )
 
+      bosh.show_version
+
       @manifest_generator = ReleaseManifestGenerator.new(@runner, release_repo, options.infrastructure, 'new_deployment.yml')
 
       build_deployment_strategy(bosh, release_repo)
     end
-
-    private
 
     def build_deployment_strategy(bosh, release_repo)
       strategy_type =
