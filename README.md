@@ -35,3 +35,5 @@ $ cf_deploy_uploaded_release \
     --deployment-name <deployment name> \
     --infrastructure {aws, vsphere, warden} # pick one
 ```
+
+To run this command in non-interactive mode (as you would want to do when using it in a CI pipeline), use the --non-interactive flag.
