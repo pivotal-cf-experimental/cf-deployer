@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'cf_deployer/cli'
-
-CfDeployer::CLI.start(ARGV) do |cf_deploy|
-  cf_deploy.create_release
-end

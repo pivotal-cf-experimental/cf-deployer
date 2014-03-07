@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'cf_deployer/cli'
+
+# this command must generate a final release, not a dev release.
+modified_argv = ARGV + %w(--final)
+
+CfDeployer::CLI.start(modified_argv) do |cf_deploy|
+  cf_deploy.create_release
+end
