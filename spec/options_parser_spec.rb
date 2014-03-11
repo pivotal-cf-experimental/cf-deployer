@@ -76,6 +76,7 @@ describe CfDeployer::OptionsParser do
       expect(opts.repos_path).to eq('./repos')
       expect(opts.dirty).to eq(false)
       expect(opts.promote_branch).to be_nil
+      expect(opts.push_branch).to be_nil
       expect(opts.final_release).to eq(false)
       expect(opts.rebase).to eq(false)
       expect(opts.interactive).to eq(true)
@@ -107,6 +108,14 @@ describe CfDeployer::OptionsParser do
         expect(options_parser).to validate_successfully
         opts = options_parser.options
         expect(opts.promote_branch).to eq('my_promote_branch')
+      end
+
+      it 'exposes overridden --push-to' do
+        args << '--push-to=the_best_branch'
+
+        expect(options_parser).to validate_successfully
+        opts = options_parser.options
+        expect(opts.push_branch).to eq('the_best_branch')
       end
 
       it 'exposes overridden --final' do

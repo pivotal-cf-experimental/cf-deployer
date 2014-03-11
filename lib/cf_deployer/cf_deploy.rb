@@ -31,7 +31,7 @@ module CfDeployer
     end
 
     def tag_and_push_final_release
-      deploy_environment.strategy.tag_and_push_final_release
+      deploy_environment.strategy.tag_and_push_final_release(deploy_environment.options.push_branch)
     end
 
     def promote_release

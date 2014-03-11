@@ -22,6 +22,7 @@ module CfDeployer
              options: double(:options,
                              deployment_name: 'anchors aweigh',
                              install_tokens: true,
+                             push_branch: 'an_awesome_branch',
                              promote_branch: promote_branch
              )
       )
@@ -106,7 +107,7 @@ module CfDeployer
     describe '#tag_and_push_final_release' do
       it 'delegates to the DeployEnvironment#strategy' do
         cf_deploy.tag_and_push_final_release
-        expect(deploy_environment.strategy).to have_received(:tag_and_push_final_release)
+        expect(deploy_environment.strategy).to have_received(:tag_and_push_final_release).with('an_awesome_branch')
       end
     end
 

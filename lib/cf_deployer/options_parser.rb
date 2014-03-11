@@ -22,6 +22,7 @@ module CfDeployer
       dirty: false,
 
       promote_branch: nil,
+      push_branch: nil,
 
       final_release: false,
       rebase: false,
@@ -123,6 +124,12 @@ module CfDeployer
           '--promote-to BRANCH', 'Branch to push to after deploying (e.g. release-candidate).'
         ) do |promote_branch|
           @options.promote_branch = promote_branch
+        end
+
+        opts.on(
+          '--push-to BRANCH', 'Branch to push to after creating a final release (e.g. release-candidate).'
+        ) do |push_branch|
+          @options.push_branch = push_branch
         end
 
         opts.on(
