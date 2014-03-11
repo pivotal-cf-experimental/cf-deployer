@@ -29,6 +29,10 @@ module CfDeployer
       expect { subject.upload_release }.to raise_error(NotImplementedError)
     end
 
+    it 'does not implement #tag_and_push_final_release' do
+      expect { subject.tag_and_push_final_release("anything") }.to raise_error(NoMethodError)
+    end
+
     describe '#deploy_release' do
       let(:generic_stub) { File.join(deployment_path, 'cf-stub.yml') }
       let(:shared_secrets) { File.join(deployment_path, 'cf-shared-secrets.yml') }

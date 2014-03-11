@@ -21,5 +21,9 @@ module CfDeployer
     def promote_release(branch)
       @release_repo.promote_final_release(branch)
     end
+
+    def tag_and_push_final_release(branch)
+      @release_repo.tag_and_push_final_release(branch)
+    end
   end
 end

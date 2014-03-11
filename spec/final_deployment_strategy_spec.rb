@@ -62,6 +62,16 @@ module CfDeployer
         }.to('some-branch')
       end
     end
+
+    describe '#tag_and_push_final_release' do
+      it 'tags and pushes the final release' do
+        expect {
+          subject.tag_and_push_final_release 'some-branch'
+        }.to change {
+          release_repo.tagged_and_pushed_final_release
+        }.to('some-branch')
+      end
+    end
   end
 end
 

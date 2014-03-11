@@ -35,6 +35,10 @@ module CfDeployer
       raise NotImplementedError
     end
 
+    def tag_and_push_final_release(_)
+      raise NoMethodError, 'This method is only available on a FinalDeploymentStrategy. Calling it elsewhere is a mistake.'
+    end
+
     private
 
     def with_deployment_hooks

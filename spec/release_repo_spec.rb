@@ -124,6 +124,43 @@ EOF
       end
     end
 
+    describe '#tag_and_push_final_release' do
+      it 'logs the important steps' do
+        subject.tag_and_push_final_release('deployed-to-prod')
+
+        expect(logger).to have_logged(/creating release blobs commit for v125/)
+        expect(logger).to have_logged(/creating and pushing tag v125/)
+        expect(logger).to have_logged(/pushing final release to deployed-to-prod/)
+      end
+
+      it 'commits .final_builds/ and releases/' do
+        subject.tag_and_push_final_release('deployed-to-prod')
+
+        expect(runner).to have_executed_serially(
+          "cd #{repo_path} && git add .final_builds/ releases/",
+          "cd #{repo_path} && git commit -m 'add blobs for release v125'",
+        )
+      end
+
+      it 'creates a tag of the latest release and pushes it, after committing' do
+        subject.tag_and_push_final_release('deployed-to-prod')
+
+        expect(runner).to have_executed_serially(
+          /git commit.*add blobs/,
+          "cd #{repo_path} && git tag -f v125",
+          "cd #{repo_path} && git push --tags"
+        )
+      end
+
+      it 'pushes HEAD to the remote branch' do
+        subject.tag_and_push_final_release('deployed-to-prod')
+
+        expect(runner).to have_executed_serially(
+          "cd #{repo_path} && git push origin HEAD:refs/heads/deployed-to-prod"
+        )
+      end
+    end
+
     describe '#promote_dev_release' do
       it "logs that it's promoting a dev release" do
         subject.promote_dev_release('staging-deployed')

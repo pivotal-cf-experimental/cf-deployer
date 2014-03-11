@@ -23,6 +23,19 @@ module CfDeployer
       promote(branch)
     end
 
+    def tag_and_push_final_release(branch)
+      latest_release = current_final_release
+
+      log_message "creating release blobs commit for v#{latest_release}"
+      commit_final_release(latest_release)
+
+      log_message "creating and pushing tag v#{latest_release}"
+      push_latest_final_release_tag(latest_release)
+
+      log_message "pushing final release to #{branch}"
+      promote(branch)
+    end
+
     private
 
     def commit_final_release(release)

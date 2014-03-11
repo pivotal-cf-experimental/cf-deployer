@@ -7,4 +7,5 @@ modified_argv = ARGV + %w(--final)
 
 CfDeployer::CLI.start(modified_argv) do |cf_deploy|
   cf_deploy.create_release
+  cf_deploy.tag_and_push_final_release
 end
