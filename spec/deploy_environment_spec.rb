@@ -60,7 +60,7 @@ module CfDeployer
 
     specify Repo do
       make_new_deploy_environment
-      expect(Repo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-deployments_repo', 'origin/master')
+      expect(Repo).to have_received(:new).with(logger, runner, '/path/to/repos', 'fake-deployments_repo', 'master')
     end
 
     specify ReleaseRepo do

@@ -20,7 +20,7 @@ module CfDeployer
     private
 
     def prepare
-      deployments_repo = Repo.new(@logger, @runner, options.repos_path, options.deployments_repo, 'origin/master')
+      deployments_repo = Repo.new(@logger, @runner, options.repos_path, options.deployments_repo, 'master')
       deployments_repo.sync! unless options.dirty
 
       release_repo = ReleaseRepo.new(@logger, @runner, options.repos_path, options.release_repo, options.release_ref)
