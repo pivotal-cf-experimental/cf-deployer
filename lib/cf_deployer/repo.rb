@@ -14,7 +14,7 @@ module CfDeployer
       unless cloned?
         log_message 'not found; cloning'
         @runner.run! "mkdir -p #{@repos_path}"
-        @runner.run! "git clone #{@uri} #{path}"
+        @runner.run! "git clone --no-checkout #{@uri} #{path}"
       end
 
       unless git_toplevel

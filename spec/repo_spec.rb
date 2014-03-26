@@ -39,7 +39,7 @@ module CfDeployer
           subject.sync!
 
           expect(runner).to have_executed_serially(
-            "git clone git@github.com:cloudfoundry/some-repo.git #{repo_path}",
+            "git clone --no-checkout git@github.com:cloudfoundry/some-repo.git #{repo_path}",
           )
         end
 
@@ -85,7 +85,7 @@ module CfDeployer
           subject.sync!
 
           expect(runner).to have_executed_serially(
-            "git clone git@github.com:cloudfoundry/some-repo.git #{repo_path}",
+            "git clone --no-checkout git@github.com:cloudfoundry/some-repo.git #{repo_path}",
             "cd #{repo_path} && git reset --hard",
             "cd #{repo_path} && git clean --force --force -d",
             "cd #{repo_path} && git fetch",
