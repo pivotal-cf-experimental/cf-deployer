@@ -34,82 +34,41 @@ module CfDeployer
         ShellOut.unstub(:capture_output)
       end
 
-      context 'when the repo does not exist' do
-        it 'clones into the repo path' do
-          subject.sync!
-
-          expect(runner).to have_executed_serially(
-            "git clone --no-checkout git@github.com:cloudfoundry/some-repo.git #{repo_path}",
-          )
-        end
-
-        it "logs that it's cloning" do
-          subject.sync!
-          expect(logger).to have_logged('cloudfoundry/some-repo: not found; cloning')
-        end
-      end
-
-      context 'when the repo is already cloned' do
-        before do
+      before do
+        runner.when_running(/git clone/) do
           Dir.mkdir(repo_path)
           Dir.chdir(repo_path) do
             `git init`
           end
         end
-
-        it 'does not clone the repo' do
-          subject.sync!
-
-          expect(runner).not_to have_executed_serially(
-            /git clone/,
-          )
-        end
-
-        it "logs that it's syncing" do
-          subject.sync!
-          expect(logger).to have_logged('cloudfoundry/some-repo: syncing with some-ref')
-        end
       end
 
-      context 'after cloning the repo' do
-        before do
-          runner.when_running(/git clone/) do
-            Dir.mkdir(repo_path)
-            Dir.chdir(repo_path) do
-              `git init`
-            end
-          end
-        end
+      it 'cleans the repository and fetches the latest from origin on the ref' do
+        subject.sync!
 
-        it 'cleans the repository and fetches the latest from origin on the ref' do
-          subject.sync!
+        expect(runner).to have_executed_serially(
+                              "rm -rf #{repo_path}",
+                              "mkdir -p #{repo_path}",
+                              "git clone --branch some-ref git@github.com:cloudfoundry/some-repo.git #{repo_path}",
+                              "cd #{repo_path} && git clean --force --force -d",
+                              "cd #{repo_path} && git submodule sync --recursive",
+                              "cd #{repo_path} && git submodule init",
+                              "cd #{repo_path} && git submodule status | awk '{print $2}' | xargs -P10 -n1 git submodule update --init --recursive",
+                              "cd #{repo_path} && git submodule foreach --recursive git clean --force --force -d"
+                          )
+      end
 
-          expect(runner).to have_executed_serially(
-            "git clone --no-checkout git@github.com:cloudfoundry/some-repo.git #{repo_path}",
-            "cd #{repo_path} && git reset --hard",
-            "cd #{repo_path} && git clean --force --force -d",
-            "cd #{repo_path} && git fetch",
-            "cd #{repo_path} && git checkout some-ref",
-            "cd #{repo_path} && git clean --force --force -d",
-            "cd #{repo_path} && git submodule sync --recursive",
-            "cd #{repo_path} && git submodule init",
-            "cd #{repo_path} && git submodule status | awk '{print $2}' | xargs -P10 -n1 git submodule update --init --recursive",
-            "cd #{repo_path} && git submodule foreach --recursive git clean --force --force -d"
-          )
-        end
+      it "logs that it's syncing" do
+        subject.sync!
+        expect(logger).to have_logged('cloudfoundry/some-repo: syncing with some-ref')
+      end
 
-        it "logs that it's syncing" do
+      context 'with a http uri' do
+        let(:uri) { 'https://github.com/cloudfoundry/some-repo.git' }
+
+        it 'logs the proper owner/repo name' do
           subject.sync!
           expect(logger).to have_logged('cloudfoundry/some-repo: syncing with some-ref')
-        end
-
-        context 'with a http uri' do
-          let(:uri) { 'https://github.com/cloudfoundry/some-repo.git' }
-
-          it 'logs the proper owner/repo name' do
-            subject.sync!
-            expect(logger).to have_logged('cloudfoundry/some-repo: syncing with some-ref')
-          end
         end
       end
     end

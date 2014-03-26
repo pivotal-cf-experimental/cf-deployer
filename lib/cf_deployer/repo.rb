@@ -11,11 +11,9 @@ module CfDeployer
     end
 
     def sync!
-      unless cloned?
-        log_message 'not found; cloning'
-        @runner.run! "mkdir -p #{@repos_path}"
-        @runner.run! "git clone --no-checkout #{@uri} #{path}"
-      end
+      @runner.run! "rm -rf #{path}"
+      @runner.run! "mkdir -p #{path}"
+      @runner.run! "git clone --branch #{@ref} #{@uri} #{path}"
 
       unless git_toplevel
         log_message 'not a repo; skipping'
@@ -28,10 +26,6 @@ module CfDeployer
 
     def path
       File.directory?(@uri) ? @uri : File.join(@repos_path, repo_name)
-    end
-
-    def cloned?
-      File.exists?(path)
     end
 
     private
@@ -53,10 +47,6 @@ module CfDeployer
     end
 
     def sync_with_origin
-      run_git! 'reset --hard'
-      run_git! 'clean --force --force -d'
-      run_git! 'fetch'
-      run_git! "checkout #{@ref}"
       run_git! 'clean --force --force -d'
       run_git! 'submodule sync --recursive'
       run_git! 'submodule init'
