@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e -u
+
+(
+    cf_release_dir=${1:-~/workspace/cf-release}
+    workingdir=$(mktemp -d -t lite_deploy);
+    cd $workingdir
+
+    if ! which cf_deploy > /dev/null 2>&1; then
+        echo "cf_deploy not installed. See pivotal-cf/cf-deployer repo."
+        exit 1
+    fi
+
+    mkdir -p deployments/warden
+
+    bosh target 192.168.50.4
+    director_uuid=$(bosh status | grep UUID | awk '{print $2}')
+    echo "Director UUID: ${director_uuid}"
+    cat > deployments/warden/cf-stub.yml  <<EOF
+---
+name: cf-warden
+director_uuid: ${director_uuid}
+releases:
+  - name: cf
+    version: latest
+EOF
+
+    cat > deployments/warden/bosh_environment  <<EOF
+export BOSH_DIRECTOR=https://192.168.50.4:25555
+export BOSH_USER=admin
+export BOSH_PASSWORD=admin
+EOF
+
+    cf_deploy --dirty \
+              --non-interactive \
+              --rebase \
+              --deployments-repo deployments \
+              --deployment-name warden \
+              --release-repo ${cf_release_dir} \
+              --release-name cf \
+              --infrastructure warden
+)
