@@ -1,43 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-set -e -u
+require "tmpdir"
 
-(
-    cf_release_dir=${1:-~/workspace/cf-release}
-    workingdir=$(mktemp -d -t lite_deploy);
-    cd $workingdir
+cf_release_dir=ARGV[0] || "~/workspace/cf-release"
 
-    if ! which cf_deploy > /dev/null 2>&1; then
-        echo "cf_deploy not installed. See pivotal-cf/cf-deployer repo."
-        exit 1
-    fi
+def system!(command)
+  system(command) or raise "command failed: `#{command}'"
+end
 
-    mkdir -p deployments/warden
+Dir.mktmpdir do |working_dir|
+  Dir.chdir(working_dir) do
+    unless system('which cf_deploy > /dev/null 2>&1')
+      fail "cf_deploy not installed. See pivotal-cf/cf-deployer repo."
+    end
 
-    bosh target 192.168.50.4
-    director_uuid=$(bosh status | grep UUID | awk '{print $2}')
-    echo "Director UUID: ${director_uuid}"
-    cat > deployments/warden/cf-stub.yml  <<EOF
+    FileUtils.mkpath("deployments/warden")
+
+    system!("bosh target 192.168.50.4")
+
+    director_uuid=`bosh status | grep UUID | awk '{print $2}'`
+    puts "Director UUID: #{director_uuid}"
+
+    File.open("deployments/warden/cf-stub.yml", 'w') do |file|
+      file.write <<YAML
 ---
 name: cf-warden
 director_uuid: ${director_uuid}
 releases:
   - name: cf
     version: latest
-EOF
+YAML
+    end
 
-    cat > deployments/warden/bosh_environment  <<EOF
-export BOSH_DIRECTOR=https://192.168.50.4:25555
-export BOSH_USER=admin
-export BOSH_PASSWORD=admin
-EOF
+    File.open("deployments/warden/bosh_environment", 'w') do |file|
+      file.write <<-BASH
+      export BOSH_DIRECTOR=https://192.168.50.4:25555
+      export BOSH_USER=admin
+      export BOSH_PASSWORD=admin
+      BASH
+    end
 
+    system! <<-BASH
     cf_deploy --dirty \
               --non-interactive \
               --rebase \
               --deployments-repo deployments \
               --deployment-name warden \
-              --release-repo ${cf_release_dir} \
+              --release-repo #{cf_release_dir} \
               --release-name cf \
               --infrastructure warden
-)
+    BASH
+  end
+end
