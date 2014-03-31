@@ -10,10 +10,6 @@ end
 
 Dir.mktmpdir do |working_dir|
   Dir.chdir(working_dir) do
-    unless system('which cf_deploy > /dev/null 2>&1')
-      fail "cf_deploy not installed. See pivotal-cf/cf-deployer repo."
-    end
-
     FileUtils.mkpath("deployments/warden")
 
     system!("bosh target 192.168.50.4")
