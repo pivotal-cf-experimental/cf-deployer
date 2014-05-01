@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'dogapi', '~> 1.9'
   spec.add_runtime_dependency 'bosh_cli', '~> 1.0'
-  spec.add_runtime_dependency 'cf', '~> 5.2.2'
 
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
