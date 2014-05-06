@@ -1,5 +1,6 @@
 require 'yaml'
 require 'cf_deployer/release_manifest'
+require 'cf_deployer/spiff_checker'
 
 module CfDeployer
   class ReleaseManifestGenerator
@@ -17,7 +18,10 @@ module CfDeployer
       gospace = File.expand_path('./gospace')
 
       FileUtils.mkdir_p(gospace)
-      @runner.run!('go get -v github.com/cloudfoundry-incubator/spiff', environment: {'GOPATH' => gospace})
+
+      unless SpiffChecker.spiff_present?
+        @runner.run!('go get -v github.com/cloudfoundry-incubator/spiff', environment: {'GOPATH' => gospace})
+      end
 
       overrides_file = Tempfile.new('overrides')
       begin

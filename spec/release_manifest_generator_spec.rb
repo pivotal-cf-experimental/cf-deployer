@@ -14,13 +14,32 @@ module CfDeployer
       end
     end
 
+    before do
+      allow(SpiffChecker).to receive(:spiff_present?).and_return(false)
+    end
+
     describe '#generate!' do
-      it 'installs spiff' do
+      it 'installs spiff if not already present' do
         subject.generate!(['/woah', '/stub/files'])
 
         gospace = File.join(Dir.pwd, 'gospace')
 
         expect(runner).to have_executed_serially(
+          ['go get -v github.com/cloudfoundry-incubator/spiff', environment: { 'GOPATH' => gospace }],
+          [ './repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml',
+            environment: { 'PATH' => "#{gospace}/bin:/usr/bin:/bin" }
+          ]
+        )
+      end
+
+      it 'does not install spiff if already present' do
+        expect(SpiffChecker).to receive(:spiff_present?).and_return(true)
+
+        subject.generate!(['/woah', '/stub/files'])
+
+        gospace = File.join(Dir.pwd, 'gospace')
+
+        expect(runner).to_not have_executed_serially(
           ['go get -v github.com/cloudfoundry-incubator/spiff', environment: { 'GOPATH' => gospace }],
           [ './repos/cf-release/generate_deployment_manifest aws /woah /stub/files > new_deployment.yml',
             environment: { 'PATH' => "#{gospace}/bin:/usr/bin:/bin" }
