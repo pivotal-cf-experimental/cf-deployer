@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'bosh_cli', '~> 1.0'
 
   spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'rspec', '~> 2.0'
   spec.add_development_dependency 'blue-shell'
   spec.add_development_dependency 'timecop'
 end
