@@ -33,7 +33,8 @@ module CfDeployer
 
       dry_run: false,
 
-      manifest_domain: nil
+      manifest_domain: nil,
+      local_blob_cache_dir: nil
     }
 
     class Options < Struct.new(*OPTIONS.keys); end
@@ -57,6 +58,7 @@ module CfDeployer
 
     def validate!
       die 'exactly one --release-repo is required' unless @options.release_repo
+      die 'can not specify --local-blob-cache-dir if --dirty is specified' if @options.dirty && @options.local_blob_cache_dir
       die 'exactly one --release-name is required' unless @options.release_name
       die '--deployments-repo is required' unless @options.deployments_repo
       die '--deployment-name is required' unless @options.deployment_name
@@ -118,6 +120,12 @@ module CfDeployer
           '--dirty', "Deploy using whatever state the deployment and release repos are in. DEFAULT: #{@options.dirty}"
         ) do |dirty|
           @options.dirty = dirty
+        end
+
+        opts.on(
+            '--local-blob-cache-dir CACHE_DIR', 'Use CACHE_DIR for local blob cache in release repo (.blobs).'
+        ) do |local_blob_cache_dir|
+          @options.local_blob_cache_dir = local_blob_cache_dir
         end
 
         opts.on(
