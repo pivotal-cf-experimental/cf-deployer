@@ -9,6 +9,7 @@ cf-deployer is not on Rubygems yet.
 To install the gem from source:
 
 ```bash
+$ bundle install
 $ bundle exec rake install
 cf_deployer 0.3.1 built to pkg/cf_deployer-0.3.1.gem.
 cf_deployer (0.3.1) installed.

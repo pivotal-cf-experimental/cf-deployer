@@ -55,6 +55,12 @@ describe CfDeployer::OptionsParser do
       args.delete_if { |s| s.match /--release-ref/ }
       expect(options_parser).to fail_validation(/--release-ref or --dirty is required/)
     end
+
+    it 'fails if both --local-blob-cache-dir and --dirty are specified' do
+      args << '--dirty'
+      args << '--local-blob-cache-dir=my_dir'
+      expect(options_parser).to fail_validation(/can not specify --local-blob-cache-dir if --dirty is specified/)
+    end
   end
 
   describe 'parsed options' do
@@ -83,6 +89,7 @@ describe CfDeployer::OptionsParser do
       expect(opts.install_tokens).to eq(false)
       expect(opts.dry_run).to eq(false)
       expect(opts.manifest_domain).to be_nil
+      expect(opts.local_blob_cache_dir).to be_nil
     end
 
     describe 'overridden, non-required options' do
@@ -100,6 +107,14 @@ describe CfDeployer::OptionsParser do
         expect(options_parser).to validate_successfully
         opts = options_parser.options
         expect(opts.dirty).to eq(true)
+      end
+
+      it 'exposes overridden --local-blob-cache-dir' do
+        args << '--local-blob-cache-dir=my_dir'
+
+        expect(options_parser).to validate_successfully
+        opts = options_parser.options
+        expect(opts.local_blob_cache_dir).to eq("my_dir")
       end
 
       it 'exposes overridden --promote-to' do

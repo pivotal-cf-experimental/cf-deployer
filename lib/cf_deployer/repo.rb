@@ -24,6 +24,12 @@ module CfDeployer
       sync_with_origin
     end
 
+    def use_local_blob_cache(blob_cache_dir)
+      @runner.run! "rm -rf #{path}/.blobs"
+      @runner.run! "mkdir -p #{blob_cache_dir}"
+      @runner.run! "ln -s #{blob_cache_dir} #{path}/.blobs"
+    end
+
     def path
       File.directory?(@uri) ? @uri : File.join(@repos_path, repo_name)
     end

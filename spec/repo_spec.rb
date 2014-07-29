@@ -73,6 +73,22 @@ module CfDeployer
       end
     end
 
+    describe '#use_local_blob_cache' do
+      before do
+        ShellOut.unstub(:capture_output)
+      end
+      it 'symlinks .blobs to the specified directory' do
+        subject.use_local_blob_cache('my_dir')
+
+        expect(runner).to have_executed_serially(
+                              "rm -rf #{repo_path}/.blobs",
+                              "mkdir -p my_dir",
+                              "ln -s my_dir #{repo_path}/.blobs"
+                          )
+      end
+    end
+
+
     describe '#path' do
       context 'with a ssh git uri' do
         let(:uri) { 'git@github.com:foo/some-repo.git' }
